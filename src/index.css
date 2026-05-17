@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+/* v4 defaults `dark:` to prefers-color-scheme; we toggle `class="dark"` on <html> instead. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "SF Pro Display",
+    "SF Pro Text", "Segoe UI", sans-serif;
+
+  /* Shell background (sidebar + top chrome row) — light uses white chrome */
+  --color-chrome-bg-light: #ffffff;
+  --color-chrome-border-light: #e6e6e9;
+  /* Sidebar row states on white chrome */
+  --color-sidebar-hover-light: #f4f4f5;
+  --color-sidebar-selected-light: #e8e8ed;
+  --color-sidebar-text-muted-light: #6b6b6b;
+
+  --color-chrome-bg-dark: #141416;
+  --color-chrome-border-dark: #2a2a2e;
+  --color-sidebar-hover-dark: rgba(255, 255, 255, 0.06);
+  --color-sidebar-selected-dark: rgba(255, 255, 255, 0.1);
+  --color-sidebar-text-muted-dark: #8e8e93;
+
+  --color-app-bg: #0a0a0b;
+  --color-app-surface: #131316;
+  --color-app-border: #2a2a2e;
+  --color-app-muted: #8b8b90;
+  --color-app-fg: #f4f4f5;
+
+  /* Same as chrome: one flat shell (no striped grays) */
+  --color-app-bg-light: #ffffff;
+  --color-app-surface-light: #ffffff;
+  --color-app-border-light: #e4e4e7;
+  --color-app-muted-light: #71717a;
+  --color-app-fg-light: #18181b;
+}
+
+@layer base {
+  html {
+    @apply antialiased;
+    background-color: var(--color-chrome-bg-light);
+  }
+
+  html.dark {
+    background-color: var(--color-chrome-bg-dark);
+  }
+
+  body {
+    @apply m-0 min-h-[100dvh] text-[15px];
+    background-color: var(--color-chrome-bg-light);
+    color: var(--color-app-fg-light);
+    font-family: var(--font-sans);
+  }
+
+  html.dark body {
+    background-color: var(--color-chrome-bg-dark);
+    color: var(--color-app-fg);
+  }
+
+  #root {
+    @apply min-h-[100dvh];
+  }
+}
+
+@layer components {
+  /* macOS WKWebView: required for window dragging with overlay title bars */
+  [data-tauri-drag-region] {
+    -webkit-app-region: drag;
+    app-region: drag;
+  }
+
+  button,
+  a,
+  input,
+  textarea,
+  select,
+  [data-tauri-no-drag] {
+    -webkit-app-region: no-drag;
+    app-region: no-drag;
+  }
+
+  .chrome-bg {
+    background-color: var(--color-chrome-bg-light);
+  }
+  html.dark .chrome-bg {
+    background-color: var(--color-chrome-bg-dark);
+  }
+
+  .chrome-border-r {
+    border-right: 1px solid var(--color-chrome-border-light);
+  }
+  html.dark .chrome-border-r {
+    border-right-color: var(--color-chrome-border-dark);
+  }
+
+  .chrome-border-b {
+    border-bottom: 1px solid var(--color-chrome-border-light);
+  }
+  html.dark .chrome-border-b {
+    border-bottom-color: var(--color-chrome-border-dark);
+  }
+
+  .chrome-border-t {
+    border-top: 1px solid var(--color-chrome-border-light);
+  }
+  html.dark .chrome-border-t {
+    border-top-color: var(--color-chrome-border-dark);
+  }
+}

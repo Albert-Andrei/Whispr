@@ -1,40 +1,63 @@
-import type { NewImportStep } from "../../types";
+import { useState } from "react";
+import { DropZone } from "../import/DropZone";
+import { URLInput } from "../import/URLInput";
 
 type EmptyStateProps = {
-  onPickImport: (step: Exclude<NewImportStep, "choose">) => void;
+  onSubmitUrl: (url: string) => Promise<void>;
+  onLocalFiles: (files: File[]) => Promise<void>;
+  onLocalFilePaths?: (paths: string[]) => Promise<void>;
 };
 
-export function EmptyState({ onPickImport }: EmptyStateProps) {
+export function EmptyState({ onSubmitUrl, onLocalFiles, onLocalFilePaths }: EmptyStateProps) {
+  const [busy, setBusy] = useState(false);
+
+  const run = async (fn: () => Promise<void>) => {
+    setBusy(true);
+    try {
+      await fn();
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
-    <div className="flex min-h-[calc(100vh-7rem)] flex-col items-center justify-center px-5 py-16">
-      <div className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white/80 p-8 text-center shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/60">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
-          <span className="text-xl" aria-hidden>
-            ⌁
-          </span>
+    <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-4 py-6 sm:py-8">
+      <div className="w-full max-w-[380px]">
+        <div className="text-center">
+          <h2 className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+            No transcriptions yet
+          </h2>
+          <p className="mt-1.5 text-xs leading-snug text-zinc-500 dark:text-zinc-400">
+            Paste a link or drop a file below. Everything runs offline on your Mac—no API
+            keys.
+          </p>
         </div>
-        <h2 className="mt-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-          No transcriptions yet
-        </h2>
-        <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-          Import a link or add a local file to get started. Everything runs
-          offline—no API keys.
-        </p>
-        <div className="mt-6 grid gap-3 sm:grid-cols-2">
-          <button
-            type="button"
-            onClick={() => onPickImport("url")}
-            className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm font-medium text-zinc-900 transition hover:border-indigo-300 hover:bg-white dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50 dark:hover:border-indigo-400 dark:hover:bg-zinc-900/80"
-          >
-            Import from URL
-          </button>
-          <button
-            type="button"
-            onClick={() => onPickImport("local")}
-            className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm font-medium text-zinc-900 transition hover:border-indigo-300 hover:bg-white dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50 dark:hover:border-indigo-400 dark:hover:bg-zinc-900/80"
-          >
-            Import local file
-          </button>
+
+        <div className="mt-5 space-y-4 text-left">
+          <URLInput
+            compact
+            disabled={busy}
+            focusRequest
+            onSubmitUrl={(url) => void run(() => onSubmitUrl(url))}
+          />
+
+          <div className="relative flex items-center justify-center py-0.5" aria-hidden>
+            <div className="absolute inset-x-0 top-1/2 h-px bg-zinc-200/90 dark:bg-zinc-700/80" />
+            <span className="relative bg-white px-2 text-[11px] font-medium text-zinc-400 dark:bg-zinc-950 dark:text-zinc-500">
+              or
+            </span>
+          </div>
+
+          <DropZone
+            compact
+            disabled={busy}
+            onPaths={
+              onLocalFilePaths
+                ? (paths) => void run(() => onLocalFilePaths(paths))
+                : undefined
+            }
+            onFiles={(files) => void run(() => onLocalFiles(files))}
+          />
         </div>
       </div>
     </div>

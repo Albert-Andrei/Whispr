@@ -4,4 +4,5 @@
  */
 export type SidebarView = "history" | "settings" | "record";
 
-export type NewImportStep = "choose" | "url" | "local";
+/** Which part of the import modal to emphasize when opened (e.g. from dashboard CTAs). */
+export type NewImportStep = "url" | "local";

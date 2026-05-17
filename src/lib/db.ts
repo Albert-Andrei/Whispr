@@ -30,4 +30,46 @@ async function runMigrations(db: Database): Promise<void> {
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
   `);
+
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS app_config (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL,
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+  `);
+
+  await safeAlter(db, "ALTER TABLE transcription_jobs ADD COLUMN error_message TEXT;");
+  await safeAlter(db, "ALTER TABLE transcription_jobs ADD COLUMN progress REAL DEFAULT 0;");
+  await safeAlter(db, "ALTER TABLE transcription_jobs ADD COLUMN pipeline_stage TEXT;");
+  await safeAlter(db, "ALTER TABLE transcription_jobs ADD COLUMN srt_output TEXT;");
+  await safeAlter(db, "ALTER TABLE transcription_jobs ADD COLUMN model_used TEXT;");
+}
+
+async function safeAlter(db: Database, sql: string): Promise<void> {
+  try {
+    await db.execute(sql);
+  } catch {
+    /* column may already exist */
+  }
+}
+
+export async function getConfig(key: string): Promise<string | null> {
+  const db = await getDatabase();
+  const rows = await db.select<{ value: string }[]>(
+    "SELECT value FROM app_config WHERE key = $1",
+    [key],
+  );
+  const row = rows[0];
+  return row?.value ?? null;
+}
+
+export async function setConfig(key: string, value: string): Promise<void> {
+  const db = await getDatabase();
+  const now = new Date().toISOString();
+  await db.execute(
+    `INSERT INTO app_config (key, value, updated_at) VALUES ($1, $2, $3)
+     ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
+    [key, value, now],
+  );
 }

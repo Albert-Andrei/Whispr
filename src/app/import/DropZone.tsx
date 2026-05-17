@@ -1,41 +1,111 @@
 import { useRef } from "react";
-import { ACCEPT_INPUT_ATTRIBUTE, isAcceptedMediaFile } from "./constants";
+import { isTauri } from "@tauri-apps/api/core";
+import { message, open } from "@tauri-apps/plugin-dialog";
+import {
+  ACCEPT_INPUT_ATTRIBUTE,
+  DIALOG_MEDIA_FILTER,
+  isAcceptedMediaFile,
+} from "./constants";
 
 type DropZoneProps = {
   onFiles: (files: File[]) => void;
+  /** Tauri: absolute paths from the native picker or drag-and-drop with `File.path`. */
+  onPaths?: (paths: string[]) => void;
   disabled?: boolean;
+  /** Tighter padding only; same dashed panel + chrome as the modal. */
+  compact?: boolean;
 };
 
-export function DropZone({ onFiles, disabled }: DropZoneProps) {
+const DRAG_ACTIVE = [
+  "bg-zinc-50",
+  "dark:bg-zinc-800/50",
+  "ring-2",
+  "ring-zinc-300",
+  "ring-inset",
+  "dark:ring-zinc-600",
+] as const;
+
+function filePathFromWebFile(file: File): string | undefined {
+  const p = (file as File & { path?: string }).path;
+  return typeof p === "string" && p.length > 0 ? p : undefined;
+}
+
+export function DropZone({
+  onFiles,
+  onPaths,
+  disabled,
+  compact = false,
+}: DropZoneProps) {
   const dragDepth = useRef(0);
 
   const handleFiles = (list: FileList | null) => {
     if (!list || disabled) return;
     const files = [...list].filter(isAcceptedMediaFile);
-    if (files.length > 0) onFiles(files);
+    if (files.length === 0) return;
+
+    if (isTauri() && onPaths) {
+      const paths = files
+        .map((f) => filePathFromWebFile(f))
+        .filter((p): p is string => p !== undefined);
+      if (paths.length === files.length) {
+        onPaths(paths);
+        return;
+      }
+      if (paths.length > 0) {
+        onPaths(paths);
+        void message(
+          "Some files could not be added because their path was not available. Use Browse to pick files, or drop them from Finder.",
+          { title: "Whispr", kind: "warning" },
+        );
+        return;
+      }
+    }
+
+    onFiles(files);
+  };
+
+  const openNativePicker = async () => {
+    if (disabled) return;
+    try {
+      const selected = await open({
+        multiple: true,
+        title: "Choose video or audio",
+        filters: [DIALOG_MEDIA_FILTER],
+      });
+      if (selected === null) return;
+      const paths = Array.isArray(selected) ? selected : [selected];
+      onPaths?.(paths);
+    } catch {
+      /* dialog unavailable or dismissed */
+    }
   };
 
   const clearDragHighlight = (el: HTMLDivElement) => {
-    el.classList.remove(
-      "border-indigo-500",
-      "bg-indigo-50",
-      "dark:border-indigo-400",
-      "dark:bg-indigo-950/40",
-    );
+    for (const c of DRAG_ACTIVE) {
+      el.classList.remove(c);
+    }
   };
 
   const addDragHighlight = (el: HTMLDivElement) => {
-    el.classList.add(
-      "border-indigo-500",
-      "bg-indigo-50",
-      "dark:border-indigo-400",
-      "dark:bg-indigo-950/40",
-    );
+    for (const c of DRAG_ACTIVE) {
+      el.classList.add(c);
+    }
   };
+
+  const shell =
+    "border border-dashed border-zinc-200 bg-white text-center transition-colors dark:border-zinc-600 dark:bg-zinc-950 " +
+    (compact ? "rounded-xl px-5 py-6" : "rounded-2xl px-6 py-10");
+
+  const browseButtonClass =
+    compact
+      ? "inline-flex w-full max-w-full items-center justify-center rounded-full bg-zinc-900 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-800 has-disabled:opacity-50 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100 sm:max-w-[200px]"
+      : "inline-flex w-full max-w-full items-center justify-center rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white transition hover:bg-zinc-800 has-disabled:opacity-50 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100 sm:max-w-[200px]";
+
+  const useNativePicker = isTauri() && !!onPaths;
 
   return (
     <div
-      className="rounded-xl border-2 border-dashed border-zinc-300 bg-white/50 px-6 py-10 text-center transition-colors hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900/40 dark:hover:border-zinc-500"
+      className={shell}
       onDragEnter={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -63,24 +133,41 @@ export function DropZone({ onFiles, disabled }: DropZoneProps) {
         handleFiles(e.dataTransfer.files);
       }}
     >
-      <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+      <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
         Drag & drop video or audio files
       </p>
-      <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+      <p className="mt-2 text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
         MP4, MOV, MKV, WebM, AVI, MP3, WAV, M4A, FLAC, OGG, AAC
       </p>
 
-      <label className="mt-6 inline-flex cursor-pointer items-center justify-center rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 has-[:disabled]:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white">
-        <input
-          type="file"
-          className="sr-only"
-          accept={ACCEPT_INPUT_ATTRIBUTE}
-          disabled={disabled}
-          multiple
-          onChange={(e) => handleFiles(e.target.files)}
-        />
-        Browse files…
-      </label>
+      <div
+        className={`flex w-full cursor-pointer justify-center ${compact ? "mt-5" : "mt-8"}`}
+      >
+        {useNativePicker ? (
+          <button
+            type="button"
+            disabled={disabled}
+            className={browseButtonClass}
+            onClick={() => void openNativePicker()}
+          >
+            Browse files...
+          </button>
+        ) : (
+          <label className="flex w-full cursor-pointer justify-center">
+            <span className={browseButtonClass}>
+              <input
+                type="file"
+                className="sr-only"
+                accept={ACCEPT_INPUT_ATTRIBUTE}
+                disabled={disabled}
+                multiple
+                onChange={(e) => handleFiles(e.target.files)}
+              />
+              Browse files...
+            </span>
+          </label>
+        )}
+      </div>
     </div>
   );
 }

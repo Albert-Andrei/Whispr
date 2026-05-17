@@ -21,6 +21,14 @@ export const ACCEPTED_EXTENSIONS = new Set([
   ...ACCEPTED_AUDIO_EXTENSIONS,
 ]);
 
+/** Extension list for `plugin-dialog` `open({ filters })` — no leading dot. */
+export const DIALOG_MEDIA_EXTENSIONS: string[] = [...ACCEPTED_EXTENSIONS].sort();
+
+export const DIALOG_MEDIA_FILTER = {
+  name: "Video & audio",
+  extensions: DIALOG_MEDIA_EXTENSIONS,
+} as const;
+
 export function extensionOf(name: string): string {
   const idx = name.lastIndexOf(".");
   if (idx === -1) return "";

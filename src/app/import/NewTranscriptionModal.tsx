@@ -7,38 +7,41 @@ import { URLInput } from "./URLInput";
 type NewTranscriptionModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  initialStep?: NewImportStep;
+  /** When set (e.g. from dashboard CTAs), focus URL field or hint local path. */
+  initialFocus?: NewImportStep | null;
   onLocalFiles: (files: File[]) => Promise<void>;
+  /** Desktop: absolute paths from the native file dialog. */
+  onLocalFilePaths?: (paths: string[]) => Promise<void>;
   onUrl: (url: string) => Promise<void>;
 };
 
 export function NewTranscriptionModal({
   open,
   onOpenChange,
-  initialStep = "choose",
+  initialFocus = null,
   onLocalFiles,
+  onLocalFilePaths,
   onUrl,
 }: NewTranscriptionModalProps) {
-  const [step, setStep] = useState<NewImportStep>("choose");
   const [busy, setBusy] = useState(false);
+  const [focusUrl, setFocusUrl] = useState(false);
 
   useEffect(() => {
     if (!open) {
-      setStep("choose");
       setBusy(false);
+      setFocusUrl(false);
     }
   }, [open]);
 
   useEffect(() => {
-    if (open) setStep(initialStep);
-  }, [open, initialStep]);
+    if (open) setFocusUrl(initialFocus === "url");
+  }, [open, initialFocus]);
 
   const run = async (fn: () => Promise<void>) => {
     setBusy(true);
     try {
       await fn();
       onOpenChange(false);
-      setStep("choose");
     } finally {
       setBusy(false);
     }
@@ -47,95 +50,53 @@ export function NewTranscriptionModal({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Backdrop className="fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px]" />
+        <Dialog.Backdrop className="fixed inset-0 z-40 bg-black/40" />
         <Dialog.Viewport className="fixed inset-0 z-50 grid place-items-center p-4">
-          <Dialog.Popup className="w-full max-w-lg rounded-2xl border border-zinc-200 bg-white p-6 shadow-xl outline-none dark:border-zinc-800 dark:bg-zinc-950">
+          <Dialog.Popup className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-8 shadow-[0_8px_30px_rgb(0,0,0,0.08)] outline-none dark:border-zinc-700 dark:bg-zinc-950 dark:shadow-none">
             <div className="flex items-start justify-between gap-4">
-              <div>
-                <Dialog.Title className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+              <div className="min-w-0">
+                <Dialog.Title className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
                   New transcription
                 </Dialog.Title>
-                <Dialog.Description className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                  Import from a link or add local media files.
+                <Dialog.Description className="mt-1.5 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+                  Paste a link, or drag in a file — everything stays on your Mac.
                 </Dialog.Description>
               </div>
               <Dialog.Close
-                className="rounded-lg p-1 text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
+                className="-mr-1 -mt-0.5 shrink-0 rounded-lg p-1.5 text-lg leading-none text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
                 aria-label="Close"
               >
-                ✕
+                ×
               </Dialog.Close>
             </div>
 
-            <div className="mt-6">
-              {step === "choose" ? (
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <button
-                    type="button"
-                    disabled={busy}
-                    onClick={() => setStep("url")}
-                    className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-left transition hover:border-indigo-300 hover:bg-white disabled:opacity-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-indigo-400 dark:hover:bg-zinc-900/80"
-                  >
-                    <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
-                      Import from URL
-                    </p>
-                    <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                      YouTube, Vimeo, and more.
-                    </p>
-                  </button>
-                  <button
-                    type="button"
-                    disabled={busy}
-                    onClick={() => setStep("local")}
-                    className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-left transition hover:border-indigo-300 hover:bg-white disabled:opacity-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-indigo-400 dark:hover:bg-zinc-900/80"
-                  >
-                    <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
-                      Import local file
-                    </p>
-                    <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                      Drag & drop or browse.
-                    </p>
-                  </button>
-                </div>
-              ) : null}
+            <div className="mt-8 space-y-6">
+              <URLInput
+                disabled={busy}
+                focusRequest={focusUrl}
+                onSubmitUrl={(url) => {
+                  void run(() => onUrl(url));
+                }}
+              />
 
-              {step === "url" ? (
-                <div className="space-y-4">
-                  <button
-                    type="button"
-                    disabled={busy}
-                    onClick={() => setStep("choose")}
-                    className="text-xs font-medium text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
-                  >
-                    ← Back
-                  </button>
-                  <URLInput
-                    disabled={busy}
-                    onSubmitUrl={(url) => {
-                      void run(() => onUrl(url));
-                    }}
-                  />
-                </div>
-              ) : null}
+              <div className="relative flex items-center justify-center" aria-hidden>
+                <div className="absolute inset-x-0 top-1/2 h-px bg-zinc-200 dark:bg-zinc-700" />
+                <span className="relative bg-white px-3 text-xs font-medium text-zinc-400 dark:bg-zinc-950 dark:text-zinc-500">
+                  or
+                </span>
+              </div>
 
-              {step === "local" ? (
-                <div className="space-y-4">
-                  <button
-                    type="button"
-                    disabled={busy}
-                    onClick={() => setStep("choose")}
-                    className="text-xs font-medium text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
-                  >
-                    ← Back
-                  </button>
-                  <DropZone
-                    disabled={busy}
-                    onFiles={(files) => {
-                      void run(() => onLocalFiles(files));
-                    }}
-                  />
-                </div>
-              ) : null}
+              <DropZone
+                disabled={busy}
+                onPaths={
+                  onLocalFilePaths
+                    ? (paths) => void run(() => onLocalFilePaths(paths))
+                    : undefined
+                }
+                onFiles={(files) => {
+                  void run(() => onLocalFiles(files));
+                }}
+              />
             </div>
           </Dialog.Popup>
         </Dialog.Viewport>

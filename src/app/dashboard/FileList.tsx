@@ -16,6 +16,7 @@ export function FileList({ jobs }: FileListProps) {
               <th className="px-4 py-3">Duration</th>
               <th className="px-4 py-3">Date</th>
               <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">Actions</th>
             </tr>
           </thead>
           <tbody>

@@ -1,15 +1,43 @@
-import { isTauri } from "@tauri-apps/api/core";
+import { invoke, isTauri } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { create } from "zustand";
-import type { TranscriptionJob } from "./types";
-import { insertJob, listJobs } from "./db";
+import type { PipelineStage, TranscriptionJob } from "./types";
+import {
+  deleteJob,
+  insertJob,
+  listJobs,
+  resetJobForRetry,
+} from "./db";
+import { getConfig, setConfig } from "../../lib/db";
+
+export type PipelineProgressEvt = {
+  jobId: string;
+  stage: string;
+  percent: number;
+};
 
 type TranscriptionState = {
   jobs: TranscriptionJob[];
   ready: boolean;
   error: string | null;
+  selectedJobId: string | null;
+  pipelineQueue: string[];
+  activePipelines: number;
+  maxConcurrent: number;
+  listenersReady: boolean;
+
   loadJobs: () => Promise<void>;
+  setSelectedJob: (id: string | null) => void;
   addLocalFiles: (files: File[]) => Promise<void>;
+  addLocalFilePaths: (paths: string[]) => Promise<void>;
   addUrlImport: (url: string) => Promise<void>;
+  retryJob: (id: string) => Promise<void>;
+  removeJob: (id: string) => Promise<void>;
+  initPipelineListeners: () => Promise<void>;
+  refreshMaxConcurrent: () => Promise<void>;
+  setMaxConcurrentJobs: (n: number) => Promise<void>;
+  enqueuePipeline: (jobId: string) => void;
+  processPipelineQueue: () => Promise<void>;
 };
 
 function urlDisplayName(url: string): string {
@@ -27,10 +55,71 @@ function filePathIfAvailable(file: File): string | null {
   return null;
 }
 
+function basenameFromFsPath(p: string): string {
+  const normalized = p.replace(/\\/g, "/");
+  const idx = normalized.lastIndexOf("/");
+  return idx >= 0 ? normalized.slice(idx + 1) || normalized : normalized;
+}
+
+async function recommendedMaxConcurrent(): Promise<number> {
+  try {
+    const n = await invoke<number>("get_recommended_max_concurrent");
+    return Math.min(3, Math.max(1, n));
+  } catch {
+    return 1;
+  }
+}
+
 export const useTranscriptionStore = create<TranscriptionState>((set, get) => ({
   jobs: [],
   ready: false,
   error: null,
+  selectedJobId: null,
+  pipelineQueue: [],
+  activePipelines: 0,
+  maxConcurrent: 1,
+  listenersReady: false,
+
+  refreshMaxConcurrent: async () => {
+    const raw = await getConfig("max_concurrent_jobs");
+    if (raw) {
+      const n = Number.parseInt(raw, 10);
+      if (Number.isFinite(n)) {
+        set({ maxConcurrent: Math.min(3, Math.max(1, n)) });
+        return;
+      }
+    }
+    const def = await recommendedMaxConcurrent();
+    set({ maxConcurrent: def });
+    await setConfig("max_concurrent_jobs", String(def));
+  },
+
+  setMaxConcurrentJobs: async (n: number) => {
+    const v = Math.min(3, Math.max(1, Math.round(n)));
+    await setConfig("max_concurrent_jobs", String(v));
+    set({ maxConcurrent: v });
+    await get().processPipelineQueue();
+  },
+
+  initPipelineListeners: async () => {
+    if (get().listenersReady || !isTauri()) return;
+    await listen<PipelineProgressEvt>("pipeline:progress", (ev) => {
+      const p = ev.payload;
+      set((s) => ({
+        jobs: s.jobs.map((j) =>
+          j.id === p.jobId
+            ? {
+                ...j,
+                status: "processing",
+                pipeline_stage: p.stage as PipelineStage,
+                progress: p.percent,
+              }
+            : j,
+        ),
+      }));
+    });
+    set({ listenersReady: true });
+  },
 
   loadJobs: async () => {
     if (!isTauri()) {
@@ -43,7 +132,22 @@ export const useTranscriptionStore = create<TranscriptionState>((set, get) => ({
     }
     try {
       const jobs = await listJobs();
-      set({ jobs, ready: true, error: null });
+      const pendingIds = jobs
+        .filter((j) => j.status === "pending")
+        .sort(
+          (a, b) =>
+            new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+        )
+        .map((j) => j.id);
+      set((s) => ({
+        jobs,
+        ready: true,
+        error: null,
+        pipelineQueue: [
+          ...new Set([...s.pipelineQueue, ...pendingIds]),
+        ],
+      }));
+      await get().processPipelineQueue();
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to load transcriptions";
@@ -51,20 +155,98 @@ export const useTranscriptionStore = create<TranscriptionState>((set, get) => ({
     }
   },
 
+  setSelectedJob: (id) => set({ selectedJobId: id }),
+
+  enqueuePipeline: (jobId) => {
+    const { pipelineQueue, jobs } = get();
+    const job = jobs.find((j) => j.id === jobId);
+    if (!job || job.status !== "pending") return;
+    if (pipelineQueue.includes(jobId)) return;
+    set({ pipelineQueue: [...pipelineQueue, jobId] });
+    void get().processPipelineQueue();
+  },
+
+  processPipelineQueue: async () => {
+    if (!isTauri()) return;
+    const { activePipelines, maxConcurrent, pipelineQueue, jobs } = get();
+    const slots = maxConcurrent - activePipelines;
+    if (slots <= 0 || pipelineQueue.length === 0) return;
+
+    const toStart = pipelineQueue.slice(0, slots);
+    const rest = pipelineQueue.filter((id) => !toStart.includes(id));
+    set({ pipelineQueue: rest });
+
+    for (const jobId of toStart) {
+      const job = jobs.find((j) => j.id === jobId);
+      if (!job || job.status !== "pending") continue;
+
+      set((s) => ({ activePipelines: s.activePipelines + 1 }));
+
+      void (async () => {
+        const current = get().jobs.find((j) => j.id === jobId);
+        if (!current || current.status !== "pending") {
+          set((s) => ({
+            activePipelines: Math.max(0, s.activePipelines - 1),
+          }));
+          await get().processPipelineQueue();
+          return;
+        }
+        try {
+          await invoke("run_pipeline", {
+            jobId,
+            sourceType: current.source_type,
+            sourcePath: current.source_path,
+            sourceUrl: current.source_url,
+          });
+        } catch {
+          /* errors recorded in DB */
+        } finally {
+          await get().loadJobs();
+          set((s) => ({
+            activePipelines: Math.max(0, s.activePipelines - 1),
+          }));
+          await get().processPipelineQueue();
+        }
+      })();
+    }
+  },
+
   addLocalFiles: async (files: File[]) => {
     const created: TranscriptionJob[] = [];
     for (const file of files) {
+      const path = filePathIfAvailable(file);
+      if (isTauri() && !path) continue;
       const job = await insertJob({
         filename: file.name,
         source_type: "local",
-        source_path: filePathIfAvailable(file) ?? file.name,
+        source_path: path ?? file.name,
         file_size: file.size,
         duration: null,
         status: "pending",
       });
       created.push(job);
     }
-    set({ jobs: [...created, ...get().jobs], error: null });
+    set((s) => ({ jobs: [...created, ...s.jobs], error: null }));
+    for (const j of created) get().enqueuePipeline(j.id);
+  },
+
+  addLocalFilePaths: async (paths: string[]) => {
+    const created: TranscriptionJob[] = [];
+    for (const sourcePath of paths) {
+      const trimmed = sourcePath.trim();
+      if (!trimmed) continue;
+      const job = await insertJob({
+        filename: basenameFromFsPath(trimmed),
+        source_type: "local",
+        source_path: trimmed,
+        file_size: null,
+        duration: null,
+        status: "pending",
+      });
+      created.push(job);
+    }
+    set((s) => ({ jobs: [...created, ...s.jobs], error: null }));
+    for (const j of created) get().enqueuePipeline(j.id);
   },
 
   addUrlImport: async (url: string) => {
@@ -77,6 +259,22 @@ export const useTranscriptionStore = create<TranscriptionState>((set, get) => ({
       duration: null,
       status: "pending",
     });
-    set({ jobs: [job, ...get().jobs], error: null });
+    set((s) => ({ jobs: [job, ...s.jobs], error: null }));
+    get().enqueuePipeline(job.id);
+  },
+
+  retryJob: async (id: string) => {
+    await resetJobForRetry(id);
+    await get().loadJobs();
+    get().enqueuePipeline(id);
+  },
+
+  removeJob: async (id: string) => {
+    await deleteJob(id);
+    set((s) => ({
+      jobs: s.jobs.filter((j) => j.id !== id),
+      selectedJobId: s.selectedJobId === id ? null : s.selectedJobId,
+      pipelineQueue: s.pipelineQueue.filter((x) => x !== id),
+    }));
   },
 }));

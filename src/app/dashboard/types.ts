@@ -1,5 +1,6 @@
 export type JobStatus = "pending" | "processing" | "completed" | "failed";
 export type SourceType = "local" | "url";
+export type PipelineStage = "downloading" | "extracting" | "transcribing";
 
 export interface TranscriptionJob {
   id: string;
@@ -13,6 +14,11 @@ export interface TranscriptionJob {
   transcript: string | null;
   created_at: string;
   updated_at: string;
+  error_message: string | null;
+  progress: number;
+  pipeline_stage: PipelineStage | null;
+  srt_output: string | null;
+  model_used: string | null;
 }
 
 export type NewJobInput = {

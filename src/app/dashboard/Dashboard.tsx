@@ -1,16 +1,16 @@
-import type { NewImportStep } from "../../types";
 import { EmptyState } from "./EmptyState";
 import { FileList } from "./FileList";
+import { TranscriptView } from "./TranscriptView";
 import { useTranscriptionStore } from "./store";
 
-type DashboardProps = {
-  onRequestImport: (step: Exclude<NewImportStep, "choose">) => void;
-};
-
-export function Dashboard({ onRequestImport }: DashboardProps) {
+export function Dashboard() {
   const jobs = useTranscriptionStore((s) => s.jobs);
   const ready = useTranscriptionStore((s) => s.ready);
   const error = useTranscriptionStore((s) => s.error);
+  const selectedId = useTranscriptionStore((s) => s.selectedJobId);
+  const addLocalFiles = useTranscriptionStore((s) => s.addLocalFiles);
+  const addLocalFilePaths = useTranscriptionStore((s) => s.addLocalFilePaths);
+  const addUrlImport = useTranscriptionStore((s) => s.addUrlImport);
 
   if (!ready) {
     return (
@@ -33,8 +33,18 @@ export function Dashboard({ onRequestImport }: DashboardProps) {
     );
   }
 
+  if (selectedId) {
+    return <TranscriptView />;
+  }
+
   if (jobs.length === 0) {
-    return <EmptyState onPickImport={onRequestImport} />;
+    return (
+      <EmptyState
+        onSubmitUrl={addUrlImport}
+        onLocalFiles={addLocalFiles}
+        onLocalFilePaths={addLocalFilePaths}
+      />
+    );
   }
 
   return <FileList jobs={jobs} />;

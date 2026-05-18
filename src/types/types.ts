@@ -1,3 +1,11 @@
+export type AppUpdateInfo = {
+  currentVersion: string;
+  latestVersion: string | null;
+  updateAvailable: boolean;
+  releaseUrl: string | null;
+  releaseName: string | null;
+};
+
 export type BinaryInfo = {
   id: string;
   label: string;

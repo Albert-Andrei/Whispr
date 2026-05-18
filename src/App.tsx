@@ -1,7 +1,16 @@
 import { AppShell } from "./components/AppShell";
+import { UpdateAvailablePopover } from "./components/UpdateAvailablePopover";
+import { useAppUpdate } from "./hooks/useAppUpdate";
 
 function App() {
-  return <AppShell />;
+  const appUpdate = useAppUpdate();
+
+  return (
+    <>
+      <AppShell appUpdate={appUpdate} />
+      <UpdateAvailablePopover updateInfo={appUpdate.updateInfo} />
+    </>
+  );
 }
 
 export default App;

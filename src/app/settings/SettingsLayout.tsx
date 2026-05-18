@@ -3,14 +3,70 @@ import type { ReactNode } from "react";
 type SettingsSectionProps = {
   title: string;
   children: ReactNode;
+  syncing?: boolean;
 };
 
-export function SettingsSection({ title, children }: SettingsSectionProps) {
+function SettingsSyncIcon() {
+  return (
+    <svg
+      className="h-3.5 w-3.5 animate-spin text-zinc-400 dark:text-zinc-500"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+    >
+      <path
+        d="M22.008 12.002L20.006 14.002L18.005 12.002"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M6.341 6.344C7.79 4.896 9.791 4 12.002 4C16.423 4 20.007 7.582 20.007 12.002C20.007 12.61 19.933 13.2 19.805 13.769"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M1.992 11.998L3.994 9.99805L5.995 11.998"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M17.659 17.656C16.21 19.104 14.209 20 11.998 20C7.577 20 3.993 16.418 3.993 11.998C3.993 11.39 4.067 10.8 4.195 10.231"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function SettingsSection({
+  title,
+  children,
+  syncing = false,
+}: SettingsSectionProps) {
   return (
     <section>
-      <h2 className="mb-2 px-1 text-[13px] font-semibold text-zinc-900 dark:text-zinc-100">
-        {title}
-      </h2>
+      <div className="mb-2 flex items-center gap-1.5 px-1">
+        <h2 className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100">
+          {title}
+        </h2>
+        {syncing ? (
+          <span
+            className="inline-flex"
+            title="Checking tools…"
+            aria-label="Checking tools"
+          >
+            <SettingsSyncIcon />
+          </span>
+        ) : null}
+      </div>
       <div className="overflow-hidden rounded-xl border border-zinc-200/80 bg-white dark:border-[var(--color-settings-border-dark)] dark:bg-[var(--color-settings-surface-dark)]">
         {children}
       </div>

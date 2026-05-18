@@ -6,6 +6,8 @@ import { Record } from "../app/record/Record";
 import { Settings } from "../app/settings/Settings";
 import { SetupScreen } from "../app/setup/SetupScreen";
 import { useTranscriptionStore } from "../app/dashboard/store";
+import type { AppUpdateHandle } from "../hooks/useAppUpdate";
+import { prefetchBinaryHealth } from "../hooks/useBinaryHealth";
 import { useIsMacTauri } from "../hooks/useIsMacTauri";
 import { getConfig } from "../lib/db";
 import { windowDragPointerDown } from "../lib/windowDrag";
@@ -28,7 +30,11 @@ function headerTitle(view: SidebarView): string {
 
 type SetupGate = "loading" | "setup" | "ready";
 
-export function AppShell() {
+type AppShellProps = {
+  appUpdate: AppUpdateHandle;
+};
+
+export function AppShell({ appUpdate }: AppShellProps) {
   const [view, setView] = useState<SidebarView>("history");
   const [sidebarWidth, setSidebarWidth] = useState(() =>
     readInitialSidebarWidth(),
@@ -40,6 +46,11 @@ export function AppShell() {
     isTauri() ? "loading" : "ready",
   );
   const isMac = useIsMacTauri();
+  const {
+    updateInfo,
+    checking: updateChecking,
+    refresh: refreshUpdate,
+  } = appUpdate;
 
   const loadJobs = useTranscriptionStore((state) => state.loadJobs);
   const initPipelineListeners = useTranscriptionStore(
@@ -76,6 +87,7 @@ export function AppShell() {
     void initPipelineListeners();
     void refreshMaxConcurrent();
     void loadJobs();
+    prefetchBinaryHealth();
   }, [setupGate, initPipelineListeners, refreshMaxConcurrent, loadJobs]);
 
   const openModal = (focus?: NewImportStep | null) => {
@@ -115,6 +127,7 @@ export function AppShell() {
             onWidthChange={setSidebarWidth}
             mainColumnDragStripPx={DRAG_STRIP_PX}
             trafficInset={isMac}
+            updateAvailable={updateInfo?.updateAvailable ?? false}
           />
 
           <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
@@ -159,7 +172,13 @@ export function AppShell() {
                 }
               >
                 {view === "history" ? <Dashboard /> : null}
-                {view === "settings" ? <Settings /> : null}
+                {view === "settings" ? (
+                  <Settings
+                    updateInfo={updateInfo}
+                    updateChecking={updateChecking}
+                    onRefreshUpdate={() => void refreshUpdate()}
+                  />
+                ) : null}
                 {view === "record" ? <Record /> : null}
               </main>
             </div>

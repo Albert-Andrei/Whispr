@@ -1,0 +1,80 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  publish-tauri:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Build and publish
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: Whispr ${{ github.ref_name }}
+          releaseBody: |
+            ## Whispr ${{ github.ref_name }}
+
+            Offline transcription for video and audio on macOS.
+
+            Download the `.dmg` for your Mac (Apple Silicon or Intel) from the assets below.
+          releaseDraft: false
+          prerelease: false
+          args: --target aarch64-apple-darwin
+
+  publish-tauri-intel:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-apple-darwin
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Build and upload to existing release
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: Whispr ${{ github.ref_name }}
+          releaseBody: |
+            ## Whispr ${{ github.ref_name }}
+
+            Offline transcription for video and audio on macOS.
+
+            Download the `.dmg` for your Mac (Apple Silicon or Intel) from the assets below.
+          releaseDraft: false
+          prerelease: false
+          args: --target x86_64-apple-darwin

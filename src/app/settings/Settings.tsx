@@ -1,21 +1,28 @@
 import { invoke, isTauri } from "@tauri-apps/api/core";
 import { useCallback, useEffect, useState } from "react";
+import type { AppUpdateInfo } from "../../types/types";
+import { AboutSettings } from "./AboutSettings";
 import { BinaryStatusRows } from "./BinaryStatusRow";
 import { DiskBreakdown } from "./DiskBreakdown";
 import { GeneralSettings } from "./GeneralSettings";
 import { ModelSelector } from "./ModelSelector";
 import { SettingsBlock, SettingsSection } from "./SettingsLayout";
-import type { BinaryHealthReport, DiskUsageReport } from "../../types/types";
+import { useBinaryHealth } from "../../hooks/useBinaryHealth";
+import type { DiskUsageReport } from "../../types/types";
 
-export function Settings() {
-  const [health, setHealth] = useState<BinaryHealthReport | null>(null);
+type SettingsProps = {
+  updateInfo: AppUpdateInfo | null;
+  updateChecking: boolean;
+  onRefreshUpdate: () => void;
+};
+
+export function Settings({
+  updateInfo,
+  updateChecking,
+  onRefreshUpdate,
+}: SettingsProps) {
+  const { health, checking: healthChecking } = useBinaryHealth();
   const [disk, setDisk] = useState<DiskUsageReport | null>(null);
-
-  const loadHealth = useCallback(async () => {
-    if (!isTauri()) return;
-    const report = await invoke<BinaryHealthReport>("check_binaries");
-    setHealth(report);
-  }, []);
 
   const loadDisk = useCallback(async () => {
     if (!isTauri()) return;
@@ -25,8 +32,7 @@ export function Settings() {
 
   useEffect(() => {
     void loadDisk();
-    void loadHealth();
-  }, [loadDisk, loadHealth]);
+  }, [loadDisk]);
 
   if (!isTauri()) {
     return (
@@ -54,11 +60,20 @@ export function Settings() {
           Settings
         </h1>
 
+        <SettingsSection title="About">
+          <AboutSettings
+            info={updateInfo}
+            checking={updateChecking}
+            error={null}
+            onRefresh={onRefreshUpdate}
+          />
+        </SettingsSection>
+
         <SettingsSection title="General">
           <GeneralSettings />
         </SettingsSection>
 
-        <SettingsSection title="System">
+        <SettingsSection title="System" syncing={healthChecking}>
           <BinaryStatusRows health={binaries} loading={!health} />
         </SettingsSection>
 

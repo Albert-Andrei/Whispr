@@ -89,6 +89,7 @@ type SidebarProps = {
   mainColumnDragStripPx: number;
   /** Extra top inset on macOS so the first row clears overlay traffic lights. */
   trafficInset?: boolean;
+  updateAvailable?: boolean;
 };
 
 function navButtonClass(isActive: boolean): string {
@@ -107,6 +108,7 @@ export function Sidebar({
   onWidthChange,
   mainColumnDragStripPx,
   trafficInset = false,
+  updateAvailable = false,
 }: SidebarProps) {
   /** Shell `p-2` is the only outer inset (8px); keep inner horizontal flush so left/bottom match the main card’s inset. */
   const gutter = "px-0";
@@ -148,10 +150,20 @@ export function Sidebar({
             type="button"
             onClick={() => onChange("settings")}
             aria-current={active === "settings" ? "page" : undefined}
-            className={navButtonClass(false)}
+            className={`${navButtonClass(active === "settings")} justify-between`}
           >
-            <IconSettings />
-            Settings
+            <span className="flex min-w-0 items-center gap-2.5">
+              <IconSettings />
+              Settings
+            </span>
+            {updateAvailable ? (
+              <span
+                className="inline-flex h-5 shrink-0 items-center rounded-full bg-zinc-900 px-2 text-[10px] font-semibold leading-none text-white dark:bg-zinc-100 dark:text-zinc-900"
+                aria-label="Update available"
+              >
+                New
+              </span>
+            ) : null}
           </button>
         </div>
       </div>

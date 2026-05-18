@@ -4,6 +4,7 @@ mod export;
 mod jobs_db;
 mod paths;
 mod pipeline;
+mod updates;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -25,6 +26,7 @@ pub fn run() {
             pipeline::fetch_url_title,
             pipeline::cancel_pipeline,
             export::export_transcript,
+            updates::check_for_update,
         ])
         .setup(|app| {
             let h = app.handle().clone();

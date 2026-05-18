@@ -17,6 +17,9 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -32,6 +35,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          installCommand: bun install --frozen-lockfile
           tagName: ${{ github.ref_name }}
           releaseName: Whispr ${{ github.ref_name }}
           releaseBody: |
@@ -41,7 +45,7 @@ jobs:
 
             Download the `.dmg` for your Mac (Apple Silicon or Intel) from the assets below.
           releaseDraft: false
-          prerelease: false
+          prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
           args: --target aarch64-apple-darwin
 
   publish-tauri-intel:
@@ -51,6 +55,9 @@ jobs:
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -67,6 +74,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          installCommand: bun install --frozen-lockfile
           tagName: ${{ github.ref_name }}
           releaseName: Whispr ${{ github.ref_name }}
           releaseBody: |
@@ -76,5 +84,5 @@ jobs:
 
             Download the `.dmg` for your Mac (Apple Silicon or Intel) from the assets below.
           releaseDraft: false
-          prerelease: false
+          prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
           args: --target x86_64-apple-darwin

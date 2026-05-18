@@ -4,13 +4,13 @@ import { TranscriptView } from "./TranscriptView";
 import { useTranscriptionStore } from "./store";
 
 export function Dashboard() {
-  const jobs = useTranscriptionStore((s) => s.jobs);
-  const ready = useTranscriptionStore((s) => s.ready);
-  const error = useTranscriptionStore((s) => s.error);
-  const selectedId = useTranscriptionStore((s) => s.selectedJobId);
-  const addLocalFiles = useTranscriptionStore((s) => s.addLocalFiles);
-  const addLocalFilePaths = useTranscriptionStore((s) => s.addLocalFilePaths);
-  const addUrlImport = useTranscriptionStore((s) => s.addUrlImport);
+  const jobs = useTranscriptionStore((state) => state.jobs);
+  const ready = useTranscriptionStore((state) => state.ready);
+  const error = useTranscriptionStore((state) => state.error);
+  const selectedId = useTranscriptionStore((state) => state.selectedJobId);
+  const addLocalFiles = useTranscriptionStore((state) => state.addLocalFiles);
+  const addLocalFilePaths = useTranscriptionStore((state) => state.addLocalFilePaths);
+  const addUrlImport = useTranscriptionStore((state) => state.addUrlImport);
 
   if (!ready) {
     return (

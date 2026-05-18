@@ -7,19 +7,25 @@
   --font-sans: ui-sans-serif, system-ui, -apple-system, "SF Pro Display",
     "SF Pro Text", "Segoe UI", sans-serif;
 
-  /* Shell background (sidebar + top chrome row) — light uses white chrome */
-  --color-chrome-bg-light: #ffffff;
+  /* Shell background (sidebar + top chrome row) */
+  --color-chrome-bg-light: #f3f3f4;
   --color-chrome-border-light: #e6e6e9;
-  /* Sidebar row states on white chrome */
-  --color-sidebar-hover-light: #f4f4f5;
-  --color-sidebar-selected-light: #e8e8ed;
+  /* Sidebar row states on gray chrome */
+  --color-sidebar-hover-light: #ebebeb;
+  --color-sidebar-selected-light: #e6e6e6;
   --color-sidebar-text-muted-light: #6b6b6b;
 
-  --color-chrome-bg-dark: #141416;
+  /* Sidebar + top chrome — darkest layer in dark mode */
+  --color-chrome-bg-dark: #111113;
   --color-chrome-border-dark: #2a2a2e;
   --color-sidebar-hover-dark: rgba(255, 255, 255, 0.06);
   --color-sidebar-selected-dark: rgba(255, 255, 255, 0.1);
   --color-sidebar-text-muted-dark: #8e8e93;
+
+  /* Main center column — lighter gray than sidebar */
+  --color-content-bg-dark: #232326;
+  --color-content-surface-dark: #2c2c2e;
+  --color-content-border-dark: #38383a;
 
   --color-app-bg: #0a0a0b;
   --color-app-surface: #131316;
@@ -27,8 +33,14 @@
   --color-app-muted: #8b8b90;
   --color-app-fg: #f4f4f5;
 
+  /* Settings page background (lighter than shell chrome in light mode) */
+  --color-settings-bg-light: #fcfcfc;
+  --color-settings-bg-dark: var(--color-content-bg-dark);
+  --color-settings-surface-dark: var(--color-content-surface-dark);
+  --color-settings-border-dark: var(--color-content-border-dark);
+
   /* Same as chrome: one flat shell (no striped grays) */
-  --color-app-bg-light: #ffffff;
+  --color-app-bg-light: #f3f3f4;
   --color-app-surface-light: #ffffff;
   --color-app-border-light: #e4e4e7;
   --color-app-muted-light: #71717a;
@@ -37,7 +49,7 @@
 
 @layer base {
   html {
-    @apply antialiased;
+    @apply h-dvh overflow-hidden antialiased;
     background-color: var(--color-chrome-bg-light);
   }
 
@@ -46,7 +58,7 @@
   }
 
   body {
-    @apply m-0 min-h-[100dvh] text-[15px];
+    @apply m-0 h-dvh overflow-hidden text-[15px];
     background-color: var(--color-chrome-bg-light);
     color: var(--color-app-fg-light);
     font-family: var(--font-sans);
@@ -58,7 +70,7 @@
   }
 
   #root {
-    @apply min-h-[100dvh];
+    @apply h-dvh overflow-hidden;
   }
 }
 

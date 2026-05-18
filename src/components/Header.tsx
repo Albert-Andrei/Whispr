@@ -1,20 +1,95 @@
 import { windowDragPointerDown } from "../lib/windowDrag";
 
+type TranscriptDetail = {
+  fileName: string;
+  onBack: () => void;
+};
+
 type HeaderProps = {
   title: string;
   onNewTranscription: () => void;
+  transcriptDetail?: TranscriptDetail;
 };
 
-export function Header({ title, onNewTranscription }: HeaderProps) {
+function IconChevronLeft() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="m15 18-6-6 6-6" />
+    </svg>
+  );
+}
+
+function IconChevronRight() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="m9 18 6-6-6-6" />
+    </svg>
+  );
+}
+
+export function Header({
+  title,
+  onNewTranscription,
+  transcriptDetail,
+}: HeaderProps) {
   return (
     <header
       data-tauri-drag-region
       onPointerDown={windowDragPointerDown}
       className="flex h-[52px] shrink-0 select-none items-center justify-between gap-4 border-b border-zinc-100 px-5 dark:border-zinc-800/90"
     >
-      <h1 className="min-w-0 flex-1 truncate text-[15px] font-semibold tracking-[-0.02em] text-zinc-700 dark:text-zinc-50">
-        {title}
-      </h1>
+      {transcriptDetail ? (
+        <div className="flex min-w-0 flex-1 items-center gap-0.5">
+          <button
+            type="button"
+            data-tauri-no-drag
+            onClick={transcriptDetail.onBack}
+            aria-label="Back to transcriptions"
+            className="-ml-3 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-transparent text-zinc-600 transition hover:bg-[var(--color-sidebar-hover-light)] dark:text-zinc-300 dark:hover:bg-[var(--color-sidebar-hover-dark)]"
+          >
+            <IconChevronLeft />
+          </button>
+          <div className="flex min-w-0 items-center gap-1 text-[15px] tracking-[-0.02em]">
+            <span className="shrink-0 font-semibold text-zinc-700 dark:text-zinc-50">
+              Transcription
+            </span>
+            <span
+              className="flex shrink-0 items-center text-zinc-500 dark:text-zinc-400"
+              aria-hidden
+            >
+              <IconChevronRight />
+            </span>
+            <span className="truncate font-semibold text-zinc-900 dark:text-zinc-50">
+              {transcriptDetail.fileName}
+            </span>
+          </div>
+        </div>
+      ) : (
+        <h1 className="min-w-0 flex-1 truncate text-[15px] font-semibold tracking-[-0.02em] text-zinc-700 dark:text-zinc-50">
+          {title}
+        </h1>
+      )}
+
       <button
         type="button"
         data-tauri-no-drag

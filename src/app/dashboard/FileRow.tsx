@@ -32,9 +32,9 @@ type FileRowProps = {
 };
 
 export function FileRow({ job }: FileRowProps) {
-  const setSelected = useTranscriptionStore((s) => s.setSelectedJob);
-  const retryJob = useTranscriptionStore((s) => s.retryJob);
-  const removeJob = useTranscriptionStore((s) => s.removeJob);
+  const setSelected = useTranscriptionStore((state) => state.setSelectedJob);
+  const retryJob = useTranscriptionStore((state) => state.retryJob);
+  const removeJob = useTranscriptionStore((state) => state.removeJob);
 
   const onRowClick = () => {
     if (job.status === "completed") setSelected(job.id);

@@ -1,9 +1,10 @@
 import { invoke, isTauri } from "@tauri-apps/api/core";
 import { useCallback, useEffect, useState } from "react";
-import { BinaryStatusCard } from "./BinaryStatusCard";
+import { BinaryStatusRows } from "./BinaryStatusRow";
 import { DiskBreakdown } from "./DiskBreakdown";
 import { GeneralSettings } from "./GeneralSettings";
 import { ModelSelector } from "./ModelSelector";
+import { SettingsBlock, SettingsSection } from "./SettingsLayout";
 import type { BinaryHealthReport, DiskUsageReport } from "../../types/types";
 
 export function Settings() {
@@ -12,14 +13,14 @@ export function Settings() {
 
   const loadHealth = useCallback(async () => {
     if (!isTauri()) return;
-    const h = await invoke<BinaryHealthReport>("check_binaries");
-    setHealth(h);
+    const report = await invoke<BinaryHealthReport>("check_binaries");
+    setHealth(report);
   }, []);
 
   const loadDisk = useCallback(async () => {
     if (!isTauri()) return;
-    const d = await invoke<DiskUsageReport>("get_app_disk_usage");
-    setDisk(d);
+    const report = await invoke<DiskUsageReport>("get_app_disk_usage");
+    setDisk(report);
   }, []);
 
   useEffect(() => {
@@ -29,7 +30,7 @@ export function Settings() {
 
   if (!isTauri()) {
     return (
-      <div className="px-5 py-8">
+      <div className="px-8 py-8">
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
           Settings that talk to your Mac (binaries, disk usage, models) need the
           desktop app. Run{" "}
@@ -42,71 +43,38 @@ export function Settings() {
     );
   }
 
+  const binaries = health
+    ? [health.ffmpeg, health.ytdlp, health.whisper]
+    : null;
+
   return (
-    <div className="mx-auto max-w-3xl space-y-10 px-5 py-8 pb-16">
-      <section>
-        <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-          System dependencies
-        </h2>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-          Tools used for downloads, audio processing, and transcription.
-        </p>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {health
-            ? [health.ffmpeg, health.ytdlp, health.whisper].map((binary) => (
-                <BinaryStatusCard key={binary.id} binary={binary} />
-              ))
-            : Array.from({ length: 3 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="animate-pulse rounded-xl border border-zinc-200 p-4 dark:border-zinc-800"
-                >
-                  <div className="h-4 w-20 rounded bg-zinc-200 dark:bg-zinc-700" />
-                  <div className="mt-2 h-3 w-32 rounded bg-zinc-100 dark:bg-zinc-800" />
-                </div>
-              ))}
-        </div>
-        <button
-          type="button"
-          onClick={() => void loadHealth()}
-          className="mt-4 text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400"
-        >
-          Refresh status
-        </button>
-      </section>
+    <div className="min-h-0 flex-1 overflow-y-auto px-8 py-8 pb-16">
+      <div className="mx-auto max-w-2xl space-y-8">
+        <h1 className="text-[22px] font-semibold tracking-[-0.02em] text-zinc-900 dark:text-zinc-50">
+          Settings
+        </h1>
 
-      <section>
-        <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-          Storage
-        </h2>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-          Rough breakdown of disk usage for this app.
-        </p>
-        <div className="mt-4">
-          <DiskBreakdown report={disk} />
-        </div>
-      </section>
-
-      <section>
-        <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-          Whisper models
-        </h2>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-          Multilingual GGML models. Active model is used for new jobs.
-        </p>
-        <div className="mt-4">
-          <ModelSelector onRefresh={loadDisk} />
-        </div>
-      </section>
-
-      <section>
-        <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-          General
-        </h2>
-        <div className="mt-4">
+        <SettingsSection title="General">
           <GeneralSettings />
-        </div>
-      </section>
+        </SettingsSection>
+
+        <SettingsSection title="System">
+          <BinaryStatusRows health={binaries} loading={!health} />
+        </SettingsSection>
+
+        <SettingsSection title="Storage">
+          <SettingsBlock last>
+            <p className="mb-3 text-[12px] text-zinc-500 dark:text-zinc-400">
+              Rough breakdown of disk usage for this app
+            </p>
+            <DiskBreakdown report={disk} />
+          </SettingsBlock>
+        </SettingsSection>
+
+        <SettingsSection title="Whisper models">
+          <ModelSelector onRefresh={loadDisk} />
+        </SettingsSection>
+      </div>
     </div>
   );
 }

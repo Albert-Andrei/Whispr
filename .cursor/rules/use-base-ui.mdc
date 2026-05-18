@@ -1,0 +1,20 @@
+---
+description: Always use Base UI headless primitives for interactive UI components
+globs: "**/*.tsx"
+alwaysApply: false
+---
+
+# Use Base UI for all interactive primitives
+
+When building any interactive UI component (tooltip, dialog, menu, popover, select, accordion, tabs, etc.), **always** use `@base-ui-components/react` instead of rolling custom implementations with manual state, portals, or positioning logic.
+
+```tsx
+// ✅ GOOD — use Base UI
+import { Tooltip } from "@base-ui-components/react/tooltip";
+
+// ❌ BAD — custom tooltip with manual portals/positioning
+import { createPortal } from "react-dom";
+function MyTooltip() { /* manual getBoundingClientRect, useState, etc. */ }
+```
+
+Base UI provides accessible, headless primitives that handle focus management, keyboard navigation, positioning, and portaling correctly. Style them with Tailwind — do not reimplement these behaviors from scratch.

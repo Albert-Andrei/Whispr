@@ -4,8 +4,8 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 export const THEME_STORAGE_KEY = "whispr.theme";
 
 /** Matches `--color-chrome-bg-*` in `index.css` (native window layer behind WebView). */
-const NATIVE_CHROME_LIGHT = "#ffffff";
-const NATIVE_CHROME_DARK = "#141416";
+const NATIVE_CHROME_LIGHT = "#f3f3f4";
+const NATIVE_CHROME_DARK = "#111113";
 
 export type ThemeMode = "light" | "dark";
 export type ThemePreference = "light" | "dark" | "system";

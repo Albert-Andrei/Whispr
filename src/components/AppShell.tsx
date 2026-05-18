@@ -20,7 +20,7 @@ function headerTitle(view: SidebarView): string {
     case "history":
       return "Transcriptions";
     case "settings":
-      return "Settings";
+      return "";
     case "record":
       return "Record";
   }
@@ -30,7 +30,9 @@ type SetupGate = "loading" | "setup" | "ready";
 
 export function AppShell() {
   const [view, setView] = useState<SidebarView>("history");
-  const [sidebarWidth, setSidebarWidth] = useState(() => readInitialSidebarWidth());
+  const [sidebarWidth, setSidebarWidth] = useState(() =>
+    readInitialSidebarWidth(),
+  );
   const [modalOpen, setModalOpen] = useState(false);
   const [modalInitialFocus, setModalInitialFocus] =
     useState<NewImportStep | null>(null);
@@ -39,16 +41,21 @@ export function AppShell() {
   );
   const isMac = useIsMacTauri();
 
-  const loadJobs = useTranscriptionStore((s) => s.loadJobs);
+  const loadJobs = useTranscriptionStore((state) => state.loadJobs);
   const initPipelineListeners = useTranscriptionStore(
-    (s) => s.initPipelineListeners,
+    (state) => state.initPipelineListeners,
   );
   const refreshMaxConcurrent = useTranscriptionStore(
-    (s) => s.refreshMaxConcurrent,
+    (state) => state.refreshMaxConcurrent,
   );
-  const addLocalFiles = useTranscriptionStore((s) => s.addLocalFiles);
-  const addLocalFilePaths = useTranscriptionStore((s) => s.addLocalFilePaths);
-  const addUrlImport = useTranscriptionStore((s) => s.addUrlImport);
+  const addLocalFiles = useTranscriptionStore((state) => state.addLocalFiles);
+  const addLocalFilePaths = useTranscriptionStore(
+    (state) => state.addLocalFilePaths,
+  );
+  const addUrlImport = useTranscriptionStore((state) => state.addUrlImport);
+  const selectedJobId = useTranscriptionStore((state) => state.selectedJobId);
+  const jobs = useTranscriptionStore((state) => state.jobs);
+  const setSelectedJob = useTranscriptionStore((state) => state.setSelectedJob);
 
   useEffect(() => {
     if (!isTauri()) return;
@@ -98,28 +105,51 @@ export function AppShell() {
         <div className="flex min-h-0 flex-1 gap-2 overflow-hidden p-2">
           <Sidebar
             active={view}
-            onChange={setView}
+            onChange={(newView) => {
+              if (newView === "history") setSelectedJob(null);
+              setView(newView);
+            }}
             width={sidebarWidth}
             onWidthChange={setSidebarWidth}
             mainColumnDragStripPx={DRAG_STRIP_PX}
             trafficInset={isMac}
           />
 
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
             <div
               data-tauri-drag-region
               onPointerDown={windowDragPointerDown}
               className="chrome-bg w-full shrink-0 select-none"
-              style={{height: DRAG_STRIP_PX}}
+              style={{ height: DRAG_STRIP_PX }}
               aria-hidden
             />
-            <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-zinc-200/90 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)] dark:border-zinc-800 dark:bg-zinc-950 dark:shadow-none">
-              <Header
-                title={headerTitle(view)}
-                onNewTranscription={() => openModal()}
-              />
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-zinc-200/90 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)] dark:border-[var(--color-content-bg-dark)] dark:bg-[var(--color-content-bg-dark)] dark:shadow-none">
+              {view !== "settings" ? (
+                <Header
+                  title={headerTitle(view)}
+                  onNewTranscription={() => openModal()}
+                  transcriptDetail={
+                    view === "history" && selectedJobId
+                      ? {
+                          fileName:
+                            jobs.find((job) => job.id === selectedJobId)
+                              ?.filename ?? "",
+                          onBack: () => setSelectedJob(null),
+                        }
+                      : undefined
+                  }
+                />
+              ) : null}
 
-              <main className="min-h-0 flex-1 overflow-auto">
+              <main
+                className={
+                  view === "settings"
+                    ? "flex min-h-0 flex-1 flex-col overflow-hidden"
+                    : selectedJobId
+                      ? "flex min-h-0 flex-1 overflow-hidden"
+                      : "min-h-0 flex-1 overflow-y-auto"
+                }
+              >
                 {view === "history" ? <Dashboard /> : null}
                 {view === "settings" ? <Settings /> : null}
                 {view === "record" ? <Record /> : null}

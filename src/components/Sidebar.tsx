@@ -110,7 +110,7 @@ export function Sidebar({
 }: SidebarProps) {
   /** Shell `p-2` is the only outer inset (8px); keep inner horizontal flush so left/bottom match the main card’s inset. */
   const gutter = "px-0";
-  const topPad = trafficInset ? "pt-8" : "pt-2";
+  const topPad = trafficInset ? "pt-6" : "pt-2";
 
   return (
     <aside
@@ -119,10 +119,12 @@ export function Sidebar({
       className="chrome-bg relative flex h-full min-h-0 shrink-0 flex-col select-none"
       style={{ width }}
     >
-      <div className={`flex min-h-0 min-w-0 flex-1 flex-col ${gutter} ${topPad}`}>
+      <div
+        className={`flex min-h-0 min-w-0 flex-1 flex-col ${gutter} ${topPad}`}
+      >
         <nav className="flex min-h-0 flex-1 flex-col gap-0.5 pb-2">
           <p className="mb-0.5 px-2.5 text-left text-[11px] font-semibold tracking-wide text-[var(--color-sidebar-text-muted-light)] dark:text-[var(--color-sidebar-text-muted-dark)]">
-            Whispr Ai transcriber
+            Whispr
           </p>
           {MAIN_ITEMS.map((item) => {
             const isActive = item.id === active;

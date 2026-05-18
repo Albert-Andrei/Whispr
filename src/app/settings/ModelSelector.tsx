@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { useCallback, useEffect, useState } from "react";
 import { getConfig, setConfig } from "../../lib/db";
 import type { ModelTier } from "../setup/SetupScreen";
+import { SettingsRow } from "./SettingsLayout";
 
 const TIERS: { tier: ModelTier; file: string; label: string; hint: string }[] =
   [
@@ -30,12 +31,12 @@ export function ModelSelector({ onRefresh }: ModelSelectorProps) {
   const [busy, setBusy] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
-    const [files, sel] = await Promise.all([
+    const [files, selected] = await Promise.all([
       invoke<string[]>("list_model_files"),
       getConfig("selected_model"),
     ]);
     setDownloaded(files);
-    setActive(sel);
+    setActive(selected);
   }, []);
 
   useEffect(() => {
@@ -66,68 +67,59 @@ export function ModelSelector({ onRefresh }: ModelSelectorProps) {
   };
 
   return (
-    <div className="space-y-3">
-      {TIERS.map(({ tier, file, label, hint }) => {
-        const has = downloaded.includes(file);
+    <>
+      {TIERS.map(({ tier, file, label, hint }, index) => {
+        const hasFile = downloaded.includes(file);
         const isActive = active === file;
+        const isLast = index === TIERS.length - 1;
+
         return (
-          <div
+          <SettingsRow
             key={tier}
-            className="flex flex-col gap-2 rounded-xl border border-zinc-200 px-4 py-3 dark:border-zinc-800"
+            label={label}
+            description={`${hint} · ${file}`}
+            last={isLast}
           >
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-                  {label}{" "}
-                  <span className="font-normal text-zinc-400">({hint})</span>
-                </p>
-                <p className="font-mono text-[11px] text-zinc-500">{file}</p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {isActive ? (
-                  <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-300">
-                    Active
-                  </span>
-                ) : has ? (
-                  <span className="rounded-full bg-zinc-500/15 px-2 py-0.5 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                    Downloaded
-                  </span>
-                ) : null}
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {!has ? (
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              {isActive ? (
+                <span className="rounded-md bg-indigo-500/10 px-2 py-1 text-[12px] font-medium text-indigo-700 dark:text-indigo-300">
+                  Active
+                </span>
+              ) : hasFile ? (
+                <span className="text-[12px] text-zinc-500">Downloaded</span>
+              ) : null}
+              {!hasFile ? (
                 <button
                   type="button"
                   disabled={busy !== null}
                   onClick={() => void download(tier)}
-                  className="rounded-lg bg-zinc-900 px-3 py-1.5 text-xs font-semibold text-white dark:bg-zinc-100 dark:text-zinc-900"
+                  className="rounded-lg border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[12px] font-medium text-zinc-800 transition hover:bg-zinc-100 disabled:opacity-50 dark:border-[var(--color-settings-border-dark)] dark:bg-[#353538] dark:text-zinc-200 dark:hover:bg-[#3f3f42]"
                 >
                   {busy === tier ? "Downloading…" : "Download"}
                 </button>
               ) : null}
-              {has && !isActive ? (
+              {hasFile && !isActive ? (
                 <button
                   type="button"
                   onClick={() => void selectModel(file)}
-                  className="rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-semibold dark:border-zinc-700"
+                  className="rounded-lg border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[12px] font-medium text-zinc-800 transition hover:bg-zinc-100 dark:border-[var(--color-settings-border-dark)] dark:bg-[#353538] dark:text-zinc-200 dark:hover:bg-[#3f3f42]"
                 >
                   Use
                 </button>
               ) : null}
-              {has && !isActive ? (
+              {hasFile && !isActive ? (
                 <button
                   type="button"
                   onClick={() => void remove(file)}
-                  className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 dark:border-red-500/40 dark:text-red-300"
+                  className="rounded-lg px-2.5 py-1 text-[12px] font-medium text-red-600 transition hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
                 >
                   Delete
                 </button>
               ) : null}
             </div>
-          </div>
+          </SettingsRow>
         );
       })}
-    </div>
+    </>
   );
 }

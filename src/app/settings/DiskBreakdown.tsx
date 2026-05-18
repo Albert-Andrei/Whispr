@@ -1,4 +1,4 @@
-import type { DiskUsageReport } from "./types";
+import type { DiskUsageReport } from "../../types/types";
 
 const PALETTE = [
   "bg-indigo-500",
@@ -12,7 +12,9 @@ const PALETTE = [
 export function DiskBreakdown({ report }: { report: DiskUsageReport | null }) {
   if (!report || report.totalBytes === 0) {
     return (
-      <p className="text-sm text-zinc-500 dark:text-zinc-400">No usage data yet.</p>
+      <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        No usage data yet.
+      </p>
     );
   }
 

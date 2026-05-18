@@ -38,7 +38,7 @@ fn run_version(bin: &Path, arg: &str) -> Option<String> {
         .ok()?;
 
     let mut stdout = child.stdout.take()?;
-    let deadline = Instant::now() + Duration::from_secs(8);
+    let deadline = Instant::now() + Duration::from_secs(3);
 
     loop {
         match child.try_wait().ok()? {
@@ -63,53 +63,55 @@ fn run_version(bin: &Path, arg: &str) -> Option<String> {
 }
 
 #[tauri::command]
-pub fn check_binaries(app: AppHandle) -> Result<BinaryHealthReport, String> {
+pub async fn check_binaries(app: AppHandle) -> Result<BinaryHealthReport, String> {
     paths::ensure_layout(&app)?;
     let ffmpeg = paths::ffmpeg_path(&app)?;
     let ytdlp = paths::ytdlp_path(&app)?;
-
-    let ffmpeg_ok = ffmpeg.is_file();
-    let ffmpeg_ver = ffmpeg_ok.then(|| run_version(&ffmpeg, "-version")).flatten();
-    let ffmpeg_size = ffmpeg_ok.then(|| jobs_db::file_size64(&ffmpeg));
-
-    let ytdlp_ok = ytdlp.is_file();
-    let ytdlp_ver = ytdlp_ok.then(|| run_version(&ytdlp, "--version")).flatten();
-    let ytdlp_size = ytdlp_ok.then(|| jobs_db::file_size64(&ytdlp));
-
     let whisper_cli = paths::whisper_cli_path(&app)?;
-    let whisper_ok = whisper_cli.exists();
-    let whisper_ver = whisper_ok.then(|| run_version(&whisper_cli, "--version")).flatten();
-    let whisper_size = whisper_ok.then(|| jobs_db::file_size64(&whisper_cli));
 
-    Ok(BinaryHealthReport {
-        ffmpeg: BinaryInfo {
-            id: "ffmpeg".into(),
-            label: "ffmpeg".into(),
-            ok: ffmpeg_ok,
-            version: ffmpeg_ver,
-            path: Some(ffmpeg.to_string_lossy().into()),
-            size_bytes: ffmpeg_size,
-            role: "Audio/video processing".into(),
-        },
-        ytdlp: BinaryInfo {
-            id: "yt-dlp".into(),
-            label: "yt-dlp".into(),
-            ok: ytdlp_ok,
-            version: ytdlp_ver,
-            path: Some(ytdlp.to_string_lossy().into()),
-            size_bytes: ytdlp_size,
-            role: "URL media download".into(),
-        },
-        whisper: BinaryInfo {
-            id: "whisper-cli".into(),
-            label: "whisper-cli".into(),
-            ok: whisper_ok,
-            version: whisper_ver,
-            path: Some(whisper_cli.to_string_lossy().into()),
-            size_bytes: whisper_size,
-            role: "Local transcription (whisper.cpp CLI; installed via Homebrew by Whispr when needed)".into(),
-        },
-    })
+    tokio::task::spawn_blocking(move || {
+        let ffmpeg_ok = ffmpeg.is_file();
+        let ffmpeg_ver = ffmpeg_ok.then(|| run_version(&ffmpeg, "-version")).flatten();
+        let ffmpeg_size = ffmpeg_ok.then(|| jobs_db::file_size64(&ffmpeg));
+
+        let ytdlp_ok = ytdlp.is_file();
+        let ytdlp_ver = ytdlp_ok.then(|| run_version(&ytdlp, "--version")).flatten();
+        let ytdlp_size = ytdlp_ok.then(|| jobs_db::file_size64(&ytdlp));
+
+        let whisper_ok = whisper_cli.exists();
+        let whisper_ver = whisper_ok.then(|| run_version(&whisper_cli, "--version")).flatten();
+        let whisper_size = whisper_ok.then(|| jobs_db::file_size64(&whisper_cli));
+
+        BinaryHealthReport {
+            ffmpeg: BinaryInfo {
+                id: "ffmpeg".into(),
+                label: "ffmpeg".into(),
+                ok: ffmpeg_ok,
+                version: ffmpeg_ver,
+                path: Some(ffmpeg.to_string_lossy().into()),
+                size_bytes: ffmpeg_size,
+                role: "Audio/video processing".into(),
+            },
+            ytdlp: BinaryInfo {
+                id: "yt-dlp".into(),
+                label: "yt-dlp".into(),
+                ok: ytdlp_ok,
+                version: ytdlp_ver,
+                path: Some(ytdlp.to_string_lossy().into()),
+                size_bytes: ytdlp_size,
+                role: "URL media download".into(),
+            },
+            whisper: BinaryInfo {
+                id: "whisper-cli".into(),
+                label: "whisper-cli".into(),
+                ok: whisper_ok,
+                version: whisper_ver,
+                path: Some(whisper_cli.to_string_lossy().into()),
+                size_bytes: whisper_size,
+                role: "Local transcription (whisper.cpp CLI; installed via Homebrew by Whispr when needed)".into(),
+            },
+        }
+    }).await.map_err(|e| e.to_string())
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -128,59 +130,61 @@ pub struct DiskUsageReport {
 }
 
 #[tauri::command]
-pub fn get_app_disk_usage(app: AppHandle) -> Result<DiskUsageReport, String> {
+pub async fn get_app_disk_usage(app: AppHandle) -> Result<DiskUsageReport, String> {
     paths::ensure_layout(&app)?;
     let bin = paths::bin_dir(&app)?;
     let models = paths::models_dir(&app)?;
     let tmp = paths::tmp_dir(&app)?;
     let db = paths::db_path(&app)?;
 
-    let bin_bytes = jobs_db::dir_size(&bin);
-    let models_bytes = jobs_db::dir_size(&models);
-    let tmp_bytes = jobs_db::dir_size(&tmp);
-    let db_bytes = jobs_db::file_size64(&db);
+    tokio::task::spawn_blocking(move || {
+        let bin_bytes = jobs_db::dir_size(&bin);
+        let models_bytes = jobs_db::dir_size(&models);
+        let tmp_bytes = jobs_db::dir_size(&tmp);
+        let db_bytes = jobs_db::file_size64(&db);
 
-    let mut categories = vec![
-        DiskCategory {
-            id: "binaries".into(),
-            label: "Tools (ffmpeg, yt-dlp)".into(),
-            bytes: bin_bytes,
-        },
-        DiskCategory {
-            id: "models".into(),
-            label: "Whisper models".into(),
-            bytes: models_bytes,
-        },
-        DiskCategory {
-            id: "database".into(),
-            label: "Database".into(),
-            bytes: db_bytes,
-        },
-        DiskCategory {
-            id: "temp".into(),
-            label: "Temporary files".into(),
-            bytes: tmp_bytes,
-        },
-    ];
+        let mut categories = vec![
+            DiskCategory {
+                id: "binaries".into(),
+                label: "Tools (ffmpeg, yt-dlp)".into(),
+                bytes: bin_bytes,
+            },
+            DiskCategory {
+                id: "models".into(),
+                label: "Whisper models".into(),
+                bytes: models_bytes,
+            },
+            DiskCategory {
+                id: "database".into(),
+                label: "Database".into(),
+                bytes: db_bytes,
+            },
+            DiskCategory {
+                id: "temp".into(),
+                label: "Temporary files".into(),
+                bytes: tmp_bytes,
+            },
+        ];
 
-    let mut total: u64 = categories.iter().map(|c| c.bytes).sum();
+        let mut total: u64 = categories.iter().map(|c| c.bytes).sum();
 
-    if let Ok(exe) = std::env::current_exe() {
-        let exe_sz = jobs_db::file_size64(&exe);
-        if exe_sz > 0 {
-            categories.push(DiskCategory {
-                id: "app_core".into(),
-                label: "App executable".into(),
-                bytes: exe_sz,
-            });
-            total += exe_sz;
+        if let Ok(exe) = std::env::current_exe() {
+            let exe_sz = jobs_db::file_size64(&exe);
+            if exe_sz > 0 {
+                categories.push(DiskCategory {
+                    id: "app_core".into(),
+                    label: "App executable".into(),
+                    bytes: exe_sz,
+                });
+                total += exe_sz;
+            }
         }
-    }
 
-    Ok(DiskUsageReport {
-        categories,
-        total_bytes: total,
-    })
+        DiskUsageReport {
+            categories,
+            total_bytes: total,
+        }
+    }).await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -201,16 +205,18 @@ pub fn delete_model_file(app: AppHandle, filename: String) -> Result<(), String>
 }
 
 #[tauri::command]
-pub fn list_model_files(app: AppHandle) -> Result<Vec<String>, String> {
+pub async fn list_model_files(app: AppHandle) -> Result<Vec<String>, String> {
     let d = paths::models_dir(&app)?;
-    let mut names: Vec<String> = Vec::new();
-    for e in std::fs::read_dir(&d).map_err(|e| e.to_string())? {
-        let e = e.map_err(|e| e.to_string())?;
-        let n = e.file_name().to_string_lossy().into_owned();
-        if n.ends_with(".bin") {
-            names.push(n);
+    tokio::task::spawn_blocking(move || {
+        let mut names: Vec<String> = Vec::new();
+        for e in std::fs::read_dir(&d).map_err(|e| e.to_string())? {
+            let e = e.map_err(|e| e.to_string())?;
+            let n = e.file_name().to_string_lossy().into_owned();
+            if n.ends_with(".bin") {
+                names.push(n);
+            }
         }
-    }
-    names.sort();
-    Ok(names)
+        names.sort();
+        Ok(names)
+    }).await.map_err(|e| e.to_string())?
 }

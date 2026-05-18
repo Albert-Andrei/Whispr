@@ -4,32 +4,38 @@ import { BinaryStatusCard } from "./BinaryStatusCard";
 import { DiskBreakdown } from "./DiskBreakdown";
 import { GeneralSettings } from "./GeneralSettings";
 import { ModelSelector } from "./ModelSelector";
-import type { BinaryHealthReport, DiskUsageReport } from "./types";
+import type { BinaryHealthReport, DiskUsageReport } from "../../types/types";
 
 export function Settings() {
   const [health, setHealth] = useState<BinaryHealthReport | null>(null);
   const [disk, setDisk] = useState<DiskUsageReport | null>(null);
 
-  const load = useCallback(async () => {
+  const loadHealth = useCallback(async () => {
     if (!isTauri()) return;
-    const [h, d] = await Promise.all([
-      invoke<BinaryHealthReport>("check_binaries"),
-      invoke<DiskUsageReport>("get_app_disk_usage"),
-    ]);
+    const h = await invoke<BinaryHealthReport>("check_binaries");
     setHealth(h);
+  }, []);
+
+  const loadDisk = useCallback(async () => {
+    if (!isTauri()) return;
+    const d = await invoke<DiskUsageReport>("get_app_disk_usage");
     setDisk(d);
   }, []);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    void loadDisk();
+    void loadHealth();
+  }, [loadDisk, loadHealth]);
 
   if (!isTauri()) {
     return (
       <div className="px-5 py-8">
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
           Settings that talk to your Mac (binaries, disk usage, models) need the
-          desktop app. Run <code className="rounded bg-zinc-100 px-1 dark:bg-zinc-800">bun run tauri dev</code>{" "}
+          desktop app. Run{" "}
+          <code className="rounded bg-zinc-100 px-1 dark:bg-zinc-800">
+            bun run tauri dev
+          </code>{" "}
           instead of the browser-only dev server.
         </p>
       </div>
@@ -47,14 +53,22 @@ export function Settings() {
         </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {health
-            ? [health.ffmpeg, health.ytdlp, health.whisper].map((b) => (
-                <BinaryStatusCard key={b.id} b={b} />
+            ? [health.ffmpeg, health.ytdlp, health.whisper].map((binary) => (
+                <BinaryStatusCard key={binary.id} binary={binary} />
               ))
-            : null}
+            : Array.from({ length: 3 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="animate-pulse rounded-xl border border-zinc-200 p-4 dark:border-zinc-800"
+                >
+                  <div className="h-4 w-20 rounded bg-zinc-200 dark:bg-zinc-700" />
+                  <div className="mt-2 h-3 w-32 rounded bg-zinc-100 dark:bg-zinc-800" />
+                </div>
+              ))}
         </div>
         <button
           type="button"
-          onClick={() => void load()}
+          onClick={() => void loadHealth()}
           className="mt-4 text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400"
         >
           Refresh status
@@ -81,7 +95,7 @@ export function Settings() {
           Multilingual GGML models. Active model is used for new jobs.
         </p>
         <div className="mt-4">
-          <ModelSelector onRefresh={load} />
+          <ModelSelector onRefresh={loadDisk} />
         </div>
       </section>
 

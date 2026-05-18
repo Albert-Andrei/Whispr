@@ -3,11 +3,22 @@ import { useCallback, useEffect, useState } from "react";
 import { getConfig, setConfig } from "../../lib/db";
 import type { ModelTier } from "../setup/SetupScreen";
 
-const TIERS: { tier: ModelTier; file: string; label: string; hint: string }[] = [
-  { tier: "small", file: "ggml-small.bin", label: "Small", hint: "~466 MB" },
-  { tier: "medium", file: "ggml-medium.bin", label: "Medium", hint: "~1.5 GB" },
-  { tier: "large", file: "ggml-large-v3.bin", label: "Large", hint: "~3.1 GB" },
-];
+const TIERS: { tier: ModelTier; file: string; label: string; hint: string }[] =
+  [
+    { tier: "small", file: "ggml-small.bin", label: "Small", hint: "~466 MB" },
+    {
+      tier: "medium",
+      file: "ggml-medium.bin",
+      label: "Medium",
+      hint: "~1.5 GB",
+    },
+    {
+      tier: "large",
+      file: "ggml-large-v3.bin",
+      label: "Large",
+      hint: "~3.1 GB",
+    },
+  ];
 
 type ModelSelectorProps = {
   onRefresh: () => void;

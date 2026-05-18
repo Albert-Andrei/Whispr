@@ -1,0 +1,23 @@
+---
+description: Enforce descriptive variable names in props, maps, and destructuring
+globs: "**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# No Single-Letter Variable Names
+
+Never use single-letter identifiers for props, map/filter/reduce callbacks, or destructured bindings.
+
+```tsx
+// ❌ BAD
+<BinaryStatusCard b={b} />;
+items.map((b) => <Card key={b.id} b={b} />);
+const { b } = props;
+
+// ✅ GOOD
+<BinaryStatusCard binary={binary} />;
+items.map((binary) => <Card key={binary.id} binary={binary} />);
+const { binary } = props;
+```
+
+Choose names that reflect what the value represents: `job`, `item`, `binary`, `category`, `file`, etc.

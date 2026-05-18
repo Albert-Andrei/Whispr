@@ -30,32 +30,24 @@ jobs:
         with:
           workspaces: src-tauri
 
-      - name: Build and publish
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build (Apple Silicon)
+        run: bun run tauri build --target aarch64-apple-darwin
+
+      - name: Build (Intel)
+        run: bun run tauri build --target x86_64-apple-darwin
+
+      - name: Upload release
+        uses: softprops/action-gh-release@v2
         with:
-          tauriScript: bun run tauri
-          tagName: ${{ github.ref_name }}
-          releaseName: Whispr ${{ github.ref_name }}
-          releaseBody: |
+          name: Whispr ${{ github.ref_name }}
+          body: |
             ## Whispr ${{ github.ref_name }}
 
             Offline transcription for video and audio on macOS.
 
             Download the `.dmg` for your Mac (Apple Silicon or Intel) from the assets below.
-          releaseDraft: false
+          draft: false
           prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
-          args: --target aarch64-apple-darwin
-
-      - name: Build and upload Intel
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tauriScript: bun run tauri
-          tagName: ${{ github.ref_name }}
-          releaseName: Whispr ${{ github.ref_name }}
-          releaseDraft: false
-          prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
-          args: --target x86_64-apple-darwin
+          files: |
+            src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
+            src-tauri/target/x86_64-apple-darwin/release/bundle/dmg/*.dmg

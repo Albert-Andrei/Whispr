@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { save } from "@tauri-apps/plugin-dialog";
+import { exportDefaultBaseName } from "../../lib/exportFilename";
 import {
   EXPORT_FORMATS,
   TranscriptSidePanel,
@@ -13,7 +14,7 @@ export function TranscriptView() {
   const job = jobs.find((j) => j.id === selectedId);
   if (!job) return null;
 
-  const baseName = job.filename.replace(/[^\w\-.]+/g, "_").slice(0, 80);
+  const baseName = exportDefaultBaseName(job.filename);
 
   const exportAs = async (format: ExportFormatId) => {
     const fmt = EXPORT_FORMATS.find((f) => f.id === format);

@@ -84,6 +84,20 @@ pub fn set_job_completed(
     Ok(())
 }
 
+pub fn set_job_filename(app: &AppHandle, id: &str, filename: &str) -> Result<(), String> {
+    let conn = open_conn(app)?;
+    conn.execute(
+        "UPDATE transcription_jobs SET filename = ?1, updated_at = ?2 WHERE id = ?3",
+        params![
+            filename,
+            chrono::Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Secs, true),
+            id
+        ],
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 pub fn set_job_failed(app: &AppHandle, id: &str, err: &str) -> Result<(), String> {
     let conn = open_conn(app)?;
     conn.execute(

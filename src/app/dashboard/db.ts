@@ -93,6 +93,14 @@ export async function insertJob(input: NewJobInput): Promise<TranscriptionJob> {
   return rowToJob(row);
 }
 
+export async function updateJobFilename(id: string, filename: string): Promise<void> {
+  const db = await getDatabase();
+  await db.execute(
+    "UPDATE transcription_jobs SET filename = $1, updated_at = $2 WHERE id = $3",
+    [filename, new Date().toISOString(), id],
+  );
+}
+
 export async function updateJobStatus(
   id: string,
   status: JobStatus,

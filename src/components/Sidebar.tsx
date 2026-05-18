@@ -161,7 +161,7 @@ export function Sidebar({
         role="separator"
         aria-orientation="vertical"
         aria-label="Resize sidebar"
-        className="absolute right-0 bottom-4 z-10 w-1 cursor-col-resize hover:bg-indigo-400/25"
+        className="absolute -right-2.5 bottom-4 z-10 w-1 cursor-col-resize rounded-full hover:bg-indigo-400/40"
         style={{ top: mainColumnDragStripPx }}
         onMouseDown={(e) => {
           e.preventDefault();

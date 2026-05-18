@@ -2,8 +2,9 @@ use super::progress::PipelineProgress;
 use crate::paths;
 use hound::WavReader;
 use std::fs;
+use std::io::{BufRead, BufReader};
 use std::path::Path;
-use std::process::Command;
+use std::process::{Command, Stdio};
 use tauri::{AppHandle, Emitter};
 
 fn format_duration(seconds: u64) -> String {
@@ -48,18 +49,47 @@ pub fn transcribe_file(
         },
     );
 
-    let status = Command::new(&cli)
+    let mut child = Command::new(&cli)
         .arg("-m")
         .arg(model_path)
         .arg("-f")
         .arg(wav_path)
+        .arg("-l")
+        .arg("auto")
         .arg("-of")
         .arg(&out_str)
         .arg("-otxt")
         .arg("-osrt")
-        .status()
+        .stderr(Stdio::piped())
+        .spawn()
         .map_err(|e| format!("whisper-cli failed to start: {e}"))?;
 
+    super::register_child(job_id, child.id());
+
+    if let Some(stderr) = child.stderr.take() {
+        let reader = BufReader::new(stderr);
+        for line in reader.lines().map_while(Result::ok) {
+            if let Some(pct) = parse_whisper_progress(&line) {
+                let overall = progress_base + progress_span * pct;
+                let _ = app.emit(
+                    "pipeline:progress",
+                    PipelineProgress {
+                        job_id: job_id.to_string(),
+                        stage: "transcribing".into(),
+                        percent: overall,
+                    },
+                );
+                let _ = crate::jobs_db::set_job_progress(app, job_id, overall, Some("transcribing"));
+            }
+        }
+    }
+
+    let status = child.wait().map_err(|e| format!("whisper-cli wait failed: {e}"))?;
+    super::unregister_child(job_id);
+
+    if super::is_cancelled(job_id) {
+        return Err("Cancelled".into());
+    }
     if !status.success() {
         return Err("whisper-cli exited with an error".into());
     }
@@ -95,4 +125,13 @@ pub fn transcribe_file(
         srt,
         duration_label,
     ))
+}
+
+/// Parses lines like "whisper_print_progress_callback: progress =  42%"
+fn parse_whisper_progress(line: &str) -> Option<f64> {
+    let marker = "progress =";
+    let idx = line.find(marker)?;
+    let rest = &line[idx + marker.len()..];
+    let pct_str = rest.trim().trim_end_matches('%');
+    pct_str.trim().parse::<f64>().ok().map(|v| v / 100.0)
 }

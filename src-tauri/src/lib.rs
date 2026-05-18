@@ -22,6 +22,8 @@ pub fn run() {
             downloader::download_tools,
             downloader::download_model_file,
             pipeline::run_pipeline,
+            pipeline::fetch_url_title,
+            pipeline::cancel_pipeline,
             export::export_transcript,
         ])
         .setup(|app| {

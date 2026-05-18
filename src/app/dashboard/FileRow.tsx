@@ -1,3 +1,4 @@
+import { EditableFileName } from "../../components/EditableFileName";
 import { useTranscriptionStore } from "./store";
 import type { TranscriptionJob } from "./types";
 import { ProgressBar } from "./ProgressBar";
@@ -24,6 +25,7 @@ function formatDate(iso: string): string {
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    hour12: false,
   });
 }
 
@@ -35,6 +37,7 @@ export function FileRow({ job }: FileRowProps) {
   const setSelected = useTranscriptionStore((state) => state.setSelectedJob);
   const retryJob = useTranscriptionStore((state) => state.retryJob);
   const removeJob = useTranscriptionStore((state) => state.removeJob);
+  const renameJob = useTranscriptionStore((state) => state.renameJob);
 
   const onRowClick = () => {
     if (job.status === "completed") setSelected(job.id);
@@ -55,13 +58,19 @@ export function FileRow({ job }: FileRowProps) {
           : "hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
       }`}
     >
-      <td className="max-w-[240px] truncate px-4 py-3 text-sm font-medium text-zinc-900 dark:text-zinc-100">
-        {job.filename}
+      <td className="max-w-[280px] px-4 py-3">
+        <EditableFileName
+          fileName={job.filename}
+          onRename={(filename) => {
+            void renameJob(job.id, filename);
+          }}
+          variant="row"
+        />
       </td>
       <td className="px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400">
         {job.duration ?? "—"}
       </td>
-      <td className="px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400">
+      <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400">
         {formatDate(job.created_at)}
       </td>
       <td className="px-4 py-3 align-top">

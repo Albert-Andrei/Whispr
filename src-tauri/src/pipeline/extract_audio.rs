@@ -15,7 +15,8 @@ pub fn extract_wav_16k_mono(
     }
     let tmp = paths::tmp_dir(app)?;
     let out = tmp.join(format!("{job_id}.wav"));
-    let status = Command::new(&ffmpeg)
+
+    let mut child = Command::new(&ffmpeg)
         .arg("-y")
         .arg("-i")
         .arg(input)
@@ -26,8 +27,16 @@ pub fn extract_wav_16k_mono(
         .arg("-c:a")
         .arg("pcm_s16le")
         .arg(&out)
-        .status()
+        .spawn()
         .map_err(|e| format!("ffmpeg failed to start: {e}"))?;
+
+    super::register_child(job_id, child.id());
+    let status = child.wait().map_err(|e| format!("ffmpeg wait failed: {e}"))?;
+    super::unregister_child(job_id);
+
+    if super::is_cancelled(job_id) {
+        return Err("Cancelled".into());
+    }
     if !status.success() {
         return Err("ffmpeg exited with an error".into());
     }

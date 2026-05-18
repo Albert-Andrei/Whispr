@@ -1,8 +1,11 @@
 import { windowDragPointerDown } from "../lib/windowDrag";
+import { EditableFileName } from "./EditableFileName";
 
 type TranscriptDetail = {
   fileName: string;
   onBack: () => void;
+  onRename: (filename: string) => void;
+  onDelete: () => void;
 };
 
 type HeaderProps = {
@@ -79,9 +82,11 @@ export function Header({
             >
               <IconChevronRight />
             </span>
-            <span className="truncate font-semibold text-zinc-900 dark:text-zinc-50">
-              {transcriptDetail.fileName}
-            </span>
+            <EditableFileName
+              fileName={transcriptDetail.fileName}
+              onRename={transcriptDetail.onRename}
+              variant="header"
+            />
           </div>
         </div>
       ) : (
@@ -90,17 +95,27 @@ export function Header({
         </h1>
       )}
 
-      <button
-        type="button"
-        data-tauri-no-drag
-        onClick={onNewTranscription}
-        className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-zinc-900 px-3 py-1.5 text-[13px] font-semibold text-white shadow-sm transition hover:bg-zinc-800 active:scale-[0.98] dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
-      >
-        <span className="text-base font-light leading-none" aria-hidden>
-          +
-        </span>
-        New
-      </button>
+      <div className="flex shrink-0 items-center gap-2" data-tauri-no-drag>
+        {transcriptDetail ? (
+          <button
+            type="button"
+            onClick={transcriptDetail.onDelete}
+            className="rounded-lg border border-zinc-200 px-3 py-1.5 text-[13px] font-medium text-zinc-600 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+          >
+            Delete
+          </button>
+        ) : null}
+        <button
+          type="button"
+          onClick={onNewTranscription}
+          className="inline-flex items-center gap-1.5 rounded-lg bg-zinc-900 px-3 py-1.5 text-[13px] font-semibold text-white shadow-sm transition hover:bg-zinc-800 active:scale-[0.98] dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+        >
+          <span className="text-base font-light leading-none" aria-hidden>
+            +
+          </span>
+          New
+        </button>
+      </div>
     </header>
   );
 }

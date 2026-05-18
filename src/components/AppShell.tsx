@@ -56,6 +56,8 @@ export function AppShell() {
   const selectedJobId = useTranscriptionStore((state) => state.selectedJobId);
   const jobs = useTranscriptionStore((state) => state.jobs);
   const setSelectedJob = useTranscriptionStore((state) => state.setSelectedJob);
+  const renameJob = useTranscriptionStore((state) => state.renameJob);
+  const removeJob = useTranscriptionStore((state) => state.removeJob);
 
   useEffect(() => {
     if (!isTauri()) return;
@@ -135,6 +137,12 @@ export function AppShell() {
                             jobs.find((job) => job.id === selectedJobId)
                               ?.filename ?? "",
                           onBack: () => setSelectedJob(null),
+                          onRename: (filename) => {
+                            void renameJob(selectedJobId, filename);
+                          },
+                          onDelete: () => {
+                            void removeJob(selectedJobId);
+                          },
                         }
                       : undefined
                   }

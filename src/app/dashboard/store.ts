@@ -7,6 +7,7 @@ import {
   insertJob,
   listJobs,
   resetJobForRetry,
+  updateJobFilename,
 } from "./db";
 import { getConfig, setConfig } from "../../lib/db";
 
@@ -33,6 +34,7 @@ type TranscriptionState = {
   addUrlImport: (url: string) => Promise<void>;
   retryJob: (id: string) => Promise<void>;
   removeJob: (id: string) => Promise<void>;
+  renameJob: (id: string, filename: string) => Promise<void>;
   initPipelineListeners: () => Promise<void>;
   refreshMaxConcurrent: () => Promise<void>;
   setMaxConcurrentJobs: (n: number) => Promise<void>;
@@ -261,6 +263,15 @@ export const useTranscriptionStore = create<TranscriptionState>((set, get) => ({
     });
     set((s) => ({ jobs: [job, ...s.jobs], error: null }));
     get().enqueuePipeline(job.id);
+
+    invoke<string | null>("fetch_url_title", { url: trimmed, jobId: job.id }).then((title) => {
+      if (!title) return;
+      set((s) => ({
+        jobs: s.jobs.map((j) =>
+          j.id === job.id ? { ...j, filename: title } : j,
+        ),
+      }));
+    });
   },
 
   retryJob: async (id: string) => {
@@ -270,11 +281,28 @@ export const useTranscriptionStore = create<TranscriptionState>((set, get) => ({
   },
 
   removeJob: async (id: string) => {
+    const job = get().jobs.find((j) => j.id === id);
+    if (job && (job.status === "processing" || job.status === "pending")) {
+      await invoke("cancel_pipeline", { jobId: id }).catch(() => {});
+    }
     await deleteJob(id);
     set((s) => ({
       jobs: s.jobs.filter((j) => j.id !== id),
       selectedJobId: s.selectedJobId === id ? null : s.selectedJobId,
       pipelineQueue: s.pipelineQueue.filter((x) => x !== id),
+    }));
+  },
+
+  renameJob: async (id: string, filename: string) => {
+    const trimmed = filename.trim();
+    if (!trimmed) return;
+    const current = get().jobs.find((j) => j.id === id);
+    if (!current || current.filename === trimmed) return;
+    await updateJobFilename(id, trimmed);
+    set((s) => ({
+      jobs: s.jobs.map((j) =>
+        j.id === id ? { ...j, filename: trimmed } : j,
+      ),
     }));
   },
 }));

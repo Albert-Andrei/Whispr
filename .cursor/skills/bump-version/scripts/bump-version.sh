@@ -76,19 +76,28 @@ build_tag_summary() {
   local summary=""
   local s
   for s in "${subjects[@]}"; do
+    local friendly
+    friendly="$(friendly_subject "$s")"
     if [[ -z "$summary" ]]; then
-      summary="$s"
-    elif [[ $((${#summary} + ${#s} + 2)) -le 120 ]]; then
-      summary="${summary}; ${s}"
+      summary="$friendly"
+    elif [[ $((${#summary} + ${#friendly} + 2)) -le 120 ]]; then
+      summary="${summary}; ${friendly}"
     else
       break
     fi
   done
-  # Trim trailing semicolon fragment if we cut mid-list
-  if [[ ${#subjects[@]} -gt 1 && ${#summary} -gt 120 ]]; then
-    summary="${summary:0:117}..."
-  fi
   echo "${summary}."
+}
+
+# Strip conventional commit prefix (feat: fix: chore: etc.) and capitalize first letter.
+friendly_subject() {
+  local s="$1"
+  s="$(echo "$s" | sed -E 's/^[a-z]+(\([^)]*\))?[!]?:[[:space:]]*//')"
+  # Capitalize first letter
+  local first rest
+  first="$(printf '%s' "${s:0:1}" | tr '[:lower:]' '[:upper:]')"
+  rest="${s:1}"
+  printf '%s%s' "$first" "$rest"
 }
 
 # Markdown body for GitHub release (.github/RELEASE_BODY.md).
@@ -105,17 +114,31 @@ write_release_body() {
     echo "## Whispr ${tag}"
     echo ""
     if [[ ${#subjects[@]} -eq 0 ]]; then
-      echo "- Maintenance and improvements"
+      echo "Maintenance and improvements."
+    elif [[ ${#subjects[@]} -eq 1 ]]; then
+      echo "$(friendly_subject "${subjects[0]}")."
     else
+      local summary=""
       local s
       for s in "${subjects[@]}"; do
-        echo "- ${s}"
+        local friendly
+        friendly="$(friendly_subject "$s")"
+        # lowercase first char for joining
+        local lower_first
+        lower_first="$(printf '%s' "${friendly:0:1}" | tr '[:upper:]' '[:lower:]')${friendly:1}"
+        if [[ -z "$summary" ]]; then
+          # Re-capitalize for sentence start
+          summary="$(printf '%s' "${lower_first:0:1}" | tr '[:lower:]' '[:upper:]')${lower_first:1}"
+        else
+          summary="${summary}, ${lower_first}"
+        fi
       done
+      echo "${summary}."
     fi
     echo ""
     echo "---"
     echo ""
-    echo "Offline transcription for video and audio on macOS."
+    echo "Offline transcription for video and audio on macOS"
     echo ""
     echo "Download the \`.dmg\` for your Mac (Apple Silicon or Intel) from the assets below."
   } >"$RELEASE_BODY"

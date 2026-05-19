@@ -22,11 +22,13 @@ Examples:
 # patch: 0.1.3 -> 0.1.4 (default)
 .cursor/skills/bump-version/scripts/bump-version.sh
 
-# minor / major
+# minor: 0.1.3 -> 0.2.0
 .cursor/skills/bump-version/scripts/bump-version.sh --minor
+
+# major: 0.1.3 -> 1.0.0
 .cursor/skills/bump-version/scripts/bump-version.sh --major
 
-# explicit version
+# explicit version (skips auto-increment)
 .cursor/skills/bump-version/scripts/bump-version.sh 0.2.0
 
 # commit only, no push/tag
@@ -44,9 +46,9 @@ Examples:
 
 ## Release notes
 
-| Output | Used for |
-|--------|----------|
-| Annotated tag message | `git tag -a` — title + short summary |
+| Output                    | Used for                                            |
+| ------------------------- | --------------------------------------------------- |
+| Annotated tag message     | `git tag -a` — title + short summary                |
 | `.github/RELEASE_BODY.md` | GitHub Release body (via `release.yml` `body_path`) |
 
 Commits are taken from `previous_tag..HEAD` before the version commit. Subjects become `- bullet` lines; the tag summary is a short semicolon-separated line.

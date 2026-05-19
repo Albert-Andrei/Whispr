@@ -14,6 +14,10 @@ export const TRANSLATE_LANGUAGES = [
   { code: "zh", label: "Chinese" },
 ] as const;
 
+export function translateLanguageLabel(code: string): string {
+  return TRANSLATE_LANGUAGES.find((l) => l.code === code)?.label ?? code;
+}
+
 export async function translateTranscriptText(
   text: string,
   targetLang: string,

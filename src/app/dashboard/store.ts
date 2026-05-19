@@ -35,6 +35,7 @@ type TranscriptionState = {
   retryJob: (id: string) => Promise<void>;
   removeJob: (id: string) => Promise<void>;
   renameJob: (id: string, filename: string) => Promise<void>;
+  patchJob: (id: string, patch: Partial<TranscriptionJob>) => void;
   initPipelineListeners: () => Promise<void>;
   refreshMaxConcurrent: () => Promise<void>;
   setMaxConcurrentJobs: (n: number) => Promise<void>;
@@ -290,6 +291,12 @@ export const useTranscriptionStore = create<TranscriptionState>((set, get) => ({
       jobs: s.jobs.filter((j) => j.id !== id),
       selectedJobId: s.selectedJobId === id ? null : s.selectedJobId,
       pipelineQueue: s.pipelineQueue.filter((x) => x !== id),
+    }));
+  },
+
+  patchJob: (id, patch) => {
+    set((s) => ({
+      jobs: s.jobs.map((j) => (j.id === id ? { ...j, ...patch } : j)),
     }));
   },
 

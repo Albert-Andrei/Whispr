@@ -18,6 +18,8 @@ type JobRow = {
   pipeline_stage: string | null;
   srt_output: string | null;
   model_used: string | null;
+  translated_text: string | null;
+  translated_lang: string | null;
 };
 
 function rowToJob(row: JobRow): TranscriptionJob {
@@ -32,6 +34,8 @@ function rowToJob(row: JobRow): TranscriptionJob {
         : null,
     srt_output: row.srt_output ?? null,
     model_used: row.model_used ?? null,
+    translated_text: row.translated_text ?? null,
+    translated_lang: row.translated_lang ?? null,
   };
 }
 
@@ -124,6 +128,26 @@ export async function updateJobProgress(
   );
 }
 
+export async function setJobTranslation(
+  id: string,
+  translatedText: string,
+  translatedLang: string,
+): Promise<void> {
+  const db = await getDatabase();
+  await db.execute(
+    `UPDATE transcription_jobs SET translated_text = $1, translated_lang = $2, updated_at = $3 WHERE id = $4`,
+    [translatedText, translatedLang, new Date().toISOString(), id],
+  );
+}
+
+export async function clearJobTranslation(id: string): Promise<void> {
+  const db = await getDatabase();
+  await db.execute(
+    `UPDATE transcription_jobs SET translated_text = NULL, translated_lang = NULL, updated_at = $1 WHERE id = $2`,
+    [new Date().toISOString(), id],
+  );
+}
+
 export async function updateJobTranscript(
   id: string,
   transcript: string,
@@ -152,7 +176,7 @@ export async function updateJobError(
 export async function resetJobForRetry(id: string): Promise<void> {
   const db = await getDatabase();
   await db.execute(
-    `UPDATE transcription_jobs SET status = 'pending', error_message = NULL, progress = 0, pipeline_stage = NULL, transcript = NULL, srt_output = NULL, updated_at = $1 WHERE id = $2`,
+    `UPDATE transcription_jobs SET status = 'pending', error_message = NULL, progress = 0, pipeline_stage = NULL, transcript = NULL, srt_output = NULL, translated_text = NULL, translated_lang = NULL, updated_at = $1 WHERE id = $2`,
     [new Date().toISOString(), id],
   );
 }

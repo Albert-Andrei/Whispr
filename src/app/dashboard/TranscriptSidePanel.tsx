@@ -122,6 +122,7 @@ function SideSection({
 
 type TranscriptSidePanelProps = {
   job: TranscriptionJob;
+  copyText: string;
   onExport: (format: ExportFormatId) => void;
   onTranslate: (langCode: string, langLabel: string) => void;
   translating?: boolean;
@@ -130,6 +131,7 @@ type TranscriptSidePanelProps = {
 
 export function TranscriptSidePanel({
   job,
+  copyText,
   onExport,
   onTranslate,
   translating = false,
@@ -139,10 +141,11 @@ export function TranscriptSidePanel({
 
   const transcriptText = job.transcript?.trim() ?? "";
   const actionsDisabled = transcriptText.length === 0;
+  const canCopy = copyText.length > 0;
 
   const handleCopy = async () => {
-    if (actionsDisabled) return;
-    await copyTranscriptText(transcriptText);
+    if (!canCopy) return;
+    await copyTranscriptText(copyText);
     setCopyLabel("Copied!");
     window.setTimeout(() => setCopyLabel("Copy text"), 2000);
   };
@@ -178,7 +181,7 @@ export function TranscriptSidePanel({
             <button
               type="button"
               onClick={() => void handleCopy()}
-              disabled={actionsDisabled}
+              disabled={!canCopy}
               className={ROW_BTN}
             >
               <IconCopy />

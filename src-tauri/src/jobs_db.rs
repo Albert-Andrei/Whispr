@@ -70,7 +70,7 @@ pub fn set_job_completed(
 ) -> Result<(), String> {
     let conn = open_conn(app)?;
     conn.execute(
-        "UPDATE transcription_jobs SET transcript = ?1, srt_output = ?2, model_used = ?3, duration = COALESCE(?4, duration), status = 'completed', progress = 1, pipeline_stage = NULL, error_message = NULL, updated_at = ?5 WHERE id = ?6",
+        "UPDATE transcription_jobs SET transcript = ?1, srt_output = ?2, model_used = ?3, duration = COALESCE(?4, duration), status = 'completed', progress = 1, pipeline_stage = NULL, error_message = NULL, translated_text = NULL, translated_lang = NULL, updated_at = ?5 WHERE id = ?6",
         params![
             transcript,
             srt,

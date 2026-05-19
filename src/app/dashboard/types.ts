@@ -19,6 +19,8 @@ export interface TranscriptionJob {
   pipeline_stage: PipelineStage | null;
   srt_output: string | null;
   model_used: string | null;
+  translated_text: string | null;
+  translated_lang: string | null;
 }
 
 export type NewJobInput = {

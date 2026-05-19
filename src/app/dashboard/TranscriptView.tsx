@@ -2,38 +2,49 @@ import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { save } from "@tauri-apps/plugin-dialog";
 import { exportDefaultBaseName } from "../../lib/exportFilename";
-import { translateTranscriptText } from "../../lib/transcriptActions";
+import {
+  translateLanguageLabel,
+  translateTranscriptText,
+} from "../../lib/transcriptActions";
 import {
   EXPORT_FORMATS,
   TranscriptSidePanel,
   type ExportFormatId,
 } from "./TranscriptSidePanel";
+import { setJobTranslation } from "./db";
 import { useTranscriptionStore } from "./store";
 
 export function TranscriptView() {
   const jobs = useTranscriptionStore((state) => state.jobs);
   const selectedId = useTranscriptionStore((state) => state.selectedJobId);
+  const patchJob = useTranscriptionStore((state) => state.patchJob);
   const job = jobs.find((j) => j.id === selectedId);
 
-  const [translation, setTranslation] = useState<{
-    lang: string;
-    label: string;
-    text: string;
-  } | null>(null);
+  const [viewingOriginal, setViewingOriginal] = useState(false);
   const [translating, setTranslating] = useState(false);
   const [translateError, setTranslateError] = useState<string | null>(null);
 
   useEffect(() => {
-    setTranslation(null);
+    setViewingOriginal(false);
     setTranslateError(null);
     setTranslating(false);
   }, [job?.id]);
 
   if (!job) return null;
 
+  const hasSavedTranslation = Boolean(
+    job.translated_text?.trim() && job.translated_lang,
+  );
+  const translatedLabel = job.translated_lang
+    ? translateLanguageLabel(job.translated_lang)
+    : null;
+  const showTranslation = hasSavedTranslation && !viewingOriginal;
+
   const baseName = exportDefaultBaseName(job.filename);
   const transcriptText = job.transcript?.trim() ?? "";
-  const displayText = translation?.text ?? job.transcript ?? "—";
+  const displayText = showTranslation
+    ? (job.translated_text?.trim() ?? "—")
+    : transcriptText || "—";
 
   const exportAs = async (format: ExportFormatId) => {
     const fmt = EXPORT_FORMATS.find((f) => f.id === format);
@@ -56,7 +67,7 @@ export function TranscriptView() {
     });
   };
 
-  const handleTranslate = async (langCode: string, langLabel: string) => {
+  const handleTranslate = async (langCode: string, _langLabel: string) => {
     if (!transcriptText) return;
     setTranslating(true);
     setTranslateError(null);
@@ -65,10 +76,18 @@ export function TranscriptView() {
         transcriptText,
         langCode,
       );
-      setTranslation({ lang: langCode, label: langLabel, text: translated });
+      if (!translated.trim()) {
+        setTranslateError("Translation returned no text. Try again.");
+        return;
+      }
+      await setJobTranslation(job.id, translated, langCode);
+      patchJob(job.id, {
+        translated_text: translated,
+        translated_lang: langCode,
+      });
+      setViewingOriginal(false);
     } catch {
       setTranslateError("Translation failed. Check your connection and try again.");
-      setTranslation(null);
     } finally {
       setTranslating(false);
     }
@@ -77,19 +96,31 @@ export function TranscriptView() {
   return (
     <div className="flex min-h-0 flex-1 overflow-hidden">
       <div className="min-h-0 min-w-0 flex-1 overflow-y-auto px-5 py-6">
-        {translation ? (
+        {hasSavedTranslation ? (
           <div className="mb-3 flex items-center gap-2 text-[13px] text-zinc-500 dark:text-zinc-400">
-            <span>Translated to {translation.label}</span>
-            <button
-              type="button"
-              onClick={() => {
-                setTranslation(null);
-                setTranslateError(null);
-              }}
-              className="text-zinc-700 underline decoration-zinc-300 underline-offset-2 transition hover:text-zinc-900 dark:text-zinc-300 dark:decoration-zinc-600 dark:hover:text-zinc-100"
-            >
-              Show original
-            </button>
+            {showTranslation ? (
+              <>
+                <span>Translated to {translatedLabel}</span>
+                <button
+                  type="button"
+                  onClick={() => setViewingOriginal(true)}
+                  className="text-zinc-700 underline decoration-zinc-300 underline-offset-2 transition hover:text-zinc-900 dark:text-zinc-300 dark:decoration-zinc-600 dark:hover:text-zinc-100"
+                >
+                  Show original
+                </button>
+              </>
+            ) : (
+              <>
+                <span>Showing original</span>
+                <button
+                  type="button"
+                  onClick={() => setViewingOriginal(false)}
+                  className="text-zinc-700 underline decoration-zinc-300 underline-offset-2 transition hover:text-zinc-900 dark:text-zinc-300 dark:decoration-zinc-600 dark:hover:text-zinc-100"
+                >
+                  Show translation
+                </button>
+              </>
+            )}
           </div>
         ) : null}
 
@@ -112,10 +143,11 @@ export function TranscriptView() {
 
       <TranscriptSidePanel
         job={job}
+        copyText={displayText === "—" ? "" : displayText}
         onExport={(format) => void exportAs(format)}
         onTranslate={(langCode, langLabel) => void handleTranslate(langCode, langLabel)}
         translating={translating}
-        selectedLang={translation?.lang ?? null}
+        selectedLang={job.translated_lang}
       />
     </div>
   );

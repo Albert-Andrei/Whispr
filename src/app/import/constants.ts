@@ -39,5 +39,10 @@ export function isAcceptedMediaFile(file: File): boolean {
   return ACCEPTED_EXTENSIONS.has(extensionOf(file.name));
 }
 
+export function isAcceptedMediaPath(path: string): boolean {
+  const name = path.replace(/\\/g, "/").split("/").pop() ?? path;
+  return ACCEPTED_EXTENSIONS.has(extensionOf(name));
+}
+
 export const ACCEPT_INPUT_ATTRIBUTE =
   ".mp4,.mov,.mkv,.webm,.avi,.mp3,.wav,.m4a,.flac,.ogg,.aac";

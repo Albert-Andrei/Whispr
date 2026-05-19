@@ -12,6 +12,7 @@ import { useIsMacTauri } from "../hooks/useIsMacTauri";
 import { getConfig } from "../lib/db";
 import { windowDragPointerDown } from "../lib/windowDrag";
 import type { NewImportStep, SidebarView } from "../types";
+import { AppFileDropLayer } from "./AppFileDropLayer";
 import { Header } from "./Header";
 import { readInitialSidebarWidth, Sidebar } from "./Sidebar";
 
@@ -185,6 +186,14 @@ export function AppShell({ appUpdate }: AppShellProps) {
           </div>
         </div>
       </div>
+
+      <AppFileDropLayer
+        enabled={setupGate === "ready"}
+        modalOpen={modalOpen}
+        onLocalFiles={addLocalFiles}
+        onLocalFilePaths={addLocalFilePaths}
+        onDropped={() => setModalOpen(false)}
+      />
 
       <NewTranscriptionModal
         open={modalOpen}

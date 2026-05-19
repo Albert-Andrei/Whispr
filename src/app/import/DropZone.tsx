@@ -1,6 +1,5 @@
-import { useRef } from "react";
 import { isTauri } from "@tauri-apps/api/core";
-import { message, open } from "@tauri-apps/plugin-dialog";
+import { open } from "@tauri-apps/plugin-dialog";
 import {
   ACCEPT_INPUT_ATTRIBUTE,
   DIALOG_MEDIA_FILTER,
@@ -9,26 +8,12 @@ import {
 
 type DropZoneProps = {
   onFiles: (files: File[]) => void;
-  /** Tauri: absolute paths from the native picker or drag-and-drop with `File.path`. */
+  /** Tauri: absolute paths from the native picker. */
   onPaths?: (paths: string[]) => void;
   disabled?: boolean;
   /** Tighter padding only; same dashed panel + chrome as the modal. */
   compact?: boolean;
 };
-
-const DRAG_ACTIVE = [
-  "bg-zinc-50",
-  "dark:bg-zinc-800/50",
-  "ring-2",
-  "ring-zinc-300",
-  "ring-inset",
-  "dark:ring-zinc-600",
-] as const;
-
-function filePathFromWebFile(file: File): string | undefined {
-  const p = (file as File & { path?: string }).path;
-  return typeof p === "string" && p.length > 0 ? p : undefined;
-}
 
 export function DropZone({
   onFiles,
@@ -36,34 +21,6 @@ export function DropZone({
   disabled,
   compact = false,
 }: DropZoneProps) {
-  const dragDepth = useRef(0);
-
-  const handleFiles = (list: FileList | null) => {
-    if (!list || disabled) return;
-    const files = [...list].filter(isAcceptedMediaFile);
-    if (files.length === 0) return;
-
-    if (isTauri() && onPaths) {
-      const paths = files
-        .map((f) => filePathFromWebFile(f))
-        .filter((p): p is string => p !== undefined);
-      if (paths.length === files.length) {
-        onPaths(paths);
-        return;
-      }
-      if (paths.length > 0) {
-        onPaths(paths);
-        void message(
-          "Some files could not be added because their path was not available. Use Browse to pick files, or drop them from Finder.",
-          { title: "Whispr", kind: "warning" },
-        );
-        return;
-      }
-    }
-
-    onFiles(files);
-  };
-
   const openNativePicker = async () => {
     if (disabled) return;
     try {
@@ -80,18 +37,6 @@ export function DropZone({
     }
   };
 
-  const clearDragHighlight = (el: HTMLDivElement) => {
-    for (const c of DRAG_ACTIVE) {
-      el.classList.remove(c);
-    }
-  };
-
-  const addDragHighlight = (el: HTMLDivElement) => {
-    for (const c of DRAG_ACTIVE) {
-      el.classList.add(c);
-    }
-  };
-
   const shell =
     "border border-dashed border-zinc-200 bg-white text-center transition-colors dark:border-zinc-600 dark:bg-zinc-950 " +
     (compact ? "rounded-xl px-5 py-6" : "rounded-2xl px-6 py-10");
@@ -104,35 +49,7 @@ export function DropZone({
   const useNativePicker = isTauri() && !!onPaths;
 
   return (
-    <div
-      className={shell}
-      onDragEnter={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        dragDepth.current += 1;
-        if (dragDepth.current === 1) addDragHighlight(e.currentTarget);
-      }}
-      onDragOver={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      }}
-      onDragLeave={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        dragDepth.current -= 1;
-        if (dragDepth.current <= 0) {
-          dragDepth.current = 0;
-          clearDragHighlight(e.currentTarget);
-        }
-      }}
-      onDrop={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        dragDepth.current = 0;
-        clearDragHighlight(e.currentTarget);
-        handleFiles(e.dataTransfer.files);
-      }}
-    >
+    <div className={shell}>
       <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
         Drag & drop video or audio files
       </p>
@@ -161,7 +78,12 @@ export function DropZone({
                 accept={ACCEPT_INPUT_ATTRIBUTE}
                 disabled={disabled}
                 multiple
-                onChange={(e) => handleFiles(e.target.files)}
+                onChange={(e) => {
+                  if (!e.target.files || disabled) return;
+                  const files = [...e.target.files].filter(isAcceptedMediaFile);
+                  if (files.length > 0) onFiles(files);
+                  e.target.value = "";
+                }}
               />
               Browse files...
             </span>

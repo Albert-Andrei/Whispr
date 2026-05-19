@@ -125,9 +125,19 @@ export function Sidebar({
         className={`flex min-h-0 min-w-0 flex-1 flex-col ${gutter} ${topPad}`}
       >
         <nav className="flex min-h-0 flex-1 flex-col gap-0.5 pb-2">
-          <p className="mb-0.5 px-2.5 text-left text-[11px] font-semibold tracking-wide text-[var(--color-sidebar-text-muted-light)] dark:text-[var(--color-sidebar-text-muted-dark)]">
-            Whispr
-          </p>
+          <div className="mb-0.5 flex items-center gap-1.5 px-2.5">
+            <img
+              src="/logo.png"
+              alt=""
+              width={16}
+              height={16}
+              className="size-4 shrink-0 rounded-[4px]"
+              aria-hidden
+            />
+            <p className="text-left text-[11px] font-semibold tracking-wide text-[var(--color-sidebar-text-muted-light)] dark:text-[var(--color-sidebar-text-muted-dark)]">
+              Whispr
+            </p>
+          </div>
           {MAIN_ITEMS.map((item) => {
             const isActive = item.id === active;
             const Icon = item.Icon;

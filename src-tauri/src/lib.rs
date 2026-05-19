@@ -4,6 +4,7 @@ mod export;
 mod jobs_db;
 mod paths;
 mod pipeline;
+mod translate;
 mod updates;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -26,6 +27,7 @@ pub fn run() {
             pipeline::fetch_url_title,
             pipeline::cancel_pipeline,
             export::export_transcript,
+            translate::translate_text,
             updates::check_for_update,
         ])
         .setup(|app| {

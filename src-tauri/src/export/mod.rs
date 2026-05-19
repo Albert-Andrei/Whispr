@@ -18,15 +18,61 @@ pub struct ExportJobData {
     pub created_at: String,
     pub model_used: Option<String>,
     pub duration: Option<String>,
+    /// Set when export uses saved translation (e.g. "Translated to English").
+    pub translation_note: Option<String>,
+}
+
+fn language_label(code: &str) -> &str {
+    match code {
+        "en" => "English",
+        "es" => "Spanish",
+        "fr" => "French",
+        "de" => "German",
+        "it" => "Italian",
+        "pt" => "Portuguese",
+        "ro" => "Romanian",
+        "ru" => "Russian",
+        "uk" => "Ukrainian",
+        "ja" => "Japanese",
+        "zh" => "Chinese",
+        _ => code,
+    }
+}
+
+/// Prefer saved translation when present (matches transcript UI default).
+fn pick_export_body(row: &jobs_db::JobRow) -> Result<(String, Option<String>), String> {
+    let has_translation = row
+        .translated_text
+        .as_ref()
+        .map(|s| !s.trim().is_empty())
+        .unwrap_or(false)
+        && row
+            .translated_lang
+            .as_ref()
+            .map(|s| !s.trim().is_empty())
+            .unwrap_or(false);
+
+    if has_translation {
+        let text = row.translated_text.as_ref().unwrap().trim().to_string();
+        let lang = row.translated_lang.as_ref().unwrap().trim();
+        let note = format!("Translated to {}", language_label(lang));
+        return Ok((text, Some(note)));
+    }
+
+    let transcript = row
+        .transcript
+        .as_ref()
+        .map(|s| s.trim())
+        .filter(|s| !s.is_empty())
+        .map(|s| s.to_string())
+        .ok_or_else(|| "No transcript to export".to_string())?;
+    Ok((transcript, None))
 }
 
 fn load_job_export(app: &AppHandle, job_id: &str) -> Result<ExportJobData, String> {
     let row = jobs_db::get_job(app, job_id)?
         .ok_or_else(|| "Job not found".to_string())?;
-    let transcript = row
-        .transcript
-        .filter(|s| !s.is_empty())
-        .ok_or("No transcript to export")?;
+    let (transcript, translation_note) = pick_export_body(&row)?;
     Ok(ExportJobData {
         id: row.id,
         filename: row.filename,
@@ -35,6 +81,7 @@ fn load_job_export(app: &AppHandle, job_id: &str) -> Result<ExportJobData, Strin
         created_at: row.created_at,
         model_used: row.model_used,
         duration: row.duration,
+        translation_note,
     })
 }
 

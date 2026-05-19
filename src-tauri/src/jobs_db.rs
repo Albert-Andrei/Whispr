@@ -23,6 +23,8 @@ pub struct JobRow {
     pub pipeline_stage: Option<String>,
     pub srt_output: Option<String>,
     pub model_used: Option<String>,
+    pub translated_text: Option<String>,
+    pub translated_lang: Option<String>,
 }
 
 pub fn open_conn(app: &AppHandle) -> Result<Connection, String> {
@@ -115,7 +117,7 @@ pub fn set_job_failed(app: &AppHandle, id: &str, err: &str) -> Result<(), String
 pub fn get_job(app: &AppHandle, id: &str) -> Result<Option<JobRow>, String> {
     let conn = open_conn(app)?;
     let mut stmt = conn
-        .prepare("SELECT id, filename, source_type, source_path, source_url, file_size, duration, status, transcript, created_at, updated_at, error_message, progress, pipeline_stage, srt_output, model_used FROM transcription_jobs WHERE id = ?1")
+        .prepare("SELECT id, filename, source_type, source_path, source_url, file_size, duration, status, transcript, created_at, updated_at, error_message, progress, pipeline_stage, srt_output, model_used, translated_text, translated_lang FROM transcription_jobs WHERE id = ?1")
         .map_err(|e| e.to_string())?;
     let mut rows = stmt
         .query_map(params![id], |row| {
@@ -136,6 +138,8 @@ pub fn get_job(app: &AppHandle, id: &str) -> Result<Option<JobRow>, String> {
                 pipeline_stage: row.get(13)?,
                 srt_output: row.get(14)?,
                 model_used: row.get(15)?,
+                translated_text: row.get(16)?,
+                translated_lang: row.get(17)?,
             })
         })
         .map_err(|e| e.to_string())?;

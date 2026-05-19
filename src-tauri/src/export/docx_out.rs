@@ -15,6 +15,9 @@ pub fn write_docx(data: &ExportJobData, path: &Path) -> Result<(), String> {
     if let Some(ref m) = data.model_used {
         docx = docx.add_paragraph(Paragraph::new().add_run(Run::new().add_text(format!("Model: {m}"))));
     }
+    if let Some(ref note) = data.translation_note {
+        docx = docx.add_paragraph(Paragraph::new().add_run(Run::new().add_text(note)));
+    }
 
     docx = docx.add_paragraph(Paragraph::new().add_run(Run::new().add_text("")));
 

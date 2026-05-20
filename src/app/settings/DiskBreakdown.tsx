@@ -1,25 +1,37 @@
 import { Tooltip } from "../../components/Tooltip";
 import type { DiskUsageReport } from "../../types/types";
 
-/** Stable, distinct hue per category — matches bar + legend dots */
+/** Category colors (inspired by macOS storage, tuned for Whispr) */
 const CATEGORY_COLORS: Record<string, string> = {
-  binaries: "bg-blue-600",
-  models: "bg-sky-500",
-  database: "bg-amber-500",
-  temp: "bg-emerald-500",
-  app_core: "bg-red-500",
+  binaries: "#F5A64B",
+  models: "#e85625",
+  audio: "#E8C825",
+  database: "#8E8E93",
+  temp: "#50E3C2",
+  app_core: "#6ABF26",
 };
 
 const FALLBACK_COLORS = [
-  "bg-blue-600",
-  "bg-sky-500",
-  "bg-amber-500",
-  "bg-emerald-500",
-  "bg-red-500",
+  "#EE5D52",
+  "#F5A64B",
+  "#F8E71C",
+  "#7ED321",
+  "#50E3C2",
+  "#8E8E93",
 ];
 
-function colorClass(categoryId: string, index: number): string {
-  return CATEGORY_COLORS[categoryId] ?? FALLBACK_COLORS[index % FALLBACK_COLORS.length];
+function categoryColor(categoryId: string, index: number): string {
+  return (
+    CATEGORY_COLORS[categoryId] ??
+    FALLBACK_COLORS[index % FALLBACK_COLORS.length]
+  );
+}
+
+function formatPercent(bytes: number, total: number): string {
+  if (total <= 0) return "0";
+  const pct = (bytes / total) * 100;
+  if (pct > 0 && pct < 1) return pct.toFixed(2);
+  return String(Math.round(pct));
 }
 
 function formatTooltipLabel(
@@ -28,8 +40,7 @@ function formatTooltipLabel(
   total: number,
 ): string {
   const megabytes = (bytes / 1024 / 1024).toFixed(1);
-  const percent = total > 0 ? Math.round((bytes / total) * 100) : 0;
-  return `${label} · ${megabytes} MB (${percent}%)`;
+  return `${label} · ${megabytes} MB (${formatPercent(bytes, total)}%)`;
 }
 
 export function DiskBreakdown({ report }: { report: DiskUsageReport | null }) {
@@ -42,27 +53,29 @@ export function DiskBreakdown({ report }: { report: DiskUsageReport | null }) {
   }
 
   const total = report.totalBytes;
-  const barSegments = report.categories
-    .map((category, index) => ({ category, index }))
-    .filter(({ category }) => {
-      const width = total > 0 ? (category.bytes / total) * 100 : 0;
-      return width >= 0.05;
-    });
+  const sortedCategories = [...report.categories].sort(
+    (a, b) => b.bytes - a.bytes,
+  );
 
-  const visibleCategories = report.categories.filter(
+  const barSegments = sortedCategories.filter((category) => {
+    const width = total > 0 ? (category.bytes / total) * 100 : 0;
+    return width >= 0.05;
+  });
+
+  const visibleCategories = sortedCategories.filter(
     (category) => category.bytes > 0,
   );
 
   return (
     <div className="space-y-4">
       <div
-        className="flex h-2 rounded-full bg-zinc-100 dark:bg-zinc-800"
+        className="flex h-2 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800"
         role="img"
         aria-label="Disk usage by category"
       >
-          {barSegments.map(({ category, index }, segmentIndex) => {
+        {barSegments.map((category, segmentIndex) => {
           const width = total > 0 ? (category.bytes / total) * 100 : 0;
-          const color = colorClass(category.id, index);
+          const color = categoryColor(category.id, segmentIndex);
           const isFirst = segmentIndex === 0;
           const isLast = segmentIndex === barSegments.length - 1;
           const radius =
@@ -82,7 +95,8 @@ export function DiskBreakdown({ report }: { report: DiskUsageReport | null }) {
               style={{ width: `${width}%` }}
             >
               <span
-                className={`block h-full w-full ${color} ${radius} transition-opacity hover:opacity-90`}
+                className={`block h-full w-full ${radius} transition-opacity hover:opacity-90`}
+                style={{ backgroundColor: color }}
                 aria-hidden
               />
             </Tooltip>
@@ -91,11 +105,8 @@ export function DiskBreakdown({ report }: { report: DiskUsageReport | null }) {
       </div>
 
       <ul className="space-y-2">
-        {visibleCategories.map((category) => {
-          const originalIndex = report.categories.findIndex(
-            (item) => item.id === category.id,
-          );
-          const color = colorClass(category.id, originalIndex);
+        {visibleCategories.map((category, index) => {
+          const color = categoryColor(category.id, index);
           return (
             <li
               key={category.id}
@@ -103,7 +114,8 @@ export function DiskBreakdown({ report }: { report: DiskUsageReport | null }) {
             >
               <span className="flex min-w-0 items-center gap-2 text-zinc-600 dark:text-zinc-400">
                 <span
-                  className={`h-2.5 w-2.5 shrink-0 rounded-full ${color}`}
+                  className="h-2.5 w-2.5 shrink-0 rounded-full"
+                  style={{ backgroundColor: color }}
                   aria-hidden
                 />
                 {category.label}
@@ -111,8 +123,7 @@ export function DiskBreakdown({ report }: { report: DiskUsageReport | null }) {
               <span className="shrink-0 font-medium text-zinc-900 dark:text-zinc-100">
                 {(category.bytes / 1024 / 1024).toFixed(1)} MB
                 <span className="ml-1.5 font-normal text-zinc-400">
-                  ({total > 0 ? Math.round((category.bytes / total) * 100) : 0}
-                  %)
+                  ({formatPercent(category.bytes, total)}%)
                 </span>
               </span>
             </li>
@@ -126,4 +137,3 @@ export function DiskBreakdown({ report }: { report: DiskUsageReport | null }) {
     </div>
   );
 }
-

@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useTheme } from "../../hooks/useTheme";
 import type { ThemePreference } from "../../lib/theme";
 import { getConfig, setConfig } from "../../lib/db";
-import { showAppToast } from "../../lib/toastManager";
 import { useTranscriptionStore } from "../dashboard/store";
 import { SettingsRow, SettingsSelect } from "./SettingsLayout";
 
@@ -78,6 +77,7 @@ export function GeneralSettings() {
       <SettingsRow
         label="Concurrent transcriptions"
         description="How many jobs can run at the same time (1–3)"
+        last
       >
         <SettingsSelect
           value={String(maxConcurrent)}
@@ -86,19 +86,6 @@ export function GeneralSettings() {
           }
           options={CONCURRENT_OPTS}
         />
-      </SettingsRow>
-      <SettingsRow
-        label="Toast preview"
-        description="Trigger a sample notification"
-        last
-      >
-        <button
-          type="button"
-          onClick={() => showAppToast("Recording saved")}
-          className="shrink-0 rounded-md bg-zinc-900 px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
-        >
-          Show toast
-        </button>
       </SettingsRow>
     </>
   );

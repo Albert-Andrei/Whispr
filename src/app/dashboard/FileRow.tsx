@@ -73,7 +73,7 @@ export function FileRow({ job }: FileRowProps) {
       <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400">
         {formatDate(job.created_at)}
       </td>
-      <td className="px-4 py-3 align-top">
+      <td className="px-4 py-3 align-middle">
         <div className="flex flex-col gap-1">
           <span
             className={`inline-flex w-fit rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${STATUS_STYLES[job.status]}`}

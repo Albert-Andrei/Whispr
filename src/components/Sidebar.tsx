@@ -125,7 +125,7 @@ export function Sidebar({
         className={`flex min-h-0 min-w-0 flex-1 flex-col ${gutter} ${topPad}`}
       >
         <nav className="flex min-h-0 flex-1 flex-col gap-0.5 pb-2">
-          <div className="mb-0.5 flex items-center gap-1.5 px-2.5">
+          <div className="flex items-center gap-1.5 px-2.5 pt-3.5 pb-3.5">
             <img
               src="/logo.png"
               alt=""
@@ -138,6 +138,7 @@ export function Sidebar({
               Whispr
             </p>
           </div>
+
           {MAIN_ITEMS.map((item) => {
             const isActive = item.id === active;
             const Icon = item.Icon;

@@ -39,12 +39,11 @@ export function DropZone({
 
   const shell =
     "border border-dashed border-zinc-200 bg-white text-center transition-colors dark:border-zinc-600 dark:bg-zinc-950 " +
-    (compact ? "rounded-xl px-5 py-6" : "rounded-2xl px-6 py-10");
+    (compact ? "rounded-xl px-5 py-6" : "rounded-2xl px-8 py-14");
 
-  const browseButtonClass =
-    compact
-      ? "inline-flex w-full max-w-full items-center justify-center rounded-full bg-zinc-900 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-800 has-disabled:opacity-50 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100 sm:max-w-[200px]"
-      : "inline-flex w-full max-w-full items-center justify-center rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white transition hover:bg-zinc-800 has-disabled:opacity-50 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100 sm:max-w-[200px]";
+  const browseButtonClass = compact
+    ? "inline-flex w-full max-w-full items-center justify-center rounded-full bg-zinc-900 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-800 has-disabled:opacity-50 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100 sm:max-w-[200px]"
+    : "inline-flex w-full max-w-full items-center justify-center rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white transition hover:bg-zinc-800 has-disabled:opacity-50 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100 sm:max-w-[200px]";
 
   const useNativePicker = isTauri() && !!onPaths;
 

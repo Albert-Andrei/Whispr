@@ -102,7 +102,9 @@ export function TranscriptView() {
       });
       setViewingOriginal(false);
     } catch {
-      setTranslateError("Translation failed. Check your connection and try again.");
+      setTranslateError(
+        "Translation failed. Check your connection and try again.",
+      );
     } finally {
       setTranslating(false);
     }
@@ -114,7 +116,7 @@ export function TranscriptView() {
     <div className="flex min-h-0 flex-1 overflow-hidden">
       <div className="relative min-h-0 min-w-0 flex-1">
         {hasSavedTranslation ? (
-          <div className="flex items-center gap-2 px-5 pt-4 text-[13px] text-zinc-500 dark:text-zinc-400">
+          <div className="flex items-center gap-2 px-5 pt-2 text-[13px] text-zinc-500 dark:text-zinc-400">
             {showTranslation ? (
               <>
                 <span>Translated to {translatedLabel}</span>
@@ -160,7 +162,7 @@ export function TranscriptView() {
             onSeek={playback.seek}
           />
         ) : (
-          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-6">
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 pt-2">
             <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-zinc-800 dark:text-zinc-200">
               {displayText}
             </pre>
@@ -187,7 +189,9 @@ export function TranscriptView() {
         job={job}
         copyText={displayText === "—" ? "" : displayText}
         onExport={(format) => void exportAs(format)}
-        onTranslate={(langCode, langLabel) => void handleTranslate(langCode, langLabel)}
+        onTranslate={(langCode, langLabel) =>
+          void handleTranslate(langCode, langLabel)
+        }
         translating={translating}
         selectedLang={job.translated_lang}
       />

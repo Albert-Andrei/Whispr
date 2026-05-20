@@ -43,7 +43,10 @@ export function TranscriptSegments({
   }, [activeIndex]);
 
   return (
-    <div ref={containerRef} className="min-h-0 flex-1 overflow-y-auto px-5 py-6 pb-24">
+    <div
+      ref={containerRef}
+      className="min-h-0 flex-1 overflow-y-auto px-5 py-6 pt-2 pb-24"
+    >
       {segments.map((seg) => {
         const isActive = seg.index === activeIndex;
         return (

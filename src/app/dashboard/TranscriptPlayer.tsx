@@ -12,7 +12,13 @@ function formatTime(seconds: number): string {
 
 function IconPlay() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden
+    >
       <path d="M8 5v14l11-7z" />
     </svg>
   );
@@ -20,7 +26,13 @@ function IconPlay() {
 
 function IconPause() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden
+    >
       <rect x="6" y="4" width="4" height="16" rx="1" />
       <rect x="14" y="4" width="4" height="16" rx="1" />
     </svg>
@@ -30,7 +42,17 @@ function IconPause() {
 function IconVolume({ level }: { level: number }) {
   if (level === 0) {
     return (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
         <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
         <line x1="23" y1="9" x2="17" y2="15" />
         <line x1="17" y1="9" x2="23" y2="15" />
@@ -38,7 +60,17 @@ function IconVolume({ level }: { level: number }) {
     );
   }
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
       <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
       {level > 0.33 && <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />}
       {level > 0.66 && <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />}
@@ -59,7 +91,10 @@ function VolumeControl({
   useEffect(() => {
     if (!open) return;
     const handleClick = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
         setOpen(false);
       }
     };
@@ -165,41 +200,43 @@ export function TranscriptPlayer({
         {formatTime(duration)}
       </span>
 
-      <VolumeControl volume={volume} onSetVolume={onSetVolume} />
+      <div className="flex items-center gap-1">
+        <VolumeControl volume={volume} onSetVolume={onSetVolume} />
 
-      <Menu.Root modal={false}>
-        <Menu.Trigger
-          render={(props) => (
-            <button
-              {...props}
-              type="button"
-              className="shrink-0 rounded-md px-1.5 py-0.5 text-[11px] font-medium tabular-nums text-zinc-600 transition hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
-            >
-              {speed}×
-            </button>
-          )}
-        />
-        <Menu.Portal>
-          <Menu.Positioner side="top" align="end" sideOffset={6}>
-            <Menu.Popup className="rounded-md border border-zinc-200/90 bg-white py-1 shadow-md outline-none dark:border-zinc-600 dark:bg-zinc-800">
-              {SPEEDS.map((s) => (
-                <Menu.Item
-                  key={s}
-                  label={`${s}×`}
-                  onClick={() => onSetSpeed(s)}
-                  className={`cursor-default px-3 py-1 text-[12px] tabular-nums outline-none data-highlighted:bg-zinc-100 dark:data-highlighted:bg-zinc-700/80 ${
-                    s === speed
-                      ? "font-medium text-zinc-900 dark:text-zinc-100"
-                      : "text-zinc-600 dark:text-zinc-300"
-                  }`}
-                >
-                  {s}×
-                </Menu.Item>
-              ))}
-            </Menu.Popup>
-          </Menu.Positioner>
-        </Menu.Portal>
-      </Menu.Root>
+        <Menu.Root modal={false}>
+          <Menu.Trigger
+            render={(props) => (
+              <button
+                {...props}
+                type="button"
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[11px] font-medium tabular-nums text-zinc-600 transition hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+              >
+                {speed}×
+              </button>
+            )}
+          />
+          <Menu.Portal>
+            <Menu.Positioner side="top" align="center" sideOffset={6}>
+              <Menu.Popup className="rounded-md border border-zinc-200/90 bg-white py-1 shadow-md outline-none dark:border-zinc-600 dark:bg-zinc-800">
+                {SPEEDS.map((s) => (
+                  <Menu.Item
+                    key={s}
+                    label={`${s}×`}
+                    onClick={() => onSetSpeed(s)}
+                    className={`cursor-default px-3 py-1 text-[12px] tabular-nums outline-none data-highlighted:bg-zinc-100 dark:data-highlighted:bg-zinc-700/80 ${
+                      s === speed
+                        ? "font-medium text-zinc-900 dark:text-zinc-100"
+                        : "text-zinc-600 dark:text-zinc-300"
+                    }`}
+                  >
+                    {s}×
+                  </Menu.Item>
+                ))}
+              </Menu.Popup>
+            </Menu.Positioner>
+          </Menu.Portal>
+        </Menu.Root>
+      </div>
     </div>
   );
 }

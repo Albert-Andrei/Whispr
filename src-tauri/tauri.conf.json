@@ -14,7 +14,7 @@
       {
         "label": "main",
         "title": "Whispr",
-        "width": 1200,
+        "width": 1150,
         "height": 720,
         "minWidth": 800,
         "minHeight": 560,
@@ -24,7 +24,7 @@
         "backgroundColor": "#ffffff",
         "titleBarStyle": "Overlay",
         "hiddenTitle": true,
-        "trafficLightPosition": { "x": 16, "y": 16 }
+        "trafficLightPosition": { "x": 16, "y": 20 }
       }
     ],
     "security": {

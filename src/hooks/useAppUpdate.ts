@@ -1,5 +1,6 @@
 import { check, Update } from "@tauri-apps/plugin-updater";
 import { relaunch } from "@tauri-apps/plugin-process";
+import { getVersion } from "@tauri-apps/api/app";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { AppUpdateState } from "../types/types";
 
@@ -16,6 +17,12 @@ const INITIAL_STATE: AppUpdateState = {
 export function useAppUpdate() {
   const [state, setState] = useState<AppUpdateState>(INITIAL_STATE);
   const pendingUpdate = useRef<Update | null>(null);
+
+  useEffect(() => {
+    getVersion().then((v) =>
+      setState((s) => ({ ...s, currentVersion: s.currentVersion || v })),
+    );
+  }, []);
 
   const checkForUpdate = useCallback(async () => {
     setState((s) => ({ ...s, status: "checking", error: null }));
@@ -34,7 +41,6 @@ export function useAppUpdate() {
         setState((s) => ({
           ...s,
           status: "up-to-date",
-          currentVersion: s.currentVersion || "",
           latestVersion: null,
         }));
       }

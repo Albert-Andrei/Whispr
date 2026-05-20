@@ -52,18 +52,19 @@ export function NewTranscriptionModal({
       <Dialog.Portal>
         <Dialog.Backdrop className="fixed inset-0 z-40 bg-black/40" />
         <Dialog.Viewport className="fixed inset-0 z-50 grid place-items-center p-4">
-          <Dialog.Popup className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-8 shadow-[0_8px_30px_rgb(0,0,0,0.08)] outline-none dark:border-zinc-700 dark:bg-zinc-950 dark:shadow-none">
+          <Dialog.Popup className="w-full max-w-lg rounded-2xl border border-zinc-200 bg-white p-8 shadow-[0_8px_30px_rgb(0,0,0,0.08)] outline-none dark:border-zinc-700 dark:bg-zinc-950 dark:shadow-none">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <Dialog.Title className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
                   New transcription
                 </Dialog.Title>
                 <Dialog.Description className="mt-1.5 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
-                  Paste a link, or drag in a file — everything stays on your Mac.
+                  Paste a link, or drag in a file — everything stays on your
+                  Mac.
                 </Dialog.Description>
               </div>
               <Dialog.Close
-                className="-mr-1 -mt-0.5 shrink-0 rounded-lg p-1.5 text-lg leading-none text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                className="-mr-1 -mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-lg leading-none text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
                 aria-label="Close"
               >
                 ×
@@ -79,7 +80,10 @@ export function NewTranscriptionModal({
                 }}
               />
 
-              <div className="relative flex items-center justify-center" aria-hidden>
+              <div
+                className="relative flex items-center justify-center"
+                aria-hidden
+              >
                 <div className="absolute inset-x-0 top-1/2 h-px bg-zinc-200 dark:bg-zinc-700" />
                 <span className="relative bg-white px-3 text-xs font-medium text-zinc-400 dark:bg-zinc-950 dark:text-zinc-500">
                   or

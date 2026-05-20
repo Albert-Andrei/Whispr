@@ -1,9 +1,18 @@
-export type AppUpdateInfo = {
+export type UpdateStatus =
+  | "idle"
+  | "checking"
+  | "available"
+  | "downloading"
+  | "installing"
+  | "up-to-date"
+  | "error";
+
+export type AppUpdateState = {
+  status: UpdateStatus;
   currentVersion: string;
   latestVersion: string | null;
-  updateAvailable: boolean;
-  releaseUrl: string | null;
-  releaseName: string | null;
+  downloadProgress: number;
+  error: string | null;
 };
 
 export type BinaryInfo = {

@@ -1,39 +1,104 @@
-import { invoke, isTauri } from "@tauri-apps/api/core";
-import { useCallback, useEffect, useState } from "react";
-import type { AppUpdateInfo } from "../types/types";
+import { check, Update } from "@tauri-apps/plugin-updater";
+import { relaunch } from "@tauri-apps/plugin-process";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { AppUpdateState } from "../types/types";
 
 export type AppUpdateHandle = ReturnType<typeof useAppUpdate>;
 
-export function useAppUpdate() {
-  const [updateInfo, setUpdateInfo] = useState<AppUpdateInfo | null>(null);
-  const [checking, setChecking] = useState(false);
+const INITIAL_STATE: AppUpdateState = {
+  status: "idle",
+  currentVersion: "",
+  latestVersion: null,
+  downloadProgress: 0,
+  error: null,
+};
 
-  const refresh = useCallback(async () => {
-    if (!isTauri()) return;
-    setChecking(true);
+export function useAppUpdate() {
+  const [state, setState] = useState<AppUpdateState>(INITIAL_STATE);
+  const pendingUpdate = useRef<Update | null>(null);
+
+  const checkForUpdate = useCallback(async () => {
+    setState((s) => ({ ...s, status: "checking", error: null }));
     try {
-      const info = await invoke<AppUpdateInfo>("check_for_update");
-      setUpdateInfo(info);
-    } catch {
-      setUpdateInfo({
-        currentVersion: "0.0.0",
-        latestVersion: null,
-        updateAvailable: false,
-        releaseUrl: null,
-        releaseName: null,
+      const update = await check();
+      if (update) {
+        pendingUpdate.current = update;
+        setState((s) => ({
+          ...s,
+          status: "available",
+          currentVersion: update.currentVersion,
+          latestVersion: update.version,
+        }));
+      } else {
+        pendingUpdate.current = null;
+        setState((s) => ({
+          ...s,
+          status: "up-to-date",
+          currentVersion: s.currentVersion || "",
+          latestVersion: null,
+        }));
+      }
+    } catch (e) {
+      setState((s) => ({
+        ...s,
+        status: "error",
+        error: e instanceof Error ? e.message : String(e),
+      }));
+    }
+  }, []);
+
+  const installUpdate = useCallback(async () => {
+    const update = pendingUpdate.current;
+    if (!update) return;
+
+    setState((s) => ({ ...s, status: "downloading", downloadProgress: 0 }));
+    try {
+      let totalBytes = 0;
+      let downloadedBytes = 0;
+
+      await update.downloadAndInstall((event) => {
+        switch (event.event) {
+          case "Started":
+            totalBytes = event.data.contentLength ?? 0;
+            break;
+          case "Progress":
+            downloadedBytes += event.data.chunkLength;
+            if (totalBytes > 0) {
+              setState((s) => ({
+                ...s,
+                downloadProgress: Math.round(
+                  (downloadedBytes / totalBytes) * 100,
+                ),
+              }));
+            }
+            break;
+          case "Finished":
+            setState((s) => ({
+              ...s,
+              status: "installing",
+              downloadProgress: 100,
+            }));
+            break;
+        }
       });
-    } finally {
-      setChecking(false);
+
+      await relaunch();
+    } catch (e) {
+      setState((s) => ({
+        ...s,
+        status: "error",
+        error: e instanceof Error ? e.message : String(e),
+      }));
     }
   }, []);
 
   useEffect(() => {
-    void refresh();
-  }, [refresh]);
+    void checkForUpdate();
+  }, [checkForUpdate]);
 
   return {
-    updateInfo,
-    checking,
-    refresh,
+    ...state,
+    checkForUpdate,
+    installUpdate,
   };
 }

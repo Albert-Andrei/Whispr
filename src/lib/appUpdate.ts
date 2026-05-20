@@ -1,4 +1,3 @@
-export const RELEASES_URL = "https://github.com/Albert-Andrei/Whispr/releases";
 export const UPDATE_DISMISS_KEY = "whispr.update.dismissed";
 
 export function isUpdateDismissed(latestVersion: string): boolean {

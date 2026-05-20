@@ -10,7 +10,16 @@ permissions:
 
 jobs:
   publish:
-    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: aarch64-apple-darwin
+            runner: macos-latest
+          - target: x86_64-apple-darwin
+            runner: macos-latest
+
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
 
@@ -23,32 +32,25 @@ jobs:
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: aarch64-apple-darwin,x86_64-apple-darwin
+          targets: ${{ matrix.target }}
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
 
-      # Tauri passes --skip-jenkins to create-dmg when CI=true, which skips Finder
-      # AppleScript and drops custom DMG background + icon positions.
-      - name: Build (Apple Silicon)
+      - name: Build and release
+        uses: tauri-apps/tauri-action@v0
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           CI: false
-        run: bun run tauri build --target aarch64-apple-darwin
-
-      - name: Build (Intel)
-        env:
-          CI: false
-        run: bun run tauri build --target x86_64-apple-darwin
-
-      - name: Upload release
-        uses: softprops/action-gh-release@v2
         with:
-          name: Whispr ${{ github.ref_name }}
-          body_path: .github/RELEASE_BODY.md
-          draft: false
+          tagName: ${{ github.ref_name }}
+          releaseName: "Whispr ${{ github.ref_name }}"
+          releaseBody: ""
+          releaseDraft: false
           prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
-          files: |
-            src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
-            src-tauri/target/x86_64-apple-darwin/release/bundle/dmg/*.dmg
+          args: --target ${{ matrix.target }}
+          updaterJsonPreferNsis: false

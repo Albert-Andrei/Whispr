@@ -1,6 +1,5 @@
 import { invoke, isTauri } from "@tauri-apps/api/core";
 import { useCallback, useEffect, useState } from "react";
-import type { AppUpdateInfo } from "../../types/types";
 import { AboutSettings } from "./AboutSettings";
 import { BinaryStatusRows } from "./BinaryStatusRow";
 import { DiskBreakdown } from "./DiskBreakdown";
@@ -8,19 +7,14 @@ import { GeneralSettings } from "./GeneralSettings";
 import { ModelSelector } from "./ModelSelector";
 import { SettingsBlock, SettingsSection } from "./SettingsLayout";
 import { useBinaryHealth } from "../../hooks/useBinaryHealth";
+import type { AppUpdateHandle } from "../../hooks/useAppUpdate";
 import type { DiskUsageReport } from "../../types/types";
 
 type SettingsProps = {
-  updateInfo: AppUpdateInfo | null;
-  updateChecking: boolean;
-  onRefreshUpdate: () => void;
+  appUpdate: AppUpdateHandle;
 };
 
-export function Settings({
-  updateInfo,
-  updateChecking,
-  onRefreshUpdate,
-}: SettingsProps) {
+export function Settings({ appUpdate }: SettingsProps) {
   const { health, checking: healthChecking } = useBinaryHealth();
   const [disk, setDisk] = useState<DiskUsageReport | null>(null);
 
@@ -61,12 +55,7 @@ export function Settings({
         </h1>
 
         <SettingsSection title="About">
-          <AboutSettings
-            info={updateInfo}
-            checking={updateChecking}
-            error={null}
-            onRefresh={onRefreshUpdate}
-          />
+          <AboutSettings update={appUpdate} />
         </SettingsSection>
 
         <SettingsSection title="General">

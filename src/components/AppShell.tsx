@@ -47,11 +47,6 @@ export function AppShell({ appUpdate }: AppShellProps) {
     isTauri() ? "loading" : "ready",
   );
   const isMac = useIsMacTauri();
-  const {
-    updateInfo,
-    checking: updateChecking,
-    refresh: refreshUpdate,
-  } = appUpdate;
 
   const loadJobs = useTranscriptionStore((state) => state.loadJobs);
   const initPipelineListeners = useTranscriptionStore(
@@ -128,7 +123,7 @@ export function AppShell({ appUpdate }: AppShellProps) {
             onWidthChange={setSidebarWidth}
             mainColumnDragStripPx={DRAG_STRIP_PX}
             trafficInset={isMac}
-            updateAvailable={updateInfo?.updateAvailable ?? false}
+            updateAvailable={appUpdate.status === "available"}
           />
 
           <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
@@ -174,11 +169,7 @@ export function AppShell({ appUpdate }: AppShellProps) {
               >
                 {view === "history" ? <Dashboard /> : null}
                 {view === "settings" ? (
-                  <Settings
-                    updateInfo={updateInfo}
-                    updateChecking={updateChecking}
-                    onRefreshUpdate={() => void refreshUpdate()}
-                  />
+                  <Settings appUpdate={appUpdate} />
                 ) : null}
                 {view === "record" ? <Record /> : null}
               </main>

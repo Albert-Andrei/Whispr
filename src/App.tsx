@@ -8,7 +8,7 @@ function App() {
   return (
     <>
       <AppShell appUpdate={appUpdate} />
-      <UpdateAvailablePopover updateInfo={appUpdate.updateInfo} />
+      <UpdateAvailablePopover update={appUpdate} />
     </>
   );
 }

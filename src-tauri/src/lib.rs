@@ -5,7 +5,6 @@ mod jobs_db;
 mod paths;
 mod pipeline;
 mod translate;
-mod updates;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -15,6 +14,8 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
         .invoke_handler(tauri::generate_handler![
             binaries::check_binaries,
             binaries::get_app_disk_usage,
@@ -28,7 +29,6 @@ pub fn run() {
             pipeline::cancel_pipeline,
             export::export_transcript,
             translate::translate_text,
-            updates::check_for_update,
         ])
         .setup(|app| {
             let h = app.handle().clone();

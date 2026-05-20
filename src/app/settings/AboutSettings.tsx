@@ -1,7 +1,5 @@
-import { openUrl } from "@tauri-apps/plugin-opener";
-import { RELEASES_URL } from "../../lib/appUpdate";
 import { SettingsRow } from "./SettingsLayout";
-import type { AppUpdateInfo } from "../../types/types";
+import type { AppUpdateHandle } from "../../hooks/useAppUpdate";
 
 const BTN_SECONDARY =
   "rounded-md border border-zinc-200 bg-white px-2 py-1 text-[11px] font-medium text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800";
@@ -9,64 +7,68 @@ const BTN_SECONDARY =
 const BTN_PRIMARY =
   "rounded-md bg-zinc-900 px-2 py-1 text-[11px] font-semibold text-white transition hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white";
 
-function VersionStatusBadge({
-  info,
-  checking,
-}: {
-  info: AppUpdateInfo | null;
-  checking: boolean;
-}) {
-  if (checking) {
+function VersionStatusBadge({ update }: { update: AppUpdateHandle }) {
+  if (update.status === "checking") {
     return (
       <span className="inline-flex h-5 shrink-0 items-center rounded-full border border-zinc-200 bg-zinc-50 px-2 text-[10px] font-medium leading-none text-zinc-600 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
         Checking…
       </span>
     );
   }
-  if (info?.updateAvailable) {
+  if (update.status === "available") {
     return (
       <span className="inline-flex h-5 shrink-0 items-center rounded-full bg-zinc-900 px-2 text-[10px] font-semibold leading-none text-white dark:bg-zinc-100 dark:text-zinc-900">
         Update available
       </span>
     );
   }
-  if (info?.latestVersion) {
+  if (
+    update.status === "downloading" ||
+    update.status === "installing"
+  ) {
+    return (
+      <span className="inline-flex h-5 shrink-0 items-center rounded-full border border-zinc-200 bg-zinc-50 px-2 text-[10px] font-medium leading-none text-zinc-600 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+        {update.status === "installing"
+          ? "Installing…"
+          : `Downloading ${update.downloadProgress}%`}
+      </span>
+    );
+  }
+  if (update.status === "up-to-date") {
     return (
       <span className="inline-flex h-5 shrink-0 items-center rounded-full border border-zinc-300 bg-zinc-100 px-2 text-[10px] font-medium leading-none text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
         Up to date
       </span>
     );
   }
-  return (
-    <span className="inline-flex h-5 shrink-0 items-center rounded-full border border-zinc-200 bg-zinc-50 px-2 text-[10px] font-medium leading-none text-zinc-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-      Could not check
-    </span>
-  );
+  if (update.status === "error") {
+    return (
+      <span className="inline-flex h-5 shrink-0 items-center rounded-full border border-red-200 bg-red-50 px-2 text-[10px] font-medium leading-none text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
+        Error
+      </span>
+    );
+  }
+  return null;
 }
 
 type AboutSettingsProps = {
-  info: AppUpdateInfo | null;
-  checking: boolean;
-  error: string | null;
-  onRefresh: () => void;
+  update: AppUpdateHandle;
 };
 
-export function AboutSettings({
-  info,
-  checking,
-  error,
-  onRefresh,
-}: AboutSettingsProps) {
-  const openRelease = () => {
-    const url = info?.releaseUrl ?? RELEASES_URL;
-    void openUrl(url);
-  };
+export function AboutSettings({ update }: AboutSettingsProps) {
+  const isWorking =
+    update.status === "downloading" || update.status === "installing";
 
-  const description = info?.updateAvailable
-    ? `Update available: v${info.latestVersion}`
-    : info?.latestVersion
-      ? "You are on the latest release"
-      : "Offline or no releases published yet";
+  const description =
+    update.status === "available"
+      ? `Update available: v${update.latestVersion}`
+      : update.status === "up-to-date"
+        ? "You are on the latest release"
+        : update.status === "error"
+          ? "Could not check for updates"
+          : isWorking
+            ? "Update in progress…"
+            : "";
 
   return (
     <>
@@ -74,34 +76,42 @@ export function AboutSettings({
         <div className="flex flex-col items-end gap-2">
           <div className="flex items-center gap-2">
             <span className="text-[13px] font-medium tabular-nums text-zinc-900 dark:text-zinc-50">
-              v{info?.currentVersion ?? "—"}
+              v{update.currentVersion || "—"}
             </span>
-            <VersionStatusBadge info={info} checking={checking} />
+            <VersionStatusBadge update={update} />
           </div>
           <div className="flex flex-wrap justify-end gap-1.5">
             <button
               type="button"
-              onClick={onRefresh}
-              disabled={checking}
+              onClick={update.checkForUpdate}
+              disabled={update.status === "checking" || isWorking}
               className={`${BTN_SECONDARY} disabled:opacity-50`}
             >
-              {checking ? "Checking…" : "Check again"}
+              {update.status === "checking" ? "Checking…" : "Check again"}
             </button>
-            {info?.updateAvailable ? (
-              <button type="button" onClick={openRelease} className={BTN_PRIMARY}>
-                Download v{info.latestVersion}
-              </button>
-            ) : (
-              <button type="button" onClick={openRelease} className={BTN_SECONDARY}>
-                Releases
+            {update.status === "available" && (
+              <button
+                type="button"
+                onClick={update.installUpdate}
+                className={BTN_PRIMARY}
+              >
+                Install v{update.latestVersion}
               </button>
             )}
           </div>
+          {isWorking && (
+            <div className="mt-1 h-1 w-full max-w-[180px] overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
+              <div
+                className="h-full rounded-full bg-zinc-900 transition-all duration-300 dark:bg-zinc-100"
+                style={{ width: `${update.downloadProgress}%` }}
+              />
+            </div>
+          )}
         </div>
       </SettingsRow>
-      {error ? (
+      {update.error ? (
         <p className="border-t border-zinc-100 px-4 py-3 text-[12px] text-red-600 dark:border-[var(--color-settings-border-dark)] dark:text-red-400">
-          {error}
+          {update.error}
         </p>
       ) : null}
     </>

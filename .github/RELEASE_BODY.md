@@ -1,6 +1,6 @@
-## Whispr v0.1.5
+## Whispr v0.1.6
 
-New icons, auto update, bump version skill.
+Ui inconsistencies, auto update and version check, audio play.
 
 ---
 

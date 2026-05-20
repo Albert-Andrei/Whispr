@@ -146,7 +146,11 @@ pub fn run_pipeline_blocking(
 
         check_cancelled(&job_id)?;
         emit("extracting", 0.25);
-        let audio_path = persist_audio::persist_playback_audio(&app, &job_id, &media_path).ok();
+        let audio_path = if source_type == "record" {
+            Some(media_path.clone())
+        } else {
+            persist_audio::persist_playback_audio(&app, &job_id, &media_path).ok()
+        };
         let wav = extract_audio::extract_wav_16k_mono(&app, &job_id, &media_path)?;
         emit("extracting", 0.45);
 

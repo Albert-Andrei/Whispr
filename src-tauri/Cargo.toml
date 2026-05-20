@@ -32,3 +32,5 @@ chrono = "0.4"
 printpdf = "0.3"
 docx-rs = "0.4"
 urlencoding = "2"
+cpal = "0.15"
+uuid = { version = "1", features = ["v4"] }

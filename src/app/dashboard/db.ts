@@ -54,21 +54,21 @@ export async function getJobById(id: string): Promise<TranscriptionJob | null> {
 export async function listJobs(): Promise<TranscriptionJob[]> {
   const db = await getDatabase();
   const rows = await db.select<JobRow[]>(
-    "SELECT * FROM transcription_jobs ORDER BY datetime(created_at) DESC",
+    "SELECT * FROM transcription_jobs WHERE source_type != 'record' ORDER BY datetime(created_at) DESC",
   );
   return rows.map(rowToJob);
 }
 
 export async function insertJob(input: NewJobInput): Promise<TranscriptionJob> {
   const db = await getDatabase();
-  const id = crypto.randomUUID();
+  const id = input.id ?? crypto.randomUUID();
   const createdAt = new Date().toISOString();
   await db.execute(
     `INSERT INTO transcription_jobs (
       id, filename, source_type, source_path, source_url,
       file_size, duration, status, transcript, created_at, updated_at,
-      error_message, progress, pipeline_stage, srt_output, model_used
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`,
+      error_message, progress, pipeline_stage, srt_output, model_used, audio_path
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`,
     [
       id,
       input.filename,
@@ -84,8 +84,9 @@ export async function insertJob(input: NewJobInput): Promise<TranscriptionJob> {
       null,
       0,
       null,
+      input.srt_output ?? null,
       null,
-      null,
+      input.audio_path ?? null,
     ],
   );
   const rows = await db.select<JobRow[]>(

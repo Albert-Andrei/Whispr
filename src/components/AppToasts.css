@@ -1,0 +1,185 @@
+.whispr-toast-viewport {
+  position: fixed;
+  z-index: 50;
+  /* Base UI stacks with absolute children, so the viewport needs an explicit width. */
+  width: 12rem;
+  max-width: calc(100vw - 2rem);
+  bottom: 1rem;
+  right: 1rem;
+  left: auto;
+  top: auto;
+  outline: none;
+}
+
+.whispr-toast {
+  --gap: 0.75rem;
+  --peek: 0.75rem;
+  --scale: calc(max(0, 1 - (var(--toast-index) * 0.1)));
+  --shrink: calc(1 - var(--scale));
+  --height: var(--toast-frontmost-height, var(--toast-height));
+  --offset-y: calc(
+    var(--toast-offset-y) * -1 + (var(--toast-index) * var(--gap) * -1) +
+      var(--toast-swipe-movement-y)
+  );
+
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  box-sizing: border-box;
+  width: 100%;
+  height: var(--height, auto);
+  background: transparent;
+  transform-origin: bottom center;
+  cursor: default;
+  user-select: none;
+  z-index: calc(1000 - var(--toast-index));
+  transition:
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.5s,
+    height 0.15s;
+  transform: translateX(var(--toast-swipe-movement-x))
+    translateY(
+      calc(
+        var(--toast-swipe-movement-y) - (var(--toast-index) * var(--peek)) -
+          (var(--shrink) * var(--height, 2.5rem))
+      )
+    )
+    scale(var(--scale));
+}
+
+.whispr-toast[data-expanded] {
+  transform: translateX(var(--toast-swipe-movement-x))
+    translateY(var(--offset-y));
+  height: var(--toast-height, auto);
+}
+
+.whispr-toast[data-starting-style],
+.whispr-toast[data-ending-style] {
+  transform: translateY(150%);
+}
+
+.whispr-toast[data-limited] {
+  opacity: 0;
+}
+
+.whispr-toast[data-ending-style] {
+  opacity: 0;
+}
+
+.whispr-toast[data-ending-style][data-swipe-direction="up"] {
+  transform: translateY(calc(var(--toast-swipe-movement-y) - 150%));
+}
+
+.whispr-toast[data-ending-style][data-swipe-direction="down"] {
+  transform: translateY(calc(var(--toast-swipe-movement-y) + 150%));
+}
+
+.whispr-toast[data-ending-style][data-swipe-direction="left"] {
+  transform: translateX(calc(var(--toast-swipe-movement-x) - 150%))
+    translateY(var(--offset-y));
+}
+
+.whispr-toast[data-ending-style][data-swipe-direction="right"] {
+  transform: translateX(calc(var(--toast-swipe-movement-x) + 150%))
+    translateY(var(--offset-y));
+}
+
+.whispr-toast::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  height: calc(var(--gap) + 1px);
+}
+
+/* Card chrome lives here so corners match the clipped stack box (no square halo). */
+.whispr-toast-content {
+  box-sizing: border-box;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  border: 1px solid rgb(228 228 231);
+  background: white;
+  box-shadow: 0 4px 24px rgb(0 0 0 / 0.14);
+  opacity: 1;
+  transition: opacity 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:where(.dark) .whispr-toast-content {
+  border-color: rgb(82 82 91);
+  background: rgb(24 24 27);
+  box-shadow: 0 4px 24px rgb(0 0 0 / 0.45);
+}
+
+.whispr-toast-content[data-behind] {
+  opacity: 0;
+}
+
+.whispr-toast-content[data-expanded] {
+  opacity: 1;
+}
+
+.whispr-toast-body {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.25rem 0.5rem 0.75rem;
+}
+
+.whispr-toast-title {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.25;
+  color: rgb(82 82 91);
+}
+
+:where(.dark) .whispr-toast-title {
+  color: rgb(161 161 170);
+}
+
+.whispr-toast-close {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: none;
+  border-radius: 0.25rem;
+  background: transparent;
+  font-size: 1.125rem;
+  line-height: 1;
+  color: rgb(161 161 170);
+  opacity: 0;
+  transition:
+    opacity 0.2s ease-in-out,
+    background-color 0.15s,
+    color 0.15s;
+  pointer-events: none;
+  cursor: pointer;
+}
+
+.group:hover .whispr-toast-close,
+.whispr-toast-close:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.whispr-toast-close:hover {
+  background: rgb(244 244 245);
+  color: rgb(63 63 70);
+}
+
+:where(.dark) .whispr-toast-close:hover {
+  background: rgb(63 63 70);
+  color: rgb(228 228 231);
+}

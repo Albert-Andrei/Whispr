@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Dashboard } from "../app/dashboard/Dashboard";
 import { NewTranscriptionModal } from "../app/import/NewTranscriptionModal";
 import { Record } from "../app/record/Record";
+import { useRecordStore } from "../app/record/store";
 import { Settings } from "../app/settings/Settings";
 import { SetupScreen } from "../app/setup/SetupScreen";
 import { useTranscriptionStore } from "../app/dashboard/store";
@@ -13,6 +14,7 @@ import { getConfig } from "../lib/db";
 import { windowDragPointerDown } from "../lib/windowDrag";
 import type { NewImportStep, SidebarView } from "../types";
 import { AppFileDropLayer } from "./AppFileDropLayer";
+import { AppToasts } from "./AppToasts";
 import { Header } from "./Header";
 import { readInitialSidebarWidth, Sidebar } from "./Sidebar";
 
@@ -66,6 +68,13 @@ export function AppShell({ appUpdate }: AppShellProps) {
   const renameJob = useTranscriptionStore((state) => state.renameJob);
   const removeJob = useTranscriptionStore((state) => state.removeJob);
 
+  const loadRecordJobs = useRecordStore((state) => state.loadJobs);
+  const initRecordListeners = useRecordStore((state) => state.initRecordListeners);
+  const recordSelectedId = useRecordStore((state) => state.selectedJobId);
+  const recordJobs = useRecordStore((state) => state.jobs);
+  const setRecordSelectedJob = useRecordStore((state) => state.setSelectedJob);
+  const requestRecordNavigation = useRecordStore((state) => state.requestNavigation);
+
   useEffect(() => {
     if (!isTauri()) return;
     void (async () => {
@@ -81,10 +90,31 @@ export function AppShell({ appUpdate }: AppShellProps) {
     }
     if (setupGate !== "ready") return;
     void initPipelineListeners();
+    void initRecordListeners();
     void refreshMaxConcurrent();
     void loadJobs();
+    void loadRecordJobs();
     prefetchBinaryHealth();
-  }, [setupGate, initPipelineListeners, refreshMaxConcurrent, loadJobs]);
+  }, [
+    setupGate,
+    initPipelineListeners,
+    initRecordListeners,
+    refreshMaxConcurrent,
+    loadJobs,
+    loadRecordJobs,
+  ]);
+
+  useEffect(() => {
+    const onNavigate = (ev: Event) => {
+      const detail = (ev as CustomEvent<SidebarView>).detail;
+      if (detail === "history" || detail === "settings") {
+        setView(detail);
+        if (detail === "history") setSelectedJob(null);
+      }
+    };
+    window.addEventListener("whispr:navigate", onNavigate);
+    return () => window.removeEventListener("whispr:navigate", onNavigate);
+  }, [setSelectedJob]);
 
   const openModal = (focus?: NewImportStep | null) => {
     setModalInitialFocus(focus ?? null);
@@ -116,7 +146,12 @@ export function AppShell({ appUpdate }: AppShellProps) {
           <Sidebar
             active={view}
             onChange={(newView) => {
+              if (newView !== "record" && view === "record") {
+                const allowed = requestRecordNavigation(newView);
+                if (!allowed) return;
+              }
               if (newView === "history") setSelectedJob(null);
+              if (newView !== "record") setRecordSelectedJob(null);
               setView(newView);
             }}
             width={sidebarWidth}
@@ -138,7 +173,10 @@ export function AppShell({ appUpdate }: AppShellProps) {
               {view !== "settings" ? (
                 <Header
                   title={headerTitle(view)}
-                  onNewTranscription={() => openModal()}
+                  onNewTranscription={
+                    view === "history" ? () => openModal() : undefined
+                  }
+                  hideNew={view === "record"}
                   transcriptDetail={
                     view === "history" && selectedJobId
                       ? {
@@ -153,7 +191,25 @@ export function AppShell({ appUpdate }: AppShellProps) {
                             void removeJob(selectedJobId);
                           },
                         }
-                      : undefined
+                      : view === "record" && recordSelectedId
+                        ? {
+                            fileName:
+                              recordJobs.find((job) => job.id === recordSelectedId)
+                                ?.filename ?? "",
+                            onBack: () => setRecordSelectedJob(null),
+                            onRename: (filename) => {
+                              void renameJob(recordSelectedId, filename).then(() =>
+                                loadRecordJobs(),
+                              );
+                            },
+                            onDelete: () => {
+                              void removeJob(recordSelectedId).then(() =>
+                                loadRecordJobs(),
+                              );
+                              setRecordSelectedJob(null);
+                            },
+                          }
+                        : undefined
                   }
                 />
               ) : null}
@@ -162,7 +218,8 @@ export function AppShell({ appUpdate }: AppShellProps) {
                 className={
                   view === "settings"
                     ? "flex min-h-0 flex-1 flex-col overflow-hidden"
-                    : selectedJobId
+                    : view === "record" ||
+                        (view === "history" && selectedJobId)
                       ? "flex min-h-0 flex-1 overflow-hidden"
                       : "min-h-0 flex-1 overflow-y-auto"
                 }
@@ -183,8 +240,16 @@ export function AppShell({ appUpdate }: AppShellProps) {
         modalOpen={modalOpen}
         onLocalFiles={addLocalFiles}
         onLocalFilePaths={addLocalFilePaths}
-        onDropped={() => setModalOpen(false)}
+        onDropped={() => {
+          setModalOpen(false);
+          if (view === "record") {
+            setRecordSelectedJob(null);
+            setView("history");
+          }
+        }}
       />
+
+      <AppToasts />
 
       <NewTranscriptionModal
         open={modalOpen}

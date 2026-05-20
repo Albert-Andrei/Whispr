@@ -4,12 +4,14 @@ import { create } from "zustand";
 import type { PipelineStage, TranscriptionJob } from "./types";
 import {
   deleteJob,
+  getJobById,
   insertJob,
   listJobs,
   resetJobForRetry,
   updateJobFilename,
 } from "./db";
 import { getConfig, setConfig } from "../../lib/db";
+import { isRecordSessionActive, useRecordStore } from "../record/store";
 
 export type PipelineProgressEvt = {
   jobId: string;
@@ -40,6 +42,7 @@ type TranscriptionState = {
   refreshMaxConcurrent: () => Promise<void>;
   setMaxConcurrentJobs: (n: number) => Promise<void>;
   enqueuePipeline: (jobId: string) => void;
+  enqueueExternalPipeline: (jobId: string) => void;
   processPipelineQueue: () => Promise<void>;
 };
 
@@ -169,8 +172,17 @@ export const useTranscriptionStore = create<TranscriptionState>((set, get) => ({
     void get().processPipelineQueue();
   },
 
+  enqueueExternalPipeline: (jobId) => {
+    const { pipelineQueue } = get();
+    if (pipelineQueue.includes(jobId)) return;
+    set({ pipelineQueue: [...pipelineQueue, jobId] });
+    void get().processPipelineQueue();
+  },
+
   processPipelineQueue: async () => {
     if (!isTauri()) return;
+    if (isRecordSessionActive()) return;
+
     const { activePipelines, maxConcurrent, pipelineQueue, jobs } = get();
     const slots = maxConcurrent - activePipelines;
     if (slots <= 0 || pipelineQueue.length === 0) return;
@@ -180,13 +192,16 @@ export const useTranscriptionStore = create<TranscriptionState>((set, get) => ({
     set({ pipelineQueue: rest });
 
     for (const jobId of toStart) {
-      const job = jobs.find((j) => j.id === jobId);
+      let job = jobs.find((j) => j.id === jobId);
+      if (!job) {
+        job = (await getJobById(jobId)) ?? undefined;
+      }
       if (!job || job.status !== "pending") continue;
 
       set((s) => ({ activePipelines: s.activePipelines + 1 }));
 
       void (async () => {
-        const current = get().jobs.find((j) => j.id === jobId);
+        const current = (await getJobById(jobId)) ?? job;
         if (!current || current.status !== "pending") {
           set((s) => ({
             activePipelines: Math.max(0, s.activePipelines - 1),
@@ -205,6 +220,7 @@ export const useTranscriptionStore = create<TranscriptionState>((set, get) => ({
           /* errors recorded in DB */
         } finally {
           await get().loadJobs();
+          void useRecordStore.getState().loadJobs();
           set((s) => ({
             activePipelines: Math.max(0, s.activePipelines - 1),
           }));
@@ -282,7 +298,9 @@ export const useTranscriptionStore = create<TranscriptionState>((set, get) => ({
   },
 
   removeJob: async (id: string) => {
-    const job = get().jobs.find((j) => j.id === id);
+    const job =
+      get().jobs.find((j) => j.id === id) ??
+      useRecordStore.getState().jobs.find((j) => j.id === id);
     if (job && (job.status === "processing" || job.status === "pending")) {
       await invoke("cancel_pipeline", { jobId: id }).catch(() => {});
     }
@@ -292,6 +310,10 @@ export const useTranscriptionStore = create<TranscriptionState>((set, get) => ({
       jobs: s.jobs.filter((j) => j.id !== id),
       selectedJobId: s.selectedJobId === id ? null : s.selectedJobId,
       pipelineQueue: s.pipelineQueue.filter((x) => x !== id),
+    }));
+    useRecordStore.setState((s) => ({
+      jobs: s.jobs.filter((j) => j.id !== id),
+      selectedJobId: s.selectedJobId === id ? null : s.selectedJobId,
     }));
   },
 

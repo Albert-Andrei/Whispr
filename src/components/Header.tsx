@@ -10,8 +10,9 @@ type TranscriptDetail = {
 
 type HeaderProps = {
   title: string;
-  onNewTranscription: () => void;
+  onNewTranscription?: () => void;
   transcriptDetail?: TranscriptDetail;
+  hideNew?: boolean;
 };
 
 function IconChevronLeft() {
@@ -54,6 +55,7 @@ export function Header({
   title,
   onNewTranscription,
   transcriptDetail,
+  hideNew,
 }: HeaderProps) {
   return (
     <header
@@ -94,14 +96,16 @@ export function Header({
             Delete
           </button>
         ) : null}
-        <button
-          type="button"
-          onClick={onNewTranscription}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-zinc-900 px-3 py-1.5 pl-[8px] text-[13px] font-semibold text-white shadow-sm transition hover:bg-zinc-800 active:scale-[0.98] dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
-        >
-          <IconPlus />
-          New
-        </button>
+        {!hideNew && onNewTranscription ? (
+          <button
+            type="button"
+            onClick={onNewTranscription}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-zinc-900 px-3 py-1.5 pl-[8px] text-[13px] font-semibold text-white shadow-sm transition hover:bg-zinc-800 active:scale-[0.98] dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+          >
+            <IconPlus />
+            New
+          </button>
+        ) : null}
       </div>
     </header>
   );

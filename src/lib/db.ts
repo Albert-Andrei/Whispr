@@ -47,6 +47,56 @@ async function runMigrations(db: Database): Promise<void> {
   await safeAlter(db, "ALTER TABLE transcription_jobs ADD COLUMN translated_text TEXT;");
   await safeAlter(db, "ALTER TABLE transcription_jobs ADD COLUMN translated_lang TEXT;");
   await safeAlter(db, "ALTER TABLE transcription_jobs ADD COLUMN audio_path TEXT;");
+
+  await migrateRecordSourceType(db);
+}
+
+async function migrateRecordSourceType(db: Database): Promise<void> {
+  const rows = await db.select<{ sql: string }[]>(
+    "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'transcription_jobs'",
+  );
+  const ddl = rows[0]?.sql ?? "";
+  if (ddl.includes("'record'")) return;
+
+  await db.execute("PRAGMA foreign_keys = OFF;");
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS transcription_jobs_new (
+      id TEXT PRIMARY KEY,
+      filename TEXT NOT NULL,
+      source_type TEXT NOT NULL CHECK(source_type IN ('local', 'url', 'record')),
+      source_path TEXT,
+      source_url TEXT,
+      file_size INTEGER,
+      duration TEXT,
+      status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'processing', 'completed', 'failed')),
+      transcript TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      error_message TEXT,
+      progress REAL DEFAULT 0,
+      pipeline_stage TEXT,
+      srt_output TEXT,
+      model_used TEXT,
+      translated_text TEXT,
+      translated_lang TEXT,
+      audio_path TEXT
+    );
+  `);
+  await db.execute(`
+    INSERT INTO transcription_jobs_new (
+      id, filename, source_type, source_path, source_url, file_size, duration,
+      status, transcript, created_at, updated_at, error_message, progress,
+      pipeline_stage, srt_output, model_used, translated_text, translated_lang, audio_path
+    )
+    SELECT
+      id, filename, source_type, source_path, source_url, file_size, duration,
+      status, transcript, created_at, updated_at, error_message, progress,
+      pipeline_stage, srt_output, model_used, translated_text, translated_lang, audio_path
+    FROM transcription_jobs;
+  `);
+  await db.execute("DROP TABLE transcription_jobs;");
+  await db.execute("ALTER TABLE transcription_jobs_new RENAME TO transcription_jobs;");
+  await db.execute("PRAGMA foreign_keys = ON;");
 }
 
 async function safeAlter(db: Database, sql: string): Promise<void> {

@@ -31,13 +31,17 @@ function formatDate(iso: string): string {
 
 type FileRowProps = {
   job: TranscriptionJob;
+  setSelectedJob?: (id: string | null) => void;
+  onJobsChanged?: () => void;
 };
 
-export function FileRow({ job }: FileRowProps) {
-  const setSelected = useTranscriptionStore((state) => state.setSelectedJob);
-  const retryJob = useTranscriptionStore((state) => state.retryJob);
-  const removeJob = useTranscriptionStore((state) => state.removeJob);
-  const renameJob = useTranscriptionStore((state) => state.renameJob);
+export function FileRow({ job, setSelectedJob, onJobsChanged }: FileRowProps) {
+  const storeSetSelected = useTranscriptionStore((state) => state.setSelectedJob);
+  const storeRetryJob = useTranscriptionStore((state) => state.retryJob);
+  const storeRemoveJob = useTranscriptionStore((state) => state.removeJob);
+  const storeRenameJob = useTranscriptionStore((state) => state.renameJob);
+
+  const setSelected = setSelectedJob ?? storeSetSelected;
 
   const onRowClick = () => {
     if (job.status === "completed") setSelected(job.id);
@@ -62,7 +66,7 @@ export function FileRow({ job }: FileRowProps) {
         <EditableFileName
           fileName={job.filename}
           onRename={(filename) => {
-            void renameJob(job.id, filename);
+            void storeRenameJob(job.id, filename).then(() => onJobsChanged?.());
           }}
           variant="row"
         />
@@ -112,7 +116,7 @@ export function FileRow({ job }: FileRowProps) {
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                void retryJob(job.id);
+                void storeRetryJob(job.id).then(() => onJobsChanged?.());
               }}
               className="rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-[11px] font-medium text-amber-900 hover:bg-amber-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200"
             >
@@ -123,7 +127,7 @@ export function FileRow({ job }: FileRowProps) {
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              void removeJob(job.id);
+              void storeRemoveJob(job.id).then(() => onJobsChanged?.());
             }}
             className="rounded-md border border-zinc-200 px-2 py-1 text-[11px] font-medium text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
           >

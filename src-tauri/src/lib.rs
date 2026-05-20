@@ -4,6 +4,7 @@ mod export;
 mod jobs_db;
 mod paths;
 mod pipeline;
+mod record;
 mod translate;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -30,6 +31,12 @@ pub fn run() {
             pipeline::delete_job_assets,
             export::export_transcript,
             translate::translate_text,
+            record::record_start,
+            record::record_pause,
+            record::record_resume,
+            record::record_stop,
+            record::record_discard,
+            record::record_status,
         ])
         .setup(|app| {
             let h = app.handle().clone();

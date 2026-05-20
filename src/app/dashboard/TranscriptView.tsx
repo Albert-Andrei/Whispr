@@ -18,10 +18,27 @@ import { TranscriptSegments } from "./TranscriptSegments";
 import { setJobTranslation } from "./db";
 import { useTranscriptionStore } from "./store";
 
-export function TranscriptView() {
-  const jobs = useTranscriptionStore((state) => state.jobs);
-  const selectedId = useTranscriptionStore((state) => state.selectedJobId);
-  const patchJob = useTranscriptionStore((state) => state.patchJob);
+type TranscriptViewProps = {
+  jobs?: ReturnType<typeof useTranscriptionStore.getState>["jobs"];
+  selectedJobId?: string | null;
+  patchJob?: (id: string, patch: Partial<import("./types").TranscriptionJob>) => void;
+  showRecordedBadge?: boolean;
+};
+
+export function TranscriptView(props: TranscriptViewProps = {}) {
+  const {
+    jobs: jobsProp,
+    selectedJobId: selectedIdProp,
+    patchJob: patchJobProp,
+    showRecordedBadge,
+  } = props;
+  const storeJobs = useTranscriptionStore((state) => state.jobs);
+  const storeSelectedId = useTranscriptionStore((state) => state.selectedJobId);
+  const storePatchJob = useTranscriptionStore((state) => state.patchJob);
+
+  const jobs = jobsProp ?? storeJobs;
+  const selectedId = selectedIdProp ?? storeSelectedId;
+  const patchJob = patchJobProp ?? storePatchJob;
   const job = jobs.find((j) => j.id === selectedId);
 
   const [viewingOriginal, setViewingOriginal] = useState(false);
@@ -42,10 +59,12 @@ export function TranscriptView() {
   );
   const showTranslation = hasSavedTranslation && !viewingOriginal;
 
-  const canPlay = !showTranslation && !!job?.audio_path && segments.length > 0;
+  const hasAudio = !showTranslation && !!job?.audio_path;
+  const canPlay = hasAudio;
+  const showSegments = hasAudio && segments.length > 0;
 
   const playback = useTranscriptPlayback(
-    canPlay ? job.audio_path : null,
+    hasAudio && job ? job.audio_path : null,
     segments,
   );
 
@@ -110,11 +129,17 @@ export function TranscriptView() {
     }
   };
 
-  const showSegments = canPlay && segments.length > 0;
-
   return (
     <div className="flex min-h-0 flex-1 overflow-hidden">
       <div className="relative min-h-0 min-w-0 flex-1">
+        {showRecordedBadge ? (
+          <div className="px-5 pt-2">
+            <span className="inline-flex rounded-full border border-zinc-200 bg-zinc-100 px-2.5 py-0.5 text-[11px] font-medium text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+              Recorded
+            </span>
+          </div>
+        ) : null}
+
         {hasSavedTranslation ? (
           <div className="flex items-center gap-2 px-5 pt-2 text-[13px] text-zinc-500 dark:text-zinc-400">
             {showTranslation ? (

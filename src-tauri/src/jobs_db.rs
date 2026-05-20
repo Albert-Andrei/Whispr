@@ -201,3 +201,37 @@ pub fn dir_size(path: &Path) -> u64 {
 pub fn file_size64(path: &Path) -> u64 {
     std::fs::metadata(path).map(|m| m.len()).unwrap_or(0)
 }
+
+/// Job metadata for a playback audio file (`audio/{job_id}.m4a`).
+pub fn job_playback_meta(
+    app: &AppHandle,
+    job_id: &str,
+) -> Result<Option<(String, String, bool)>, String> {
+    let conn = open_conn(app)?;
+    let row = conn
+        .query_row(
+            "SELECT filename, source_type, srt_output FROM transcription_jobs WHERE id = ?1",
+            params![job_id],
+            |row| {
+                let srt: Option<String> = row.get(2)?;
+                let has_sync = srt.map(|s| !s.trim().is_empty()).unwrap_or(false);
+                Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?, has_sync))
+            },
+        )
+        .optional()
+        .map_err(|e| e.to_string())?;
+    Ok(row)
+}
+
+pub fn clear_job_audio_path(app: &AppHandle, job_id: &str) -> Result<(), String> {
+    let conn = open_conn(app)?;
+    conn.execute(
+        "UPDATE transcription_jobs SET audio_path = NULL, updated_at = ?1 WHERE id = ?2",
+        params![
+            chrono::Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Secs, true),
+            job_id
+        ],
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(())
+}

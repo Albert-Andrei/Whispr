@@ -28,7 +28,7 @@ type RecordStoreState = {
   level: number;
   listenersReady: boolean;
   navPromptOpen: boolean;
-  pendingNavView: "history" | "settings" | null;
+  pendingNavView: "history" | "settings" | "media" | null;
 
   loadJobs: () => Promise<void>;
   setSelectedJob: (id: string | null) => void;
@@ -39,7 +39,7 @@ type RecordStoreState = {
   stopRecording: () => Promise<void>;
   discardRecording: () => Promise<void>;
   patchJob: (id: string, patch: Partial<TranscriptionJob>) => void;
-  requestNavigation: (view: "history" | "settings") => boolean;
+  requestNavigation: (view: "history" | "settings" | "media") => boolean;
   closeNavPrompt: () => void;
   confirmNavStop: () => Promise<void>;
   confirmNavDiscard: () => Promise<void>;

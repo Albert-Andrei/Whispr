@@ -2,6 +2,7 @@ mod binaries;
 mod downloader;
 mod export;
 mod jobs_db;
+mod media;
 mod paths;
 mod pipeline;
 mod record;
@@ -37,6 +38,8 @@ pub fn run() {
             record::record_stop,
             record::record_discard,
             record::record_status,
+            media::list_playback_media,
+            media::delete_playback_media,
         ])
         .setup(|app| {
             let h = app.handle().clone();

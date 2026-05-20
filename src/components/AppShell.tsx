@@ -2,6 +2,7 @@ import { isTauri } from "@tauri-apps/api/core";
 import { useEffect, useState } from "react";
 import { Dashboard } from "../app/dashboard/Dashboard";
 import { NewTranscriptionModal } from "../app/import/NewTranscriptionModal";
+import { Media } from "../app/media/Media";
 import { Record } from "../app/record/Record";
 import { useRecordStore } from "../app/record/store";
 import { Settings } from "../app/settings/Settings";
@@ -28,6 +29,8 @@ function headerTitle(view: SidebarView): string {
       return "";
     case "record":
       return "Record";
+    case "media":
+      return "Media";
   }
 }
 
@@ -107,14 +110,19 @@ export function AppShell({ appUpdate }: AppShellProps) {
   useEffect(() => {
     const onNavigate = (ev: Event) => {
       const detail = (ev as CustomEvent<SidebarView>).detail;
-      if (detail === "history" || detail === "settings") {
+      if (
+        detail === "history" ||
+        detail === "settings" ||
+        detail === "media"
+      ) {
         setView(detail);
         if (detail === "history") setSelectedJob(null);
+        setRecordSelectedJob(null);
       }
     };
     window.addEventListener("whispr:navigate", onNavigate);
     return () => window.removeEventListener("whispr:navigate", onNavigate);
-  }, [setSelectedJob]);
+  }, [setSelectedJob, setRecordSelectedJob]);
 
   const openModal = (focus?: NewImportStep | null) => {
     setModalInitialFocus(focus ?? null);
@@ -176,7 +184,7 @@ export function AppShell({ appUpdate }: AppShellProps) {
                   onNewTranscription={
                     view === "history" ? () => openModal() : undefined
                   }
-                  hideNew={view === "record"}
+                  hideNew={view === "record" || view === "media"}
                   transcriptDetail={
                     view === "history" && selectedJobId
                       ? {
@@ -229,6 +237,7 @@ export function AppShell({ appUpdate }: AppShellProps) {
                   <Settings appUpdate={appUpdate} />
                 ) : null}
                 {view === "record" ? <Record /> : null}
+                {view === "media" ? <Media /> : null}
               </main>
             </div>
           </div>

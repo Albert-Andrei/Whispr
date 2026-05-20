@@ -50,6 +50,26 @@ function IconSettings() {
   );
 }
 
+function IconMedia() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      className="shrink-0"
+      aria-hidden
+    >
+      <path d="M9 18V5l12-2v13" />
+      <circle cx="6" cy="18" r="3" />
+      <circle cx="18" cy="16" r="3" />
+    </svg>
+  );
+}
+
 function IconMic() {
   return (
     <svg
@@ -73,6 +93,7 @@ function IconMic() {
 const MAIN_ITEMS: MainNavItem[] = [
   { id: "history", label: "Transcriptions", Icon: IconTranscriptions },
   { id: "record", label: "Record", Icon: IconMic },
+  { id: "media", label: "Media", Icon: IconMedia },
 ];
 
 const SIDEBAR_WIDTH_KEY = "whispr.sidebar.width";

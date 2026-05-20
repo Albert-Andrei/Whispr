@@ -2,6 +2,9 @@ import Database from "@tauri-apps/plugin-sql";
 
 const DB_PATH = "sqlite:whispr.db";
 
+const SCHEMA_VERSION_KEY = "db_schema_version";
+const LATEST_SCHEMA_VERSION = 5;
+
 let dbPromise: Promise<Database> | null = null;
 
 export function getDatabase(): Promise<Database> {
@@ -14,23 +17,69 @@ export function getDatabase(): Promise<Database> {
   return dbPromise;
 }
 
-async function runMigrations(db: Database): Promise<void> {
-  await db.execute(`
-    CREATE TABLE IF NOT EXISTS transcription_jobs (
-      id TEXT PRIMARY KEY,
-      filename TEXT NOT NULL,
-      source_type TEXT NOT NULL CHECK(source_type IN ('local', 'url')),
-      source_path TEXT,
-      source_url TEXT,
-      file_size INTEGER,
-      duration TEXT,
-      status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'processing', 'completed', 'failed')),
-      transcript TEXT,
-      created_at TEXT NOT NULL DEFAULT (datetime('now')),
-      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-    );
-  `);
+type Migration = {
+  version: number;
+  up: (db: Database) => Promise<void>;
+};
 
+const migrations: Migration[] = [
+  {
+    version: 1,
+    up: async (db) => {
+      await db.execute(`
+        CREATE TABLE IF NOT EXISTS transcription_jobs (
+          id TEXT PRIMARY KEY,
+          filename TEXT NOT NULL,
+          source_type TEXT NOT NULL CHECK(source_type IN ('local', 'url')),
+          source_path TEXT,
+          source_url TEXT,
+          file_size INTEGER,
+          duration TEXT,
+          status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'processing', 'completed', 'failed')),
+          transcript TEXT,
+          created_at TEXT NOT NULL DEFAULT (datetime('now')),
+          updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+      `);
+      await db.execute(`
+        CREATE TABLE IF NOT EXISTS app_config (
+          key TEXT PRIMARY KEY,
+          value TEXT NOT NULL,
+          updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+      `);
+    },
+  },
+  {
+    version: 2,
+    up: async (db) => {
+      await alterColumn(db, "ALTER TABLE transcription_jobs ADD COLUMN error_message TEXT;");
+      await alterColumn(db, "ALTER TABLE transcription_jobs ADD COLUMN progress REAL DEFAULT 0;");
+      await alterColumn(db, "ALTER TABLE transcription_jobs ADD COLUMN pipeline_stage TEXT;");
+      await alterColumn(db, "ALTER TABLE transcription_jobs ADD COLUMN srt_output TEXT;");
+      await alterColumn(db, "ALTER TABLE transcription_jobs ADD COLUMN model_used TEXT;");
+    },
+  },
+  {
+    version: 3,
+    up: async (db) => {
+      await alterColumn(db, "ALTER TABLE transcription_jobs ADD COLUMN translated_text TEXT;");
+      await alterColumn(db, "ALTER TABLE transcription_jobs ADD COLUMN translated_lang TEXT;");
+    },
+  },
+  {
+    version: 4,
+    up: async (db) => {
+      await alterColumn(db, "ALTER TABLE transcription_jobs ADD COLUMN audio_path TEXT;");
+    },
+  },
+  {
+    version: 5,
+    up: migrateRecordSourceType,
+  },
+];
+
+async function runMigrations(db: Database): Promise<void> {
   await db.execute(`
     CREATE TABLE IF NOT EXISTS app_config (
       key TEXT PRIMARY KEY,
@@ -39,16 +88,65 @@ async function runMigrations(db: Database): Promise<void> {
     );
   `);
 
-  await safeAlter(db, "ALTER TABLE transcription_jobs ADD COLUMN error_message TEXT;");
-  await safeAlter(db, "ALTER TABLE transcription_jobs ADD COLUMN progress REAL DEFAULT 0;");
-  await safeAlter(db, "ALTER TABLE transcription_jobs ADD COLUMN pipeline_stage TEXT;");
-  await safeAlter(db, "ALTER TABLE transcription_jobs ADD COLUMN srt_output TEXT;");
-  await safeAlter(db, "ALTER TABLE transcription_jobs ADD COLUMN model_used TEXT;");
-  await safeAlter(db, "ALTER TABLE transcription_jobs ADD COLUMN translated_text TEXT;");
-  await safeAlter(db, "ALTER TABLE transcription_jobs ADD COLUMN translated_lang TEXT;");
-  await safeAlter(db, "ALTER TABLE transcription_jobs ADD COLUMN audio_path TEXT;");
+  let version = await getSchemaVersion(db);
 
-  await migrateRecordSourceType(db);
+  for (const migration of migrations) {
+    if (migration.version <= version) continue;
+    await migration.up(db);
+    await setSchemaVersion(db, migration.version);
+    version = migration.version;
+  }
+}
+
+async function getSchemaVersion(db: Database): Promise<number> {
+  const rows = await db.select<{ value: string }[]>(
+    "SELECT value FROM app_config WHERE key = $1",
+    [SCHEMA_VERSION_KEY],
+  );
+  const stored = rows[0]?.value;
+  if (stored != null) {
+    const parsed = parseInt(stored, 10);
+    if (!Number.isNaN(parsed)) return parsed;
+  }
+
+  const inferred = await inferSchemaVersion(db);
+  if (inferred > 0) {
+    await setSchemaVersion(db, inferred);
+  }
+  return inferred;
+}
+
+async function inferSchemaVersion(db: Database): Promise<number> {
+  const tables = await db.select<{ name: string }[]>(
+    "SELECT name FROM sqlite_master WHERE type = 'table' AND name IN ('transcription_jobs', 'app_config')",
+  );
+  const tableNames = new Set(tables.map((t) => t.name));
+  if (!tableNames.has("transcription_jobs") || !tableNames.has("app_config")) {
+    return 0;
+  }
+
+  const cols = await db.select<{ name: string }[]>("PRAGMA table_info(transcription_jobs)");
+  const colNames = new Set(cols.map((c) => c.name));
+  if (!colNames.has("error_message")) return 1;
+  if (!colNames.has("translated_text")) return 2;
+  if (!colNames.has("audio_path")) return 3;
+
+  const ddlRows = await db.select<{ sql: string }[]>(
+    "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'transcription_jobs'",
+  );
+  const ddl = ddlRows[0]?.sql ?? "";
+  if (!ddl.includes("'record'")) return 4;
+
+  return LATEST_SCHEMA_VERSION;
+}
+
+async function setSchemaVersion(db: Database, version: number): Promise<void> {
+  const now = new Date().toISOString();
+  await db.execute(
+    `INSERT INTO app_config (key, value, updated_at) VALUES ($1, $2, $3)
+     ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
+    [SCHEMA_VERSION_KEY, String(version), now],
+  );
 }
 
 async function migrateRecordSourceType(db: Database): Promise<void> {
@@ -99,11 +197,11 @@ async function migrateRecordSourceType(db: Database): Promise<void> {
   await db.execute("PRAGMA foreign_keys = ON;");
 }
 
-async function safeAlter(db: Database, sql: string): Promise<void> {
+async function alterColumn(db: Database, sql: string): Promise<void> {
   try {
     await db.execute(sql);
   } catch {
-    /* column may already exist */
+    /* column may already exist on partially migrated legacy DBs */
   }
 }
 

@@ -23,6 +23,7 @@ pub struct JobRow {
     pub pipeline_stage: Option<String>,
     pub srt_output: Option<String>,
     pub model_used: Option<String>,
+    pub audio_path: Option<String>,
     pub translated_text: Option<String>,
     pub translated_lang: Option<String>,
 }
@@ -69,15 +70,17 @@ pub fn set_job_completed(
     srt: Option<&str>,
     model_used: &str,
     duration_label: Option<&str>,
+    audio_path: Option<&str>,
 ) -> Result<(), String> {
     let conn = open_conn(app)?;
     conn.execute(
-        "UPDATE transcription_jobs SET transcript = ?1, srt_output = ?2, model_used = ?3, duration = COALESCE(?4, duration), status = 'completed', progress = 1, pipeline_stage = NULL, error_message = NULL, translated_text = NULL, translated_lang = NULL, updated_at = ?5 WHERE id = ?6",
+        "UPDATE transcription_jobs SET transcript = ?1, srt_output = ?2, model_used = ?3, duration = COALESCE(?4, duration), audio_path = ?5, status = 'completed', progress = 1, pipeline_stage = NULL, error_message = NULL, translated_text = NULL, translated_lang = NULL, updated_at = ?6 WHERE id = ?7",
         params![
             transcript,
             srt,
             model_used,
             duration_label,
+            audio_path,
             chrono::Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Secs, true),
             id
         ],
@@ -117,7 +120,7 @@ pub fn set_job_failed(app: &AppHandle, id: &str, err: &str) -> Result<(), String
 pub fn get_job(app: &AppHandle, id: &str) -> Result<Option<JobRow>, String> {
     let conn = open_conn(app)?;
     let mut stmt = conn
-        .prepare("SELECT id, filename, source_type, source_path, source_url, file_size, duration, status, transcript, created_at, updated_at, error_message, progress, pipeline_stage, srt_output, model_used, translated_text, translated_lang FROM transcription_jobs WHERE id = ?1")
+        .prepare("SELECT id, filename, source_type, source_path, source_url, file_size, duration, status, transcript, created_at, updated_at, error_message, progress, pipeline_stage, srt_output, model_used, audio_path, translated_text, translated_lang FROM transcription_jobs WHERE id = ?1")
         .map_err(|e| e.to_string())?;
     let mut rows = stmt
         .query_map(params![id], |row| {
@@ -138,8 +141,9 @@ pub fn get_job(app: &AppHandle, id: &str) -> Result<Option<JobRow>, String> {
                 pipeline_stage: row.get(13)?,
                 srt_output: row.get(14)?,
                 model_used: row.get(15)?,
-                translated_text: row.get(16)?,
-                translated_lang: row.get(17)?,
+                audio_path: row.get(16)?,
+                translated_text: row.get(17)?,
+                translated_lang: row.get(18)?,
             })
         })
         .map_err(|e| e.to_string())?;

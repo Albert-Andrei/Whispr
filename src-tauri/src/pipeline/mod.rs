@@ -1,5 +1,6 @@
 mod download;
 mod extract_audio;
+mod persist_audio;
 pub mod progress;
 mod transcribe;
 
@@ -145,6 +146,7 @@ pub fn run_pipeline_blocking(
 
         check_cancelled(&job_id)?;
         emit("extracting", 0.25);
+        let audio_path = persist_audio::persist_playback_audio(&app, &job_id, &media_path).ok();
         let wav = extract_audio::extract_wav_16k_mono(&app, &job_id, &media_path)?;
         emit("extracting", 0.45);
 
@@ -164,6 +166,7 @@ pub fn run_pipeline_blocking(
             },
             &model_used,
             dur.as_deref(),
+            audio_path.as_deref().and_then(|p| p.to_str()),
         )?;
         emit("transcribing", 1.0);
         Ok(())
@@ -212,9 +215,17 @@ pub async fn fetch_url_title(app: AppHandle, url: String, job_id: String) -> Res
 }
 
 #[tauri::command]
+pub async fn delete_job_assets(app: AppHandle, job_id: String) -> Result<(), String> {
+    persist_audio::remove_job_audio(&app, &job_id);
+    cleanup_job_tmp(&app, &job_id);
+    Ok(())
+}
+
+#[tauri::command]
 pub async fn cancel_pipeline(app: AppHandle, job_id: String) -> Result<(), String> {
     mark_cancelled(&job_id);
     kill_active_child(&job_id);
     cleanup_job_tmp(&app, &job_id);
+    persist_audio::remove_job_audio(&app, &job_id);
     Ok(())
 }

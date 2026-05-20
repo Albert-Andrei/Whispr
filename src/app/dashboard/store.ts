@@ -286,6 +286,7 @@ export const useTranscriptionStore = create<TranscriptionState>((set, get) => ({
     if (job && (job.status === "processing" || job.status === "pending")) {
       await invoke("cancel_pipeline", { jobId: id }).catch(() => {});
     }
+    await invoke("delete_job_assets", { jobId: id }).catch(() => {});
     await deleteJob(id);
     set((s) => ({
       jobs: s.jobs.filter((j) => j.id !== id),

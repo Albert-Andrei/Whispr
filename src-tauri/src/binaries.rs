@@ -135,12 +135,14 @@ pub async fn get_app_disk_usage(app: AppHandle) -> Result<DiskUsageReport, Strin
     let bin = paths::bin_dir(&app)?;
     let models = paths::models_dir(&app)?;
     let tmp = paths::tmp_dir(&app)?;
+    let audio = paths::audio_dir(&app)?;
     let db = paths::db_path(&app)?;
 
     tokio::task::spawn_blocking(move || {
         let bin_bytes = jobs_db::dir_size(&bin);
         let models_bytes = jobs_db::dir_size(&models);
         let tmp_bytes = jobs_db::dir_size(&tmp);
+        let audio_bytes = jobs_db::dir_size(&audio);
         let db_bytes = jobs_db::file_size64(&db);
 
         let mut categories = vec![
@@ -153,6 +155,11 @@ pub async fn get_app_disk_usage(app: AppHandle) -> Result<DiskUsageReport, Strin
                 id: "models".into(),
                 label: "Whisper models".into(),
                 bytes: models_bytes,
+            },
+            DiskCategory {
+                id: "audio".into(),
+                label: "Playback audio".into(),
+                bytes: audio_bytes,
             },
             DiskCategory {
                 id: "database".into(),

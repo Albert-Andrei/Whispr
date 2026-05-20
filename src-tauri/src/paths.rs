@@ -23,6 +23,10 @@ pub fn tmp_dir(app: &AppHandle) -> Result<PathBuf, String> {
     Ok(app_root(app)?.join("tmp"))
 }
 
+pub fn audio_dir(app: &AppHandle) -> Result<PathBuf, String> {
+    Ok(app_root(app)?.join("audio"))
+}
+
 pub fn ffmpeg_path(app: &AppHandle) -> Result<PathBuf, String> {
     Ok(bin_dir(app)?.join(if cfg!(windows) { "ffmpeg.exe" } else { "ffmpeg" }))
 }
@@ -37,7 +41,7 @@ pub fn whisper_cli_path(app: &AppHandle) -> Result<PathBuf, String> {
 
 pub fn ensure_layout(app: &AppHandle) -> Result<PathBuf, String> {
     let root = app_root(app)?;
-    for d in [root.join("bin"), root.join("models"), root.join("tmp")] {
+    for d in [root.join("bin"), root.join("models"), root.join("tmp"), root.join("audio")] {
         std::fs::create_dir_all(&d).map_err(|e| e.to_string())?;
     }
     Ok(root)

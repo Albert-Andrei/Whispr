@@ -1,16 +1,20 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { save } from "@tauri-apps/plugin-dialog";
 import { exportDefaultBaseName } from "../../lib/exportFilename";
+import { parseSrt } from "../../lib/srt";
 import {
   translateLanguageLabel,
   translateTranscriptText,
 } from "../../lib/transcriptActions";
+import { useTranscriptPlayback } from "../../hooks/useTranscriptPlayback";
 import {
   EXPORT_FORMATS,
   TranscriptSidePanel,
   type ExportFormatId,
 } from "./TranscriptSidePanel";
+import { TranscriptPlayer } from "./TranscriptPlayer";
+import { TranscriptSegments } from "./TranscriptSegments";
 import { setJobTranslation } from "./db";
 import { useTranscriptionStore } from "./store";
 
@@ -30,15 +34,26 @@ export function TranscriptView() {
     setTranslating(false);
   }, [job?.id]);
 
-  if (!job) return null;
+  const srtRaw = job?.srt_output ?? "";
+  const segments = useMemo(() => parseSrt(srtRaw), [srtRaw]);
 
   const hasSavedTranslation = Boolean(
-    job.translated_text?.trim() && job.translated_lang,
+    job?.translated_text?.trim() && job?.translated_lang,
   );
+  const showTranslation = hasSavedTranslation && !viewingOriginal;
+
+  const canPlay = !showTranslation && !!job?.audio_path && segments.length > 0;
+
+  const playback = useTranscriptPlayback(
+    canPlay ? job.audio_path : null,
+    segments,
+  );
+
+  if (!job) return null;
+
   const translatedLabel = job.translated_lang
     ? translateLanguageLabel(job.translated_lang)
     : null;
-  const showTranslation = hasSavedTranslation && !viewingOriginal;
 
   const baseName = exportDefaultBaseName(job.filename);
   const transcriptText = job.transcript?.trim() ?? "";
@@ -93,11 +108,13 @@ export function TranscriptView() {
     }
   };
 
+  const showSegments = canPlay && segments.length > 0;
+
   return (
     <div className="flex min-h-0 flex-1 overflow-hidden">
-      <div className="min-h-0 min-w-0 flex-1 overflow-y-auto px-5 py-6">
+      <div className="relative min-h-0 min-w-0 flex-1">
         {hasSavedTranslation ? (
-          <div className="mb-3 flex items-center gap-2 text-[13px] text-zinc-500 dark:text-zinc-400">
+          <div className="flex items-center gap-2 px-5 pt-4 text-[13px] text-zinc-500 dark:text-zinc-400">
             {showTranslation ? (
               <>
                 <span>Translated to {translatedLabel}</span>
@@ -125,20 +142,45 @@ export function TranscriptView() {
         ) : null}
 
         {translateError ? (
-          <p className="mb-3 text-[13px] text-red-600 dark:text-red-400">
+          <p className="px-5 pt-2 text-[13px] text-red-600 dark:text-red-400">
             {translateError}
           </p>
         ) : null}
 
         {translating ? (
-          <p className="mb-3 text-[13px] text-zinc-500 dark:text-zinc-400">
+          <p className="px-5 pt-2 text-[13px] text-zinc-500 dark:text-zinc-400">
             Translating…
           </p>
         ) : null}
 
-        <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-zinc-800 dark:text-zinc-200">
-          {displayText}
-        </pre>
+        {showSegments ? (
+          <TranscriptSegments
+            segments={segments}
+            activeIndex={playback.activeIdx}
+            onSeek={playback.seek}
+          />
+        ) : (
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-6">
+            <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-zinc-800 dark:text-zinc-200">
+              {displayText}
+            </pre>
+          </div>
+        )}
+
+        {canPlay ? (
+          <TranscriptPlayer
+            playing={playback.playing}
+            currentTime={playback.currentTime}
+            duration={playback.duration}
+            speed={playback.speed}
+            volume={playback.volume}
+            expanded={playback.expanded}
+            onTogglePlay={playback.togglePlay}
+            onSeekFraction={playback.seekFraction}
+            onSetSpeed={playback.setSpeed}
+            onSetVolume={playback.setVolume}
+          />
+        ) : null}
       </div>
 
       <TranscriptSidePanel

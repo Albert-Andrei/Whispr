@@ -27,6 +27,7 @@ pub fn run() {
             pipeline::run_pipeline,
             pipeline::fetch_url_title,
             pipeline::cancel_pipeline,
+            pipeline::delete_job_assets,
             export::export_transcript,
             translate::translate_text,
         ])

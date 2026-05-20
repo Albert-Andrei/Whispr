@@ -14,7 +14,7 @@
       {
         "label": "main",
         "title": "Whispr",
-        "width": 1100,
+        "width": 1200,
         "height": 720,
         "minWidth": 800,
         "minHeight": 560,
@@ -28,7 +28,11 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": null,
+      "assetProtocol": {
+        "enable": true,
+        "scope": ["$APPCONFIG/audio/**"]
+      }
     }
   },
   "bundle": {

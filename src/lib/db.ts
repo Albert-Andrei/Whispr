@@ -46,6 +46,7 @@ async function runMigrations(db: Database): Promise<void> {
   await safeAlter(db, "ALTER TABLE transcription_jobs ADD COLUMN model_used TEXT;");
   await safeAlter(db, "ALTER TABLE transcription_jobs ADD COLUMN translated_text TEXT;");
   await safeAlter(db, "ALTER TABLE transcription_jobs ADD COLUMN translated_lang TEXT;");
+  await safeAlter(db, "ALTER TABLE transcription_jobs ADD COLUMN audio_path TEXT;");
 }
 
 async function safeAlter(db: Database, sql: string): Promise<void> {

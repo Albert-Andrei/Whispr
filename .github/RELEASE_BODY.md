@@ -1,6 +1,6 @@
-## Whispr v0.1.6
+## Whispr v0.1.7
 
-Ui inconsistencies, auto update and version check, audio play.
+Media tab, setting colors and modules, recording.
 
 ---
 

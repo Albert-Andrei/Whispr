@@ -1,26 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Fetch/build sidecar binaries for Tauri bundling.
-# Usage:  ./scripts/fetch-sidecars.sh [TARGET_TRIPLE]
-# If TARGET_TRIPLE is omitted, it is detected from the current host.
+# Fetch/build sidecar binaries for Tauri bundling (aarch64-apple-darwin only).
+# Usage:  ./scripts/fetch-sidecars.sh
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 DEST="$SCRIPT_DIR/../src-tauri/binaries"
+TARGET="aarch64-apple-darwin"
 mkdir -p "$DEST"
 
-detect_triple() {
-  local arch
-  arch="$(uname -m)"
-  case "$arch" in
-    arm64) arch="aarch64" ;;
-    x86_64) arch="x86_64" ;;
-    *) echo "Unsupported arch: $arch" >&2; exit 1 ;;
-  esac
-  echo "${arch}-apple-darwin"
-}
-
-TARGET="${1:-$(detect_triple)}"
 echo "==> Target triple: $TARGET"
 
 # ── ffmpeg ──────────────────────────────────────────────────────────
@@ -30,14 +18,9 @@ fetch_ffmpeg() {
     echo "  ffmpeg already present, skipping"
     return
   fi
-  local url
-  case "$TARGET" in
-    aarch64-apple-darwin) url="https://github.com/eugeneware/ffmpeg-static/releases/download/b6.1.1/ffmpeg-darwin-arm64" ;;
-    x86_64-apple-darwin)  url="https://github.com/eugeneware/ffmpeg-static/releases/download/b6.1.1/ffmpeg-darwin-x64" ;;
-    *) echo "  No ffmpeg URL for $TARGET" >&2; return 1 ;;
-  esac
   echo "  Downloading ffmpeg …"
-  curl -fSL --progress-bar -o "$out" "$url"
+  curl -fSL --progress-bar -o "$out" \
+    "https://github.com/eugeneware/ffmpeg-static/releases/download/b6.1.1/ffmpeg-darwin-arm64"
   chmod 755 "$out"
 }
 
@@ -48,15 +31,9 @@ fetch_ytdlp() {
     echo "  yt-dlp already present, skipping"
     return
   fi
-  local url
-  case "$TARGET" in
-    aarch64-apple-darwin|x86_64-apple-darwin)
-      url="https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos"
-      ;;
-    *) echo "  No yt-dlp URL for $TARGET" >&2; return 1 ;;
-  esac
   echo "  Downloading yt-dlp …"
-  curl -fSL --progress-bar -o "$out" "$url"
+  curl -fSL --progress-bar -o "$out" \
+    "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos"
   chmod 755 "$out"
 }
 
@@ -79,7 +56,7 @@ build_whisper_cli() {
   cmake -S "$tmpdir/whisper.cpp" -B "$tmpdir/build" \
     -DWHISPER_METAL=ON \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_OSX_ARCHITECTURES="$(echo "$TARGET" | cut -d- -f1 | sed 's/aarch64/arm64/')" \
+    -DCMAKE_OSX_ARCHITECTURES=arm64 \
     -DBUILD_SHARED_LIBS=OFF
 
   cmake --build "$tmpdir/build" --config Release -t whisper-cli -j "$(sysctl -n hw.ncpu 2>/dev/null || echo 4)"

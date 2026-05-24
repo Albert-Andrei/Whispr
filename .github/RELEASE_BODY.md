@@ -1,6 +1,6 @@
-## Whispr v0.1.10
+## Whispr v0.1.11
 
-Auto-detect app language from system locale on first launch, bundle ffmpeg, yt-dlp, whisper-cli as Tauri sidecars, add settings control to wipe all app data.
+Drop x86_64 build target, build only for Apple Silicon.
 
 ---
 

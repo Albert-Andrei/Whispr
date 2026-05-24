@@ -1,6 +1,6 @@
-## Whispr v0.1.7
+## Whispr v0.1.8
 
-Media tab, setting colors and modules, recording.
+Translation, new icon color, remove purple, update settings size indicator.
 
 ---
 

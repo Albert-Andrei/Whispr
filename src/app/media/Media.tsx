@@ -93,7 +93,7 @@ export function Media() {
         <button
           type="button"
           onClick={() => void loadMedia()}
-          className="text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+          className="text-sm font-medium text-zinc-900 hover:underline dark:text-zinc-200"
         >
           Try again
         </button>

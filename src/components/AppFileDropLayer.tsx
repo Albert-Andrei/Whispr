@@ -159,14 +159,14 @@ export function AppFileDropLayer({
 
   return (
     <div
-      className={`pointer-events-none fixed inset-0 ${zClass} flex items-center justify-center bg-blue-500/20 backdrop-blur-[2px] dark:bg-blue-600/25`}
+      className={`pointer-events-none fixed inset-0 ${zClass} flex items-center justify-center bg-zinc-900/15 backdrop-blur-[2px] dark:bg-zinc-100/10`}
       aria-hidden
     >
-      <div className="rounded-2xl w-[80%] h-[70%] flex flex-col items-center justify-center border-2 border-dashed border-blue-400/90 bg-blue-500/15 px-10 py-8 text-center shadow-lg dark:border-blue-300/70 dark:bg-blue-400/10">
-        <p className="text-3xl font-semibold text-blue-950 dark:text-blue-50">
+      <div className="rounded-2xl w-[80%] h-[70%] flex flex-col items-center justify-center border-2 border-dashed border-zinc-400/90 bg-zinc-900/10 px-10 py-8 text-center shadow-lg dark:border-zinc-500/70 dark:bg-zinc-100/5">
+        <p className="text-3xl font-semibold text-zinc-900 dark:text-zinc-50">
           Drop to import
         </p>
-        <p className="mt-1.5 text-xl text-blue-900/85 dark:text-blue-100/80">
+        <p className="mt-1.5 text-xl text-zinc-700/85 dark:text-zinc-200/80">
           Video or audio files
         </p>
       </div>

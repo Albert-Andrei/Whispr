@@ -34,13 +34,22 @@ function formatPercent(bytes: number, total: number): string {
   return String(Math.round(pct));
 }
 
+function formatStorageSize(bytes: number): string {
+  const megabytes = bytes / 1024 / 1024;
+  if (megabytes > 999) {
+    const gigabytes = bytes / 1024 / 1024 / 1024;
+    const decimals = gigabytes >= 10 ? 1 : 2;
+    return `${gigabytes.toFixed(decimals)} GB`;
+  }
+  return `${megabytes.toFixed(1)} MB`;
+}
+
 function formatTooltipLabel(
   label: string,
   bytes: number,
   total: number,
 ): string {
-  const megabytes = (bytes / 1024 / 1024).toFixed(1);
-  return `${label} · ${megabytes} MB (${formatPercent(bytes, total)}%)`;
+  return `${label} · ${formatStorageSize(bytes)} (${formatPercent(bytes, total)}%)`;
 }
 
 export function DiskBreakdown({ report }: { report: DiskUsageReport | null }) {
@@ -121,7 +130,7 @@ export function DiskBreakdown({ report }: { report: DiskUsageReport | null }) {
                 {category.label}
               </span>
               <span className="shrink-0 font-medium text-zinc-900 dark:text-zinc-100">
-                {(category.bytes / 1024 / 1024).toFixed(1)} MB
+                {formatStorageSize(category.bytes)}
                 <span className="ml-1.5 font-normal text-zinc-400">
                   ({formatPercent(category.bytes, total)}%)
                 </span>
@@ -131,7 +140,7 @@ export function DiskBreakdown({ report }: { report: DiskUsageReport | null }) {
         })}
         <li className="flex justify-between border-t border-zinc-100 pt-2 text-[13px] font-semibold dark:border-[var(--color-settings-border-dark)]">
           <span>Total</span>
-          <span>{(total / 1024 / 1024).toFixed(1)} MB</span>
+          <span>{formatStorageSize(total)}</span>
         </li>
       </ul>
     </div>

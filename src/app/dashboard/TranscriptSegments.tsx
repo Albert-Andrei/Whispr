@@ -56,7 +56,7 @@ export function TranscriptSegments({
             onClick={() => onSeek(seg.startMs)}
             className={`cursor-pointer rounded-sm px-0.5 transition-colors duration-200 ${
               isActive
-                ? "bg-blue-100 text-zinc-900 dark:bg-blue-500/20 dark:text-zinc-50"
+                ? "bg-zinc-200 text-zinc-900 dark:bg-zinc-700 dark:text-zinc-50"
                 : "text-zinc-800 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800/40"
             }`}
           >

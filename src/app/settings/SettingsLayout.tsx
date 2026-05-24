@@ -127,7 +127,7 @@ export function SettingsSelect({
     <select
       value={value}
       onChange={(event) => onChange(event.target.value)}
-      className={`w-32 shrink-0 cursor-pointer appearance-none rounded-lg border border-zinc-200 bg-zinc-50/80 py-1.5 pr-7 pl-2 text-[13px] font-medium text-zinc-800 transition hover:border-zinc-300 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20 dark:border-[var(--color-settings-border-dark)] dark:bg-[#353538] dark:text-zinc-100 dark:hover:border-zinc-600 ${className}`}
+      className={`w-32 shrink-0 cursor-pointer appearance-none rounded-lg border border-zinc-200 bg-zinc-50/80 py-1.5 pr-7 pl-2 text-[13px] font-medium text-zinc-800 transition hover:border-zinc-300 focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/20 dark:border-[var(--color-settings-border-dark)] dark:bg-[#353538] dark:text-zinc-100 dark:hover:border-zinc-600 dark:focus:border-zinc-400 dark:focus:ring-zinc-400/20 ${className}`}
       style={{
         backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
         backgroundRepeat: "no-repeat",

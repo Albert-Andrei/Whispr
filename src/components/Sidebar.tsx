@@ -8,6 +8,56 @@ type MainNavItem = {
   Icon: FC;
 };
 
+function IconWhisprMark() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 512 512"
+      className="size-4 shrink-0 rounded-[4px]"
+      aria-hidden
+    >
+      <rect
+        width="512"
+        height="512"
+        className="fill-[#171717] dark:fill-[#d0d0d0]"
+      />
+      <rect
+        x="87"
+        y="196"
+        width="69"
+        height="133"
+        rx="34.5"
+        className="fill-white dark:fill-[#171717]"
+      />
+      <rect
+        x="179"
+        y="51"
+        width="69"
+        height="408"
+        rx="34.5"
+        className="fill-white dark:fill-[#171717]"
+      />
+      <rect
+        x="270"
+        y="130"
+        width="68"
+        height="256"
+        rx="34"
+        className="fill-white dark:fill-[#171717]"
+      />
+      <rect
+        x="360"
+        y="202"
+        width="65"
+        height="121"
+        rx="32.5"
+        className="fill-white dark:fill-[#171717]"
+      />
+    </svg>
+  );
+}
+
 function IconTranscriptions() {
   return (
     <svg
@@ -147,14 +197,7 @@ export function Sidebar({
       >
         <nav className="flex min-h-0 flex-1 flex-col gap-0.5 pb-2">
           <div className="flex items-center gap-1.5 px-2.5 pt-3.5 pb-3.5">
-            <img
-              src="/logo.png"
-              alt=""
-              width={16}
-              height={16}
-              className="size-4 shrink-0 rounded-[4px]"
-              aria-hidden
-            />
+            <IconWhisprMark />
             <p className="text-left text-[11px] font-semibold tracking-wide text-[var(--color-sidebar-text-muted-light)] dark:text-[var(--color-sidebar-text-muted-dark)]">
               Whispr
             </p>
@@ -205,7 +248,7 @@ export function Sidebar({
         role="separator"
         aria-orientation="vertical"
         aria-label="Resize sidebar"
-        className="absolute -right-2.5 bottom-4 z-10 w-1 cursor-col-resize rounded-full hover:bg-indigo-400/40"
+        className="absolute -right-2.5 bottom-4 z-10 w-1 cursor-col-resize rounded-full hover:bg-zinc-400/40"
         style={{ top: mainColumnDragStripPx }}
         onMouseDown={(e) => {
           e.preventDefault();

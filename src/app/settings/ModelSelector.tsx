@@ -82,7 +82,7 @@ export function ModelSelector({ onRefresh }: ModelSelectorProps) {
           >
             <div className="flex flex-wrap items-center justify-end gap-2">
               {isActive ? (
-                <span className="rounded-md bg-indigo-500/10 px-2 py-1 text-[12px] font-medium text-indigo-700 dark:text-indigo-300">
+                <span className="rounded-md border border-zinc-900 bg-zinc-200 px-2 py-1 text-[12px] font-medium text-zinc-900 dark:border-zinc-400 dark:bg-[#2a2a2d] dark:text-zinc-200">
                   Active
                 </span>
               ) : hasFile ? (

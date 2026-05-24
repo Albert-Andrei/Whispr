@@ -69,7 +69,7 @@ export function SetupScreen({ onComplete }: { onComplete: () => void }) {
           Homebrew from{" "}
           <a
             href="https://brew.sh"
-            className="font-medium text-indigo-600 underline-offset-2 hover:underline dark:text-indigo-400"
+            className="font-medium text-zinc-900 underline-offset-2 hover:underline dark:text-zinc-200"
           >
             brew.sh
           </a>
@@ -98,7 +98,7 @@ export function SetupScreen({ onComplete }: { onComplete: () => void }) {
                 onClick={() => setTier(id as ModelTier)}
                 className={`flex w-full flex-col rounded-xl border px-4 py-3 text-left transition ${
                   tier === id
-                    ? "border-indigo-400 bg-indigo-50/80 dark:border-indigo-500 dark:bg-indigo-500/10"
+                    ? "border-zinc-900 bg-zinc-100 dark:border-zinc-400 dark:bg-zinc-800/80"
                     : "border-zinc-200 hover:border-zinc-300 dark:border-zinc-700 dark:hover:border-zinc-600"
                 }`}
               >
@@ -157,7 +157,7 @@ export function SetupScreen({ onComplete }: { onComplete: () => void }) {
                   </div>
                   <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
                     <div
-                      className="h-full rounded-full bg-indigo-500 transition-all"
+                      className="h-full rounded-full bg-zinc-900 transition-all dark:bg-zinc-200"
                       style={{
                         width: `${pct != null ? Math.min(100, pct) : 5}%`,
                       }}

@@ -104,7 +104,7 @@ export function EditableFileName({
             cancel();
           }
         }}
-        className={`min-w-0 max-w-full rounded-md border border-zinc-300 bg-white px-2 py-0.5 text-zinc-900 outline-none ring-2 ring-indigo-500/20 focus:border-indigo-400 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-indigo-500 ${inputClass}`}
+        className={`min-w-0 max-w-full rounded-md border border-zinc-300 bg-white px-2 py-0.5 text-zinc-900 outline-none ring-2 ring-zinc-900/20 focus:border-zinc-900 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50 dark:ring-zinc-400/20 dark:focus:border-zinc-400 ${inputClass}`}
         aria-label="Edit title"
       />
     );

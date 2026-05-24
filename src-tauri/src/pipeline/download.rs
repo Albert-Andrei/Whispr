@@ -13,7 +13,7 @@ pub fn download_url_to_tmp(
     paths::ensure_layout(app)?;
     let ytdlp = paths::ytdlp_path(app)?;
     if !ytdlp.is_file() {
-        return Err("yt-dlp is not installed. Finish setup first.".into());
+        return Err("yt-dlp is not available. The bundled binary may be missing — try reinstalling Whispr.".into());
     }
     let tmp = paths::tmp_dir(app)?;
     let template = tmp.join(format!("{job_id}.%(ext)s"));

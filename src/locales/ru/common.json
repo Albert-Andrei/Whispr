@@ -101,10 +101,6 @@
     "ja": "Японский",
     "zh": "Китайский"
   },
-  "binaryStatus": {
-    "installed": "Установлено",
-    "missing": "Отсутствует"
-  },
   "playback": {
     "play": "Воспроизвести",
     "pause": "Пауза",
@@ -158,7 +154,6 @@
     "details": "Сведения",
     "about": "О приложении",
     "general": "Общие",
-    "system": "Система",
     "storage": "Хранилище",
     "whisperModels": "Модели Whisper"
   },
@@ -171,8 +166,6 @@
     "clickToRename": "Нажмите, чтобы переименовать",
     "backToTranscriptions": "Назад к транскрипциям",
     "startRecording": "Начать запись",
-    "checkingTools": "Проверка инструментов",
-    "checkingToolsTitle": "Проверка инструментов…",
     "diskUsageByCategory": "Использование диска по категориям"
   }
 }

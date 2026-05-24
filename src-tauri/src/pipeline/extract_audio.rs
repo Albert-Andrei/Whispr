@@ -11,7 +11,7 @@ pub fn extract_wav_16k_mono(
     paths::ensure_layout(app)?;
     let ffmpeg = paths::ffmpeg_path(app)?;
     if !ffmpeg.is_file() {
-        return Err("ffmpeg is not installed. Finish setup first.".into());
+        return Err("ffmpeg is not available. The bundled binary may be missing — try reinstalling Whispr.".into());
     }
     let tmp = paths::tmp_dir(app)?;
     let out = tmp.join(format!("{job_id}.wav"));

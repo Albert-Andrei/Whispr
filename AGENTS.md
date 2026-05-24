@@ -8,9 +8,9 @@ Context for AI agents and contributors working on this repo.
 
 ## Transcription stack (implemented)
 
-- **yt-dlp** — downloaded on demand into the app config layout (not shipped in the bundle in current iteration). **Each launch** re-checks `bin/yt-dlp`; if it is missing, empty, or unreadable it is downloaded again (quietly, no setup progress events).
-- **ffmpeg** — same; **each launch** verifies `bin/ffmpeg` and re-downloads when needed.
-- **whisper-cli** — **not** bundled. On macOS, Whispr runs **`brew install whisper-cpp`** when needed (if Homebrew is at `/opt/homebrew/bin/brew` or `/usr/local/bin/brew`), then symlinks `whisper-cli` into `bin/`. Each launch also repairs a missing/broken symlink when the binary is already on disk. Users without Homebrew need to install it from [brew.sh](https://brew.sh) once, or provide `whisper-cli` on the `PATH` / standard install paths.
+- **yt-dlp** — bundled as a Tauri **sidecar** binary (`src-tauri/binaries/`). Fetched by `scripts/fetch-sidecars.sh` before build; Tauri places it alongside the app executable at runtime.
+- **ffmpeg** — same; bundled as a sidecar.
+- **whisper-cli** — same; built from [whisper.cpp](https://github.com/ggerganov/whisper.cpp) source with Metal enabled, bundled as a sidecar. **No Homebrew dependency.**
 - **Models** — GGML `.bin` files (small / medium / large-v3) downloaded from Hugging Face URLs in Rust (`downloader.rs`); stored under the app’s models directory.
 
 ### Language / errors
@@ -37,10 +37,10 @@ Context for AI agents and contributors working on this repo.
 **`src-tauri/src/`** (Rust):
 
 - **`lib.rs`** — Tauri app entry; registers commands.
-- **`paths.rs`** — App config dirs, `bin/`, `models/`, `tmp/`, DB path, whisper-cli symlink target.
-- **`binaries.rs`** — `check_binaries`, `get_app_disk_usage`, `get_recommended_max_concurrent`, `list_model_files`, `delete_model_file`.
+- **`paths.rs`** — App config dirs (`models/`, `tmp/`, `audio/`), DB path, sidecar binary resolution.
+- **`binaries.rs`** — `get_app_disk_usage`, `get_recommended_max_concurrent`, `list_model_files`, `delete_model_file`, `reset_all_data`.
 - **`jobs_db.rs`** — Direct SQLite access from Rust for job updates (must stay consistent with TS schema in `src/lib/db.ts`).
-- **`downloader.rs`** — `download_tools`, `download_model_file`, setup progress events.
+- **`downloader.rs`** — `download_model_file`, setup progress events.
 - **`pipeline/`** — Orchestration: download → extract audio → `whisper-cli` → write transcript / SRT; emits `pipeline:progress`.
 - **`export/`** — `export_transcript` — txt, timestamped txt, srt, **pdf** (`printpdf`), **docx** (`docx-rs`).
 
@@ -48,7 +48,7 @@ Context for AI agents and contributors working on this repo.
 
 ## First-run setup
 
-- **`AppShell`** reads `app_config.setup_completed`. If unset/false in Tauri, **`SetupScreen`** runs (model tier pick, `download_tools`, `download_model_file`, then `setup_completed=true` and `selected_model`).
+- **`AppShell`** reads `app_config.setup_completed`. If unset/false in Tauri, **`SetupScreen`** runs (model tier pick, `download_model_file`, then `setup_completed=true` and `selected_model`). Tools (ffmpeg, yt-dlp, whisper-cli) are bundled as sidecars — no downloads needed.
 - After setup (or when already complete), the shell initializes pipeline event listeners, refreshes `max_concurrent_jobs`, and loads jobs.
 
 ## `app_config` keys (SQLite)
@@ -66,14 +66,14 @@ SQLite `transcription_jobs` (see `src/lib/db.ts` migrations): core fields plus *
 
 ## Tauri commands (Rust)
 
-- `check_binaries` — `BinaryHealthReport` (ffmpeg, yt-dlp, whisper-cli).
 - `get_app_disk_usage` — rough category breakdown + total.
 - `get_recommended_max_concurrent` — CPU-based hint (capped 1–3).
-- `download_tools`, `download_model_file`, `delete_model_file`, `list_model_files`.
+- `download_model_file`, `delete_model_file`, `list_model_files`.
+- `reset_all_data` — wipe models, audio, tmp, DB (danger zone).
 - `run_pipeline` — start job pipeline (by `jobId` + source fields).
 - `export_transcript` — write chosen format to user path (dialog from frontend).
 
-Events: **`pipeline:progress`**, **`setup:progress`**.
+Events: **`pipeline:progress`**, **`setup:progress`** (model download only).
 
 ## UI / UX conventions
 

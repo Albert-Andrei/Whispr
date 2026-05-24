@@ -25,13 +25,17 @@ export function SetupScreen({ onComplete }: { onComplete: () => void }) {
   const [tier, setTier] = useState<ModelTier>("medium");
   const [phase, setPhase] = useState<Phase>("pick");
   const [error, setError] = useState<string | null>(null);
-  const [progress, setProgress] = useState<Record<string, SetupProgress>>({});
+  const [modelProgress, setModelProgress] = useState<SetupProgress | null>(
+    null,
+  );
 
   useEffect(() => {
     let unlisten: (() => void) | undefined;
     void listen<SetupProgress>("setup:progress", (ev) => {
       const p = ev.payload;
-      setProgress((prev) => ({ ...prev, [p.component]: p }));
+      if (p.component.startsWith("model:")) {
+        setModelProgress(p);
+      }
     }).then((fn) => {
       unlisten = fn;
     });
@@ -43,9 +47,8 @@ export function SetupScreen({ onComplete }: { onComplete: () => void }) {
   const runSetup = async () => {
     setPhase("loading");
     setError(null);
-    setProgress({});
+    setModelProgress(null);
     try {
-      await invoke("download_tools");
       await invoke("download_model_file", { tier });
       await setConfig("selected_model", MODEL_FILE[tier]);
       await setConfig("setup_completed", "true");
@@ -56,6 +59,13 @@ export function SetupScreen({ onComplete }: { onComplete: () => void }) {
       setPhase("error");
     }
   };
+
+  const modelPct =
+    modelProgress?.total && modelProgress.total > 0
+      ? Math.round((modelProgress.downloaded / modelProgress.total) * 100)
+      : modelProgress?.downloaded
+        ? null
+        : 0;
 
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-zinc-100 px-4 py-12 dark:bg-zinc-950">
@@ -77,9 +87,21 @@ export function SetupScreen({ onComplete }: { onComplete: () => void }) {
             </p>
             {(
               [
-                ["small", t("common:models.smallTitle"), t("common:models.smallHint")],
-                ["medium", t("common:models.mediumTitle"), t("common:models.mediumHint")],
-                ["large", t("common:models.largeTitle"), t("common:models.largeHint")],
+                [
+                  "small",
+                  t("common:models.smallTitle"),
+                  t("common:models.smallHint"),
+                ],
+                [
+                  "medium",
+                  t("common:models.mediumTitle"),
+                  t("common:models.mediumHint"),
+                ],
+                [
+                  "large",
+                  t("common:models.largeTitle"),
+                  t("common:models.largeHint"),
+                ],
               ] as const
             ).map(([id, title, sub]) => (
               <button
@@ -113,55 +135,28 @@ export function SetupScreen({ onComplete }: { onComplete: () => void }) {
             <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
               {t("app:setup.loading.title")}
             </p>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              {t("app:setup.loading.homebrewNote")}
-            </p>
-            {(
-              [
-                "ffmpeg",
-                "yt-dlp",
-                "whisper-cli",
-                `model:${MODEL_FILE[tier]}`,
-              ] as const
-            ).map((key) => {
-              const p = progress[key];
-              const label =
-                key === "ffmpeg"
-                  ? t("app:setup.component.ffmpeg")
-                  : key === "yt-dlp"
-                    ? t("app:setup.component.ytdlp")
-                    : key === "whisper-cli"
-                      ? t("app:setup.component.whisperCli")
-                      : t("app:setup.component.model");
-              const pct =
-                p?.total && p.total > 0
-                  ? Math.round((p.downloaded / p.total) * 100)
-                  : p?.downloaded
-                    ? null
-                    : 0;
-              return (
-                <div key={key}>
-                  <div className="flex justify-between text-xs text-zinc-500">
-                    <span>{label}</span>
-                    <span>{pct != null ? `${pct}%` : "…"}</span>
-                  </div>
-                  <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
-                    <div
-                      className="h-full rounded-full bg-zinc-900 transition-all dark:bg-zinc-200"
-                      style={{
-                        width: `${pct != null ? Math.min(100, pct) : 5}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
+            <div>
+              <div className="flex justify-between text-xs text-zinc-500">
+                <span>{t("app:setup.component.model")}</span>
+                <span>{modelPct != null ? `${modelPct}%` : "…"}</span>
+              </div>
+              <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+                <div
+                  className="h-full rounded-full bg-zinc-900 transition-all dark:bg-zinc-200"
+                  style={{
+                    width: `${modelPct != null ? Math.min(100, modelPct) : 5}%`,
+                  }}
+                />
+              </div>
+            </div>
           </div>
         ) : null}
 
         {phase === "error" && error ? (
           <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-500/40 dark:bg-red-500/10">
-            <p className="whitespace-pre-line text-sm text-red-800 dark:text-red-200">{error}</p>
+            <p className="whitespace-pre-line text-sm text-red-800 dark:text-red-200">
+              {error}
+            </p>
             <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:justify-end">
               <button
                 type="button"

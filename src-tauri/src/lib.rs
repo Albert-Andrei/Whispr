@@ -19,13 +19,13 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .invoke_handler(tauri::generate_handler![
-            binaries::check_binaries,
             binaries::get_app_disk_usage,
             binaries::get_recommended_max_concurrent,
             binaries::delete_model_file,
             binaries::list_model_files,
             binaries::reset_all_data,
-            downloader::download_tools,
+            binaries::check_legacy_files,
+            binaries::clean_legacy_files,
             downloader::download_model_file,
             pipeline::run_pipeline,
             pipeline::fetch_url_title,
@@ -42,14 +42,6 @@ pub fn run() {
             media::list_playback_media,
             media::delete_playback_media,
         ])
-        .setup(|app| {
-            let h = app.handle().clone();
-            if let Err(e) = tauri::async_runtime::block_on(downloader::ensure_bin_tools_at_launch(&h)) {
-                eprintln!("Whispr: could not ensure ffmpeg / yt-dlp: {e}");
-            }
-            downloader::ensure_whisper_cli_linked(&h);
-            Ok(())
-        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -101,10 +101,6 @@
     "ja": "Japonés",
     "zh": "Chino"
   },
-  "binaryStatus": {
-    "installed": "Instalado",
-    "missing": "Falta"
-  },
   "playback": {
     "play": "Reproducir",
     "pause": "Pausa",
@@ -158,7 +154,6 @@
     "details": "Detalles",
     "about": "Acerca de",
     "general": "General",
-    "system": "Sistema",
     "storage": "Almacenamiento",
     "whisperModels": "Modelos Whisper"
   },
@@ -171,8 +166,6 @@
     "clickToRename": "Clic para renombrar",
     "backToTranscriptions": "Volver a transcripciones",
     "startRecording": "Iniciar grabación",
-    "checkingTools": "Comprobando herramientas",
-    "checkingToolsTitle": "Comprobando herramientas…",
     "diskUsageByCategory": "Uso de disco por categoría"
   }
 }

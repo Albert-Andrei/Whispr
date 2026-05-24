@@ -134,7 +134,7 @@ fn convert_wav_to_m4a(
 ) -> Result<(), String> {
     let ffmpeg = paths::ffmpeg_path(app)?;
     if !ffmpeg.is_file() {
-        return Err("ffmpeg is not installed. Finish setup first.".into());
+        return Err("ffmpeg is not available. The bundled binary may be missing — try reinstalling Whispr.".into());
     }
     let mut child = Command::new(&ffmpeg)
         .arg("-y")

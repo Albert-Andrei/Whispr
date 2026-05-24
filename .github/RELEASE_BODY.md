@@ -1,6 +1,6 @@
-## Whispr v0.1.9
+## Whispr v0.1.10
 
-Add @types/bun and tsconfig.scripts.json for script typechecking, remove unused PipelineStage import to fix tsc build.
+Auto-detect app language from system locale on first launch, bundle ffmpeg, yt-dlp, whisper-cli as Tauri sidecars, add settings control to wipe all app data.
 
 ---
 

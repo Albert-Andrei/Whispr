@@ -1,6 +1,6 @@
-## Whispr v0.1.8
+## Whispr v0.1.9
 
-Translation, new icon color, remove purple, update settings size indicator.
+Add @types/bun and tsconfig.scripts.json for script typechecking, remove unused PipelineStage import to fix tsc build.
 
 ---
 

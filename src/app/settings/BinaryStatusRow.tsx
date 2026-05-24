@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { BinaryInfo } from "../../types/types";
 import { SettingsRow } from "./SettingsLayout";
 
@@ -7,7 +8,8 @@ type BinaryStatusRowProps = {
 };
 
 export function BinaryStatusRow({ binary, last = false }: BinaryStatusRowProps) {
-  const statusLabel = binary.ok ? "Installed" : "Missing";
+  const { t } = useTranslation("common");
+  const statusLabel = binary.ok ? t("binaryStatus.installed") : t("binaryStatus.missing");
 
   return (
     <SettingsRow
@@ -36,8 +38,9 @@ export function BinaryStatusRow({ binary, last = false }: BinaryStatusRowProps) 
 }
 
 function BinaryStatusRowSkeleton({ last = false }: { last?: boolean }) {
+  const { t } = useTranslation("app");
   return (
-    <SettingsRow label="Loading…" description="Checking tool status" last={last}>
+    <SettingsRow label={t("settings.binaryStatus.loading")} description={t("settings.binaryStatus.checkingToolStatus")} last={last}>
       <div className="h-5 w-24 animate-pulse rounded bg-zinc-200 dark:bg-zinc-700" />
     </SettingsRow>
   );

@@ -1,5 +1,6 @@
 import { isTauri } from "@tauri-apps/api/core";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Dashboard } from "../app/dashboard/Dashboard";
 import { NewTranscriptionModal } from "../app/import/NewTranscriptionModal";
 import { Media } from "../app/media/Media";
@@ -21,16 +22,16 @@ import { readInitialSidebarWidth, Sidebar } from "./Sidebar";
 
 const DRAG_STRIP_PX = 20;
 
-function headerTitle(view: SidebarView): string {
+function headerTitle(view: SidebarView, t: (key: string) => string): string {
   switch (view) {
     case "history":
-      return "Transcriptions";
+      return t("common:nav.transcriptions");
     case "settings":
       return "";
     case "record":
-      return "Record";
+      return t("common:nav.record");
     case "media":
-      return "Media";
+      return t("common:nav.media");
   }
 }
 
@@ -41,6 +42,7 @@ type AppShellProps = {
 };
 
 export function AppShell({ appUpdate }: AppShellProps) {
+  const { t } = useTranslation(["common", "app"]);
   const [view, setView] = useState<SidebarView>("history");
   const [sidebarWidth, setSidebarWidth] = useState(() =>
     readInitialSidebarWidth(),
@@ -132,7 +134,7 @@ export function AppShell({ appUpdate }: AppShellProps) {
   if (setupGate === "loading" && isTauri()) {
     return (
       <div className="flex h-dvh items-center justify-center bg-zinc-50 text-sm text-zinc-600 dark:bg-zinc-950 dark:text-zinc-400">
-        Loading…
+        {t("app:components.appShell.loading")}
       </div>
     );
   }
@@ -180,7 +182,7 @@ export function AppShell({ appUpdate }: AppShellProps) {
             <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-zinc-200/90 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)] dark:border-[var(--color-content-bg-dark)] dark:bg-[var(--color-content-bg-dark)] dark:shadow-none">
               {view !== "settings" ? (
                 <Header
-                  title={headerTitle(view)}
+                  title={headerTitle(view, t)}
                   onNewTranscription={
                     view === "history" ? () => openModal() : undefined
                   }

@@ -1,4 +1,5 @@
 import { Toast } from "@base-ui-components/react/toast";
+import { useTranslation } from "react-i18next";
 import { appToastManager } from "../lib/toastManager";
 import "./AppToasts.css";
 
@@ -22,6 +23,7 @@ function IconCheck() {
 }
 
 function ToastList() {
+  const { t } = useTranslation("common");
   const { toasts } = Toast.useToastManager();
 
   return (
@@ -35,7 +37,7 @@ function ToastList() {
                 <Toast.Title className="whispr-toast-title" />
                 <Toast.Close
                   className="whispr-toast-close"
-                  aria-label="Dismiss notification"
+                  aria-label={t("aria.dismissNotification")}
                 >
                   ×
                 </Toast.Close>

@@ -1,0 +1,178 @@
+{
+  "actions": {
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "discard": "Discard",
+    "retry": "Retry",
+    "view": "View",
+    "new": "New",
+    "close": "Close",
+    "back": "Back",
+    "tryAgain": "Try again",
+    "use": "Use",
+    "download": "Download",
+    "browseFiles": "Browse files...",
+    "addToQueue": "Add to queue",
+    "checkAgain": "Check again",
+    "copyText": "Copy text",
+    "copied": "Copied!",
+    "translate": "Translate",
+    "copy": "Copy"
+  },
+  "loading": "Loading",
+  "loadingEllipsis": "Loading…",
+  "deleting": "Deleting…",
+  "translating": "Translating…",
+  "checking": "Checking…",
+  "downloading": "Downloading…",
+  "installing": "Installing…",
+  "or": "or",
+  "emptyPlaceholder": "—",
+  "nav": {
+    "transcriptions": "Transcriptions",
+    "record": "Record",
+    "media": "Media",
+    "settings": "Settings",
+    "whispr": "Whispr"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "colorTheme": "Color theme",
+    "colorThemeDescription": "Choose light, dark, or match your system appearance"
+  },
+  "exportFormats": {
+    "txt": "Plain text",
+    "txtTimestamps": "Text with timestamps",
+    "srt": "SRT subtitles",
+    "pdf": "PDF",
+    "docx": "Word (DOCX)",
+    "txtWithExt": "Plain text (.txt)",
+    "srtWithExt": "Subtitles (.srt)",
+    "pdfWithExt": "PDF (.pdf)",
+    "docxWithExt": "Word (.docx)"
+  },
+  "dialogFilters": {
+    "srt": "SRT",
+    "pdf": "PDF",
+    "word": "Word",
+    "text": "Text",
+    "videoAudio": "Video & audio"
+  },
+  "models": {
+    "small": "Small",
+    "medium": "Medium",
+    "large": "Large",
+    "smallTitle": "Small (~466 MB)",
+    "mediumTitle": "Medium (~1.5 GB)",
+    "largeTitle": "Large (~3.1 GB)",
+    "smallHint": "Good quality, faster",
+    "mediumHint": "Recommended",
+    "largeHint": "Best quality",
+    "smallSize": "~466 MB",
+    "mediumSize": "~1.5 GB",
+    "largeSize": "~3.1 GB",
+    "active": "Active",
+    "downloaded": "Downloaded"
+  },
+  "concurrentJobs": {
+    "one": "1 job",
+    "two": "2 jobs",
+    "three": "3 jobs"
+  },
+  "languages": {
+    "en": "English",
+    "ru": "Русский",
+    "ro": "Română",
+    "es": "Español",
+    "fr": "Français"
+  },
+  "translateLanguages": {
+    "en": "English",
+    "es": "Spanish",
+    "fr": "French",
+    "de": "German",
+    "it": "Italian",
+    "pt": "Portuguese",
+    "ro": "Romanian",
+    "ru": "Russian",
+    "uk": "Ukrainian",
+    "ja": "Japanese",
+    "zh": "Chinese"
+  },
+  "binaryStatus": {
+    "installed": "Installed",
+    "missing": "Missing"
+  },
+  "playback": {
+    "play": "Play",
+    "pause": "Pause",
+    "volume": "Volume",
+    "rec": "REC",
+    "paused": "Paused",
+    "resume": "Resume"
+  },
+  "update": {
+    "available": "Update available",
+    "upToDate": "Up to date",
+    "error": "Error",
+    "updateAndRestart": "Update & Restart",
+    "versionAvailable": "v{{version}} available",
+    "updateAvailableVersion": "Update available: v{{version}}",
+    "latestRelease": "You are on the latest release",
+    "couldNotCheck": "Could not check for updates",
+    "inProgress": "Update in progress…",
+    "installVersion": "Install v{{version}}",
+    "downloadingPercent": "Downloading {{percent}}%",
+    "installingUpdate": "Installing update…",
+    "downloadingUpdate": "Downloading update… {{percent}}%"
+  },
+  "desktopOnly": {
+    "sqliteShell": "SQLite runs in the desktop shell. Use `bun run tauri dev` instead of the browser-only dev server.",
+    "settingsShell": "Settings that talk to your Mac (binaries, disk usage, models) need the desktop app. Run `bun run tauri dev` instead of the browser-only dev server.",
+    "recordingShell": "Recording requires the desktop app.",
+    "playbackShell": "Playback media is available in the desktop app."
+  },
+  "toasts": {
+    "recordingSaved": "Recording saved"
+  },
+  "table": {
+    "name": "Name",
+    "duration": "Duration",
+    "date": "Date",
+    "status": "Status",
+    "actions": "Actions"
+  },
+  "details": {
+    "source": "Source",
+    "created": "Created",
+    "duration": "Duration",
+    "model": "Model",
+    "version": "Version",
+    "total": "Total"
+  },
+  "sections": {
+    "actions": "Actions",
+    "exportAs": "Export as",
+    "details": "Details",
+    "about": "About",
+    "general": "General",
+    "system": "System",
+    "storage": "Storage",
+    "whisperModels": "Whisper models"
+  },
+  "aria": {
+    "dismissNotification": "Dismiss notification",
+    "dismissUpdate": "Dismiss update notice",
+    "resizeSidebar": "Resize sidebar",
+    "rename": "Rename",
+    "editTitle": "Edit title",
+    "clickToRename": "Click to rename",
+    "backToTranscriptions": "Back to transcriptions",
+    "startRecording": "Start recording",
+    "checkingTools": "Checking tools",
+    "checkingToolsTitle": "Checking tools…",
+    "diskUsageByCategory": "Disk usage by category"
+  }
+}

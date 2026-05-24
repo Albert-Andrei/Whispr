@@ -1,4 +1,7 @@
+import { useTranslation } from "react-i18next";
 import { EditableFileName } from "../../components/EditableFileName";
+import i18n from "../../lib/i18n";
+import { jobStatusLabel } from "../../lib/i18nLabels";
 import { useTranscriptionStore } from "./store";
 import type { TranscriptionJob } from "./types";
 import { ProgressBar } from "./ProgressBar";
@@ -19,7 +22,7 @@ const STATUS_STYLES: Record<
 function formatDate(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleString(undefined, {
+  return d.toLocaleString(i18n.language, {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -36,6 +39,7 @@ type FileRowProps = {
 };
 
 export function FileRow({ job, setSelectedJob, onJobsChanged }: FileRowProps) {
+  const { t } = useTranslation(["common", "backend"]);
   const storeSetSelected = useTranscriptionStore((state) => state.setSelectedJob);
   const storeRetryJob = useTranscriptionStore((state) => state.retryJob);
   const storeRemoveJob = useTranscriptionStore((state) => state.removeJob);
@@ -72,7 +76,7 @@ export function FileRow({ job, setSelectedJob, onJobsChanged }: FileRowProps) {
         />
       </td>
       <td className="px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400">
-        {job.duration ?? "—"}
+        {job.duration ?? t("common:emptyPlaceholder")}
       </td>
       <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400">
         {formatDate(job.created_at)}
@@ -80,9 +84,9 @@ export function FileRow({ job, setSelectedJob, onJobsChanged }: FileRowProps) {
       <td className="px-4 py-3 align-middle">
         <div className="flex flex-col gap-1">
           <span
-            className={`inline-flex w-fit rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${STATUS_STYLES[job.status]}`}
+            className={`inline-flex w-fit rounded-full border px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLES[job.status]}`}
           >
-            {job.status}
+            {jobStatusLabel(t, job.status)}
           </span>
           {job.status === "processing" ? (
             <ProgressBar progress={job.progress} stage={job.pipeline_stage} />
@@ -108,7 +112,7 @@ export function FileRow({ job, setSelectedJob, onJobsChanged }: FileRowProps) {
               }}
               className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-[11px] font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
             >
-              View
+              {t("common:actions.view")}
             </button>
           ) : null}
           {job.status === "failed" ? (
@@ -120,7 +124,7 @@ export function FileRow({ job, setSelectedJob, onJobsChanged }: FileRowProps) {
               }}
               className="rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-[11px] font-medium text-amber-900 hover:bg-amber-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200"
             >
-              Retry
+              {t("common:actions.retry")}
             </button>
           ) : null}
           <button
@@ -131,7 +135,7 @@ export function FileRow({ job, setSelectedJob, onJobsChanged }: FileRowProps) {
             }}
             className="rounded-md border border-zinc-200 px-2 py-1 text-[11px] font-medium text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
           >
-            Delete
+            {t("common:actions.delete")}
           </button>
         </div>
       </td>

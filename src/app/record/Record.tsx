@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { TranscriptView } from "../dashboard/TranscriptView";
 import { LiveRecordView } from "./LiveRecordView";
 import { NavGuardDialog } from "./NavGuardDialog";
@@ -29,6 +30,7 @@ export function Record() {
   const confirmNavStop = useRecordStore((s) => s.confirmNavStop);
   const confirmNavDiscard = useRecordStore((s) => s.confirmNavDiscard);
 
+  const { t } = useTranslation("app");
   const [discardConfirmOpen, setDiscardConfirmOpen] = useState(false);
 
   useEffect(() => {
@@ -53,7 +55,7 @@ export function Record() {
   const handleStart = () => {
     void startRecording().catch((err) => {
       useRecordStore.setState({
-        error: err instanceof Error ? err.message : "Could not start recording",
+        error: err instanceof Error ? err.message : t("record.errors.startFailed"),
       });
     });
   };
@@ -68,7 +70,7 @@ export function Record() {
   if (!ready) {
     return (
       <div className="flex flex-1 items-center justify-center px-5 py-16 text-sm text-zinc-500 dark:text-zinc-400">
-        Loading recordings…
+        {t("record.loading")}
       </div>
     );
   }

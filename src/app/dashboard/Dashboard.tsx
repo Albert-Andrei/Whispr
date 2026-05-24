@@ -1,9 +1,11 @@
+import { useTranslation } from "react-i18next";
 import { EmptyState } from "./EmptyState";
 import { FileList } from "./FileList";
 import { TranscriptView } from "./TranscriptView";
 import { useTranscriptionStore } from "./store";
 
 export function Dashboard() {
+  const { t } = useTranslation("app");
   const jobs = useTranscriptionStore((state) => state.jobs);
   const ready = useTranscriptionStore((state) => state.ready);
   const error = useTranscriptionStore((state) => state.error);
@@ -15,7 +17,7 @@ export function Dashboard() {
   if (!ready) {
     return (
       <div className="flex flex-1 items-center justify-center px-5 py-16 text-sm text-zinc-500 dark:text-zinc-400">
-        Loading your transcriptions…
+        {t("dashboard.loading")}
       </div>
     );
   }
@@ -27,7 +29,7 @@ export function Dashboard() {
           {error}
         </p>
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          Check app permissions or restart Whispr.
+          {t("dashboard.errors.hint")}
         </p>
       </div>
     );

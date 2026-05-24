@@ -1,0 +1,178 @@
+{
+  "actions": {
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "discard": "Descartar",
+    "retry": "Reintentar",
+    "view": "Ver",
+    "new": "Nuevo",
+    "close": "Cerrar",
+    "back": "Atrás",
+    "tryAgain": "Intentar de nuevo",
+    "use": "Usar",
+    "download": "Descargar",
+    "browseFiles": "Explorar archivos...",
+    "addToQueue": "Añadir a la cola",
+    "checkAgain": "Comprobar de nuevo",
+    "copyText": "Copiar texto",
+    "copied": "¡Copiado!",
+    "translate": "Traducir",
+    "copy": "Copiar"
+  },
+  "loading": "Cargando",
+  "loadingEllipsis": "Cargando…",
+  "deleting": "Eliminando…",
+  "translating": "Traduciendo…",
+  "checking": "Comprobando…",
+  "downloading": "Descargando…",
+  "installing": "Instalando…",
+  "or": "o",
+  "emptyPlaceholder": "—",
+  "nav": {
+    "transcriptions": "Transcripciones",
+    "record": "Grabar",
+    "media": "Medios",
+    "settings": "Ajustes",
+    "whispr": "Whispr"
+  },
+  "theme": {
+    "light": "Claro",
+    "dark": "Oscuro",
+    "system": "Sistema",
+    "colorTheme": "Tema de color",
+    "colorThemeDescription": "Elige tema claro, oscuro o el del sistema"
+  },
+  "exportFormats": {
+    "txt": "Texto plano",
+    "txtTimestamps": "Texto con marcas de tiempo",
+    "srt": "Subtítulos SRT",
+    "pdf": "PDF",
+    "docx": "Word (DOCX)",
+    "txtWithExt": "Texto plano (.txt)",
+    "srtWithExt": "Subtítulos (.srt)",
+    "pdfWithExt": "PDF (.pdf)",
+    "docxWithExt": "Word (.docx)"
+  },
+  "dialogFilters": {
+    "srt": "SRT",
+    "pdf": "PDF",
+    "word": "Word",
+    "text": "Texto",
+    "videoAudio": "Vídeo y audio"
+  },
+  "models": {
+    "small": "Pequeño",
+    "medium": "Mediano",
+    "large": "Grande",
+    "smallTitle": "Pequeño (~466 MB)",
+    "mediumTitle": "Mediano (~1,5 GB)",
+    "largeTitle": "Grande (~3,1 GB)",
+    "smallHint": "Buena calidad, más rápido",
+    "mediumHint": "Recomendado",
+    "largeHint": "Mejor calidad",
+    "smallSize": "~466 MB",
+    "mediumSize": "~1,5 GB",
+    "largeSize": "~3,1 GB",
+    "active": "Activo",
+    "downloaded": "Descargado"
+  },
+  "concurrentJobs": {
+    "one": "1 trabajo",
+    "two": "2 trabajos",
+    "three": "3 trabajos"
+  },
+  "languages": {
+    "en": "English",
+    "ru": "Русский",
+    "ro": "Română",
+    "es": "Español",
+    "fr": "Français"
+  },
+  "translateLanguages": {
+    "en": "Inglés",
+    "es": "Español",
+    "fr": "Francés",
+    "de": "Alemán",
+    "it": "Italiano",
+    "pt": "Portugués",
+    "ro": "Rumano",
+    "ru": "Ruso",
+    "uk": "Ucraniano",
+    "ja": "Japonés",
+    "zh": "Chino"
+  },
+  "binaryStatus": {
+    "installed": "Instalado",
+    "missing": "Falta"
+  },
+  "playback": {
+    "play": "Reproducir",
+    "pause": "Pausa",
+    "volume": "Volumen",
+    "rec": "GRAB",
+    "paused": "En pausa",
+    "resume": "Reanudar"
+  },
+  "update": {
+    "available": "Actualización disponible",
+    "upToDate": "Al día",
+    "error": "Error",
+    "updateAndRestart": "Actualizar y reiniciar",
+    "versionAvailable": "v{{version}} disponible",
+    "updateAvailableVersion": "Actualización disponible: v{{version}}",
+    "latestRelease": "Tienes la última versión",
+    "couldNotCheck": "No se pudieron comprobar las actualizaciones",
+    "inProgress": "Actualización en curso…",
+    "installVersion": "Instalar v{{version}}",
+    "downloadingPercent": "Descargando {{percent}}%",
+    "installingUpdate": "Instalando actualización…",
+    "downloadingUpdate": "Descargando actualización… {{percent}}%"
+  },
+  "desktopOnly": {
+    "sqliteShell": "SQLite funciona en la aplicación de escritorio. Usa `bun run tauri dev` en lugar del servidor de desarrollo del navegador.",
+    "settingsShell": "Los ajustes que acceden a tu Mac (binarios, disco, modelos) requieren la app de escritorio. Ejecuta `bun run tauri dev` en lugar del servidor del navegador.",
+    "recordingShell": "La grabación requiere la aplicación de escritorio.",
+    "playbackShell": "La reproducción de medios está disponible en la aplicación de escritorio."
+  },
+  "toasts": {
+    "recordingSaved": "Grabación guardada"
+  },
+  "table": {
+    "name": "Nombre",
+    "duration": "Duración",
+    "date": "Fecha",
+    "status": "Estado",
+    "actions": "Acciones"
+  },
+  "details": {
+    "source": "Origen",
+    "created": "Creado",
+    "duration": "Duración",
+    "model": "Modelo",
+    "version": "Versión",
+    "total": "Total"
+  },
+  "sections": {
+    "actions": "Acciones",
+    "exportAs": "Exportar como",
+    "details": "Detalles",
+    "about": "Acerca de",
+    "general": "General",
+    "system": "Sistema",
+    "storage": "Almacenamiento",
+    "whisperModels": "Modelos Whisper"
+  },
+  "aria": {
+    "dismissNotification": "Descartar notificación",
+    "dismissUpdate": "Descartar aviso de actualización",
+    "resizeSidebar": "Redimensionar barra lateral",
+    "rename": "Renombrar",
+    "editTitle": "Editar título",
+    "clickToRename": "Clic para renombrar",
+    "backToTranscriptions": "Volver a transcripciones",
+    "startRecording": "Iniciar grabación",
+    "checkingTools": "Comprobando herramientas",
+    "checkingToolsTitle": "Comprobando herramientas…",
+    "diskUsageByCategory": "Uso de disco por categoría"
+  }
+}

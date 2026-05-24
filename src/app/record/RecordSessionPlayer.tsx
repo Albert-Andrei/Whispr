@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Waveform } from "./Waveform";
 
 function formatTime(ms: number): string {
@@ -91,10 +92,12 @@ export function RecordSessionPlayer({
   onStop,
   onDiscard,
 }: RecordSessionPlayerProps) {
+  const { t } = useTranslation(["common", "app"]);
+
   return (
     <div className="absolute bottom-4 left-1/2 flex w-[min(90%,480px)] -translate-x-1/2 items-center gap-3 rounded-full border border-zinc-200/80 bg-white/95 px-4 py-2.5 shadow-lg backdrop-blur-sm transition-all dark:border-zinc-700 dark:bg-zinc-900/95">
       <span className="shrink-0 text-[11px] font-medium tabular-nums text-zinc-700 dark:text-zinc-200">
-        {paused ? "Paused" : "REC"}
+        {paused ? t("common:playback.paused") : t("common:playback.rec")}
       </span>
 
       <span className="shrink-0 text-[11px] tabular-nums text-zinc-500 dark:text-zinc-400">
@@ -107,7 +110,7 @@ export function RecordSessionPlayer({
         type="button"
         onClick={paused ? onResume : onPause}
         className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-zinc-800 transition hover:bg-zinc-100 active:scale-95 dark:text-zinc-200 dark:hover:bg-zinc-800"
-        title={paused ? "Resume" : "Pause"}
+        title={paused ? t("common:playback.resume") : t("common:playback.pause")}
       >
         {paused ? <IconPlay /> : <IconPause />}
       </button>
@@ -116,7 +119,7 @@ export function RecordSessionPlayer({
         type="button"
         onClick={onStop}
         className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-white transition hover:bg-zinc-700 active:scale-95 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
-        title="Stop and save"
+        title={t("app:record.controls.stopAndSave")}
       >
         <IconStop />
       </button>
@@ -125,7 +128,7 @@ export function RecordSessionPlayer({
         type="button"
         onClick={onDiscard}
         className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
-        title="Discard recording"
+        title={t("app:record.controls.discardRecording")}
       >
         <IconTrash />
       </button>

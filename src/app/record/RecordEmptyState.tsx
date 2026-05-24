@@ -1,4 +1,7 @@
+import { useTranslation } from "react-i18next";
+
 export function RecordEmptyState() {
+  const { t } = useTranslation("app");
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-5 py-16 pb-28">
       <div className="max-w-sm rounded-2xl border border-dashed border-zinc-300 bg-white/60 p-8 text-center dark:border-zinc-700 dark:bg-zinc-950/40">
@@ -8,12 +11,10 @@ export function RecordEmptyState() {
           </span>
         </div>
         <h2 className="mt-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-          Record
+          {t("record.emptyState.title")}
         </h2>
         <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-          Capture speech with live transcription. Your recording is saved
-          locally and finalized when you stop. Tap the mic button below to
-          begin.
+          {t("record.emptyState.description")}
         </p>
       </div>
     </div>

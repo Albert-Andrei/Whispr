@@ -1,5 +1,6 @@
 import { Dialog } from "@base-ui-components/react/dialog";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { NewImportStep } from "../../types";
 import { DropZone } from "./DropZone";
 import { URLInput } from "./URLInput";
@@ -23,6 +24,7 @@ export function NewTranscriptionModal({
   onLocalFilePaths,
   onUrl,
 }: NewTranscriptionModalProps) {
+  const { t } = useTranslation();
   const [busy, setBusy] = useState(false);
   const [focusUrl, setFocusUrl] = useState(false);
 
@@ -56,16 +58,15 @@ export function NewTranscriptionModal({
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <Dialog.Title className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-                  New transcription
+                  {t("import.modal.title")}
                 </Dialog.Title>
                 <Dialog.Description className="mt-1.5 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
-                  Paste a link, or drag in a file — everything stays on your
-                  Mac.
+                  {t("import.modal.description")}
                 </Dialog.Description>
               </div>
               <Dialog.Close
                 className="-mr-1 -mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-lg leading-none text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
-                aria-label="Close"
+                aria-label={t("common:actions.close")}
               >
                 ×
               </Dialog.Close>
@@ -86,7 +87,7 @@ export function NewTranscriptionModal({
               >
                 <div className="absolute inset-x-0 top-1/2 h-px bg-zinc-200 dark:bg-zinc-700" />
                 <span className="relative bg-white px-3 text-xs font-medium text-zinc-400 dark:bg-zinc-950 dark:text-zinc-500">
-                  or
+                  {t("common:or")}
                 </span>
               </div>
 

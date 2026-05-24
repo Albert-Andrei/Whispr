@@ -1,17 +1,12 @@
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { mediaSourceLabel } from "../../lib/i18nLabels";
 import type { PlaybackMediaItem } from "./types";
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-function sourceLabel(sourceType: string | null): string {
-  if (sourceType === "record") return "Recording";
-  if (sourceType === "url") return "URL import";
-  if (sourceType === "local") return "Local file";
-  return "Transcription";
 }
 
 function IconPlay() {
@@ -68,6 +63,7 @@ export function MediaRow({
   onStop,
   onDelete,
 }: MediaRowProps) {
+  const { t } = useTranslation(["common", "app"]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
@@ -114,7 +110,7 @@ export function MediaRow({
       <button
         type="button"
         onClick={onPlayToggle}
-        aria-label={playing ? "Pause" : "Play"}
+        aria-label={playing ? t("common:playback.pause") : t("common:playback.play")}
         className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
       >
         {playing ? <IconPause /> : <IconPlay />}
@@ -125,8 +121,8 @@ export function MediaRow({
           {item.filename}
         </p>
         <p className="mt-0.5 text-[12px] text-zinc-500 dark:text-zinc-400">
-          {sourceLabel(item.sourceType)} · {formatBytes(item.bytes)}
-          {item.hasSyncedPlayback ? " · Synced playback" : ""}
+          {mediaSourceLabel(t, item.sourceType)} · {formatBytes(item.bytes)}
+          {item.hasSyncedPlayback ? ` · ${t("app:media.syncedPlayback")}` : ""}
         </p>
         {playing && duration > 0 ? (
           <div className="mt-2 h-1 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { save } from "@tauri-apps/plugin-dialog";
+import { useTranslation } from "react-i18next";
 import { exportDefaultBaseName } from "../../lib/exportFilename";
 import { parseSrt } from "../../lib/srt";
 import {
@@ -41,6 +42,7 @@ export function TranscriptView(props: TranscriptViewProps = {}) {
   const patchJob = patchJobProp ?? storePatchJob;
   const job = jobs.find((j) => j.id === selectedId);
 
+  const { t } = useTranslation(["common", "app"]);
   const [viewingOriginal, setViewingOriginal] = useState(false);
   const [translating, setTranslating] = useState(false);
   const [translateError, setTranslateError] = useState<string | null>(null);
@@ -86,12 +88,12 @@ export function TranscriptView(props: TranscriptViewProps = {}) {
       defaultPath: `${baseName}${fmt?.ext ?? ".txt"}`,
       filters:
         format === "srt"
-          ? [{ name: "SRT", extensions: ["srt"] }]
+          ? [{ name: t("common:dialogFilters.srt"), extensions: ["srt"] }]
           : format === "pdf"
-            ? [{ name: "PDF", extensions: ["pdf"] }]
+            ? [{ name: t("common:dialogFilters.pdf"), extensions: ["pdf"] }]
             : format === "docx"
-              ? [{ name: "Word", extensions: ["docx"] }]
-              : [{ name: "Text", extensions: ["txt"] }],
+              ? [{ name: t("common:dialogFilters.word"), extensions: ["docx"] }]
+              : [{ name: t("common:dialogFilters.text"), extensions: ["txt"] }],
     });
     if (!path) return;
     await invoke("export_transcript", {
@@ -111,7 +113,7 @@ export function TranscriptView(props: TranscriptViewProps = {}) {
         langCode,
       );
       if (!translated.trim()) {
-        setTranslateError("Translation returned no text. Try again.");
+        setTranslateError(t("app:dashboard.transcriptView.translationNoText"));
         return;
       }
       await setJobTranslation(job.id, translated, langCode);
@@ -122,7 +124,7 @@ export function TranscriptView(props: TranscriptViewProps = {}) {
       setViewingOriginal(false);
     } catch {
       setTranslateError(
-        "Translation failed. Check your connection and try again.",
+        t("app:dashboard.transcriptView.translationFailed"),
       );
     } finally {
       setTranslating(false);
@@ -135,7 +137,7 @@ export function TranscriptView(props: TranscriptViewProps = {}) {
         {showRecordedBadge ? (
           <div className="px-5 pt-2">
             <span className="inline-flex rounded-full border border-zinc-200 bg-zinc-100 px-2.5 py-0.5 text-[11px] font-medium text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-              Recorded
+              {t("app:dashboard.transcriptView.recordedBadge")}
             </span>
           </div>
         ) : null}
@@ -144,24 +146,24 @@ export function TranscriptView(props: TranscriptViewProps = {}) {
           <div className="flex items-center gap-2 px-5 pt-2 text-[13px] text-zinc-500 dark:text-zinc-400">
             {showTranslation ? (
               <>
-                <span>Translated to {translatedLabel}</span>
+                <span>{t("app:dashboard.transcriptView.translatedTo", { language: translatedLabel })}</span>
                 <button
                   type="button"
                   onClick={() => setViewingOriginal(true)}
                   className="text-zinc-700 underline decoration-zinc-300 underline-offset-2 transition hover:text-zinc-900 dark:text-zinc-300 dark:decoration-zinc-600 dark:hover:text-zinc-100"
                 >
-                  Show original
+                  {t("app:dashboard.transcriptView.showOriginal")}
                 </button>
               </>
             ) : (
               <>
-                <span>Showing original</span>
+                <span>{t("app:dashboard.transcriptView.showingOriginal")}</span>
                 <button
                   type="button"
                   onClick={() => setViewingOriginal(false)}
                   className="text-zinc-700 underline decoration-zinc-300 underline-offset-2 transition hover:text-zinc-900 dark:text-zinc-300 dark:decoration-zinc-600 dark:hover:text-zinc-100"
                 >
-                  Show translation
+                  {t("app:dashboard.transcriptView.showTranslation")}
                 </button>
               </>
             )}
@@ -176,7 +178,7 @@ export function TranscriptView(props: TranscriptViewProps = {}) {
 
         {translating ? (
           <p className="px-5 pt-2 text-[13px] text-zinc-500 dark:text-zinc-400">
-            Translating…
+            {t("common:translating")}
           </p>
         ) : null}
 

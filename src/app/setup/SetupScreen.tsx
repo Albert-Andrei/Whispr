@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { setConfig } from "../../lib/db";
 
 export type ModelTier = "small" | "medium" | "large";
@@ -20,6 +21,7 @@ type SetupProgress = {
 type Phase = "pick" | "loading" | "error";
 
 export function SetupScreen({ onComplete }: { onComplete: () => void }) {
+  const { t } = useTranslation(["common", "app"]);
   const [tier, setTier] = useState<ModelTier>("medium");
   const [phase, setPhase] = useState<Phase>("pick");
   const [error, setError] = useState<string | null>(null);
@@ -59,37 +61,25 @@ export function SetupScreen({ onComplete }: { onComplete: () => void }) {
     <div className="flex min-h-dvh flex-col items-center justify-center bg-zinc-100 px-4 py-12 dark:bg-zinc-950">
       <div className="w-full max-w-lg rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         <h1 className="text-center text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-          Welcome to Whispr
+          {t("app:setup.welcome.title")}
         </h1>
         <p className="mt-2 text-center text-sm text-zinc-500 dark:text-zinc-400">
-          One-time setup downloads ffmpeg, yt-dlp, and your chosen Whisper model. If{" "}
-          <strong className="text-zinc-700 dark:text-zinc-200">whisper-cli</strong> is not
-          already on your Mac, Whispr installs it via{" "}
-          <strong className="text-zinc-700 dark:text-zinc-200">Homebrew</strong> for you (you need
-          Homebrew from{" "}
-          <a
-            href="https://brew.sh"
-            className="font-medium text-zinc-900 underline-offset-2 hover:underline dark:text-zinc-200"
-          >
-            brew.sh
-          </a>
-          ). You can change the model later in Settings.
+          {t("app:setup.welcome.description")}
         </p>
         <p className="mt-2 text-center text-xs text-zinc-400">
-          After setup, transcription works offline. Internet is only required during this download
-          step.
+          {t("app:setup.welcome.offlineNote")}
         </p>
 
         {phase === "pick" ? (
           <div className="mt-8 space-y-3">
             <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
-              Choose model (multilingual)
+              {t("app:setup.model.chooseLabel")}
             </p>
             {(
               [
-                ["small", "Small (~466 MB)", "Good quality, faster"],
-                ["medium", "Medium (~1.5 GB)", "Recommended"],
-                ["large", "Large (~3.1 GB)", "Best quality"],
+                ["small", t("common:models.smallTitle"), t("common:models.smallHint")],
+                ["medium", t("common:models.mediumTitle"), t("common:models.mediumHint")],
+                ["large", t("common:models.largeTitle"), t("common:models.largeHint")],
               ] as const
             ).map(([id, title, sub]) => (
               <button
@@ -113,7 +103,7 @@ export function SetupScreen({ onComplete }: { onComplete: () => void }) {
               onClick={() => void runSetup()}
               className="mt-4 w-full rounded-xl bg-zinc-900 py-3 text-sm font-semibold text-white dark:bg-zinc-100 dark:text-zinc-900"
             >
-              Set up Whispr
+              {t("app:setup.button.setup")}
             </button>
           </div>
         ) : null}
@@ -121,10 +111,10 @@ export function SetupScreen({ onComplete }: { onComplete: () => void }) {
         {phase === "loading" ? (
           <div className="mt-8 space-y-4">
             <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
-              Downloading components…
+              {t("app:setup.loading.title")}
             </p>
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              The transcription step may run Homebrew to install <code className="text-zinc-600 dark:text-zinc-300">whisper-cpp</code> — first time can take several minutes.
+              {t("app:setup.loading.homebrewNote")}
             </p>
             {(
               [
@@ -137,12 +127,12 @@ export function SetupScreen({ onComplete }: { onComplete: () => void }) {
               const p = progress[key];
               const label =
                 key === "ffmpeg"
-                  ? "ffmpeg — audio/video"
+                  ? t("app:setup.component.ffmpeg")
                   : key === "yt-dlp"
-                    ? "yt-dlp — URL download"
+                    ? t("app:setup.component.ytdlp")
                     : key === "whisper-cli"
-                      ? "whisper-cli — transcription"
-                      : "Whisper model";
+                      ? t("app:setup.component.whisperCli")
+                      : t("app:setup.component.model");
               const pct =
                 p?.total && p.total > 0
                   ? Math.round((p.downloaded / p.total) * 100)
@@ -178,14 +168,14 @@ export function SetupScreen({ onComplete }: { onComplete: () => void }) {
                 onClick={() => setPhase("pick")}
                 className="order-2 w-full rounded-lg border border-red-300 bg-white py-2 text-center text-xs font-semibold text-red-800 dark:border-red-500/50 dark:bg-red-950/40 dark:text-red-100 sm:order-1 sm:w-auto sm:px-4"
               >
-                Back
+                {t("common:actions.back")}
               </button>
               <button
                 type="button"
                 onClick={() => void runSetup()}
                 className="order-1 w-full rounded-lg bg-red-600 py-2 text-center text-xs font-semibold text-white hover:bg-red-700 sm:order-2 sm:w-auto sm:px-4"
               >
-                Try again
+                {t("common:actions.tryAgain")}
               </button>
             </div>
           </div>

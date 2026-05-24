@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Menu } from "@base-ui-components/react/menu";
+import { useTranslation } from "react-i18next";
 import type { PlaybackSpeed } from "../../hooks/useTranscriptPlayback";
 
 const SPEEDS: PlaybackSpeed[] = [0.5, 0.75, 1, 1.25, 1.5, 2];
@@ -85,6 +86,7 @@ function VolumeControl({
   volume: number;
   onSetVolume: (v: number) => void;
 }) {
+  const { t } = useTranslation("common");
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -108,7 +110,7 @@ function VolumeControl({
         type="button"
         onClick={() => setOpen((o) => !o)}
         className="flex h-7 w-7 items-center justify-center rounded-md text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
-        title="Volume"
+        title={t("common:playback.volume")}
       >
         <IconVolume level={volume} />
       </button>
@@ -154,6 +156,8 @@ export function TranscriptPlayer({
   onSetSpeed,
   onSetVolume,
 }: TranscriptPlayerProps) {
+  const { t } = useTranslation("common");
+
   if (!expanded) {
     return (
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
@@ -161,7 +165,7 @@ export function TranscriptPlayer({
           type="button"
           onClick={onTogglePlay}
           className="flex h-11 w-11 items-center justify-center rounded-full bg-zinc-900 text-white shadow-lg transition hover:bg-zinc-700 active:scale-95 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
-          title="Play"
+          title={t("playback.play")}
         >
           <IconPlay />
         </button>
@@ -177,7 +181,7 @@ export function TranscriptPlayer({
         type="button"
         onClick={onTogglePlay}
         className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-zinc-800 transition hover:bg-zinc-100 active:scale-95 dark:text-zinc-200 dark:hover:bg-zinc-800"
-        title={playing ? "Pause" : "Play"}
+        title={playing ? t("playback.pause") : t("playback.play")}
       >
         {playing ? <IconPause /> : <IconPlay />}
       </button>

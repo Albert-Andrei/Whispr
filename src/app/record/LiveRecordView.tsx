@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import type { LiveSegment } from "./types";
 import { RecordSessionPlayer } from "./RecordSessionPlayer";
 
@@ -23,6 +24,7 @@ export function LiveRecordView({
   onStop,
   onDiscard,
 }: LiveRecordViewProps) {
+  const { t } = useTranslation("app");
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -39,7 +41,7 @@ export function LiveRecordView({
       >
         {segments.length === 0 ? (
           <p className="text-sm text-zinc-400 dark:text-zinc-500">
-            Start speaking to see live transcription…
+            {t("record.live.placeholder")}
           </p>
         ) : (
           segments.map((seg, i) => (

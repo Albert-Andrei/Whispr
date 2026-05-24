@@ -1,18 +1,20 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { Menu } from "@base-ui-components/react/menu";
+import { useTranslation } from "react-i18next";
 import {
   copyTranscriptText,
   TRANSLATE_LANGUAGES,
 } from "../../lib/transcriptActions";
+import { sourceTypeLabel } from "../../lib/i18nLabels";
 import type { TranscriptionJob } from "./types";
 
 const EXPORT_FORMATS = [
-  { id: "txt", label: "Plain text (.txt)", ext: ".txt" },
-  { id: "txt_timestamps", label: "Text with timestamps", ext: ".txt" },
-  { id: "srt", label: "Subtitles (.srt)", ext: ".srt" },
-  { id: "pdf", label: "PDF (.pdf)", ext: ".pdf" },
-  { id: "docx", label: "Word (.docx)", ext: ".docx" },
+  { id: "txt", labelKey: "common:exportFormats.txtWithExt", ext: ".txt" },
+  { id: "txt_timestamps", labelKey: "common:exportFormats.txtTimestamps", ext: ".txt" },
+  { id: "srt", labelKey: "common:exportFormats.srtWithExt", ext: ".srt" },
+  { id: "pdf", labelKey: "common:exportFormats.pdfWithExt", ext: ".pdf" },
+  { id: "docx", labelKey: "common:exportFormats.docxWithExt", ext: ".docx" },
 ] as const;
 
 export type ExportFormatId = (typeof EXPORT_FORMATS)[number]["id"];
@@ -137,7 +139,8 @@ export function TranscriptSidePanel({
   translating = false,
   selectedLang = null,
 }: TranscriptSidePanelProps) {
-  const [copyLabel, setCopyLabel] = useState("Copy text");
+  const { t, i18n } = useTranslation(["common", "app"]);
+  const [copyLabel, setCopyLabel] = useState(t("common:actions.copyText"));
 
   const transcriptText = job.transcript?.trim() ?? "";
   const actionsDisabled = transcriptText.length === 0;
@@ -146,8 +149,8 @@ export function TranscriptSidePanel({
   const handleCopy = async () => {
     if (!canCopy) return;
     await copyTranscriptText(copyText);
-    setCopyLabel("Copied!");
-    window.setTimeout(() => setCopyLabel("Copy text"), 2000);
+    setCopyLabel(t("common:actions.copied"));
+    window.setTimeout(() => setCopyLabel(t("common:actions.copyText")), 2000);
   };
 
   const handleTranslate = (langCode: string, langLabel: string) => {
@@ -156,25 +159,25 @@ export function TranscriptSidePanel({
   };
 
   const detailRows: { label: string; value: string }[] = [
-    { label: "Source", value: job.source_type },
+    { label: t("common:details.source"), value: sourceTypeLabel(t, job.source_type) },
     {
-      label: "Created",
-      value: new Date(job.created_at).toLocaleString(),
+      label: t("common:details.created"),
+      value: new Date(job.created_at).toLocaleString(i18n.language),
     },
   ];
 
   if (job.duration) {
-    detailRows.push({ label: "Duration", value: job.duration });
+    detailRows.push({ label: t("common:details.duration"), value: job.duration });
   }
   if (job.model_used) {
-    detailRows.push({ label: "Model", value: job.model_used });
+    detailRows.push({ label: t("common:details.model"), value: job.model_used });
   }
 
   return (
     <aside className="flex w-[272px] shrink-0 flex-col gap-4 bg-white p-4 pt-2 dark:bg-[var(--color-content-bg-dark)]">
       <section>
         <p className="mb-2 px-0.5 text-[13px] font-medium text-zinc-500 dark:text-zinc-400">
-          Actions
+          {t("common:sections.actions")}
         </p>
         <div className="rounded-lg border border-zinc-200/90 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)] dark:border-[var(--color-content-border-dark)] dark:bg-[var(--color-content-surface-dark)] dark:shadow-none">
           <div className="flex flex-col gap-1 p-1.5">
@@ -194,7 +197,7 @@ export function TranscriptSidePanel({
                 render={(props, state) => (
                   <button {...props} type="button" className={ROW_BTN}>
                     <IconTranslate />
-                    {translating ? "Translating…" : "Translate"}
+                    {translating ? t("common:translating") : t("common:actions.translate")}
                     <IconChevronDown open={state.open} />
                   </button>
                 )}
@@ -225,7 +228,7 @@ export function TranscriptSidePanel({
         </div>
       </section>
 
-      <SideSection title="Export as">
+      <SideSection title={t("common:sections.exportAs")}>
         <div className="flex flex-col gap-1 p-1.5">
           {EXPORT_FORMATS.map((format) => (
             <button
@@ -235,13 +238,13 @@ export function TranscriptSidePanel({
               className={ROW_BTN}
             >
               <IconDownload />
-              {format.label}
+              {t(format.labelKey)}
             </button>
           ))}
         </div>
       </SideSection>
 
-      <SideSection title="Details">
+      <SideSection title={t("common:sections.details")}>
         <dl className="flex flex-col gap-2 px-3 py-3">
           {detailRows.map((row) => (
             <div key={row.label}>

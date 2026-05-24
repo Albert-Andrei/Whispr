@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { windowDragPointerDown } from "../lib/windowDrag";
 import { EditableFileName } from "./EditableFileName";
 
@@ -57,6 +58,8 @@ export function Header({
   transcriptDetail,
   hideNew,
 }: HeaderProps) {
+  const { t } = useTranslation("common");
+
   return (
     <header
       data-tauri-drag-region
@@ -69,7 +72,7 @@ export function Header({
             type="button"
             data-tauri-no-drag
             onClick={transcriptDetail.onBack}
-            aria-label="Back to transcriptions"
+            aria-label={t("aria.backToTranscriptions")}
             className="-ml-3 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-transparent text-zinc-600 transition hover:bg-[var(--color-sidebar-hover-light)] dark:text-zinc-300 dark:hover:bg-[var(--color-sidebar-hover-dark)]"
           >
             <IconChevronLeft />
@@ -93,7 +96,7 @@ export function Header({
             onClick={transcriptDetail.onDelete}
             className="rounded-lg border border-zinc-200 px-3 py-1.5 text-[13px] font-medium text-zinc-600 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
           >
-            Delete
+            {t("actions.delete")}
           </button>
         ) : null}
         {!hideNew && onNewTranscription ? (
@@ -103,7 +106,7 @@ export function Header({
             className="inline-flex items-center gap-1.5 rounded-lg bg-zinc-900 px-3 py-1.5 pl-[8px] text-[13px] font-semibold text-white shadow-sm transition hover:bg-zinc-800 active:scale-[0.98] dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
           >
             <IconPlus />
-            New
+            {t("actions.new")}
           </button>
         ) : null}
       </div>

@@ -1,6 +1,7 @@
 import { invoke, isTauri } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { create } from "zustand";
+import i18n from "../../lib/i18n";
 import type { PipelineStage, TranscriptionJob } from "../dashboard/types";
 import { insertJob } from "../dashboard/db";
 import { useTranscriptionStore } from "../dashboard/store";
@@ -79,7 +80,7 @@ export const useRecordStore = create<RecordStoreState>((set, get) => ({
 
   loadJobs: async () => {
     if (!isTauri()) {
-      set({ ready: true, error: "Recording requires the desktop app." });
+      set({ ready: true, error: i18n.t("app:record.errors.desktopRequired") });
       return;
     }
     try {
@@ -87,7 +88,7 @@ export const useRecordStore = create<RecordStoreState>((set, get) => ({
       set({ jobs, ready: true, error: null });
     } catch (err) {
       set({
-        error: err instanceof Error ? err.message : "Failed to load recordings",
+        error: err instanceof Error ? err.message : i18n.t("app:record.errors.loadFailed"),
         ready: true,
       });
     }
@@ -194,7 +195,7 @@ export const useRecordStore = create<RecordStoreState>((set, get) => ({
       });
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Could not save recording";
+        err instanceof Error ? err.message : i18n.t("app:record.errors.saveFailed");
       set({ error: message });
       throw err;
     }
@@ -230,7 +231,7 @@ export const useRecordStore = create<RecordStoreState>((set, get) => ({
       pendingNavView: null,
     }));
 
-    showAppToast("Recording saved");
+    showAppToast(i18n.t("common:toasts.recordingSaved"));
 
     useTranscriptionStore.getState().enqueueExternalPipeline(result.jobId);
     void useTranscriptionStore.getState().processPipelineQueue();

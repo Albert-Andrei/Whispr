@@ -1,5 +1,6 @@
 import { isTauri } from "@tauri-apps/api/core";
 import { message } from "@tauri-apps/plugin-dialog";
+import i18n from "../../lib/i18n";
 import { isAcceptedMediaFile, isAcceptedMediaPath } from "./constants";
 
 export function filePathFromWebFile(file: File): string | undefined {
@@ -38,8 +39,8 @@ export async function dispatchDroppedMedia(
     if (paths.length > 0) {
       await handlers.onPaths(paths);
       void message(
-        "Some files could not be added because their path was not available. Use Browse to pick files, or drop them from Finder.",
-        { title: "Whispr", kind: "warning" },
+        i18n.t("import.dropMedia.pathWarning"),
+        { title: i18n.t("import.dropMedia.dialogTitle"), kind: "warning" },
       );
       return;
     }

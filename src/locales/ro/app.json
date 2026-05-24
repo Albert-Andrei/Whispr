@@ -1,0 +1,168 @@
+{
+  "components": {
+    "sidebar": {
+      "updateBadge": "Nou",
+      "updateAvailable": "Actualizare disponibilă"
+    },
+    "header": {},
+    "appShell": {
+      "loading": "Se încarcă…"
+    },
+    "appFileDropLayer": {
+      "title": "Trage pentru a importa",
+      "subtitle": "Fișiere video sau audio"
+    },
+    "themeToggle": {},
+    "editableFileName": {},
+    "updatePopover": {}
+  },
+  "dashboard": {
+    "loading": "Se încarcă transcrierile…",
+    "emptyState": {
+      "title": "Nicio transcriere încă",
+      "description": "Lipește un link sau trage un fișier mai jos. Totul rulează offline pe Mac-ul tău — fără chei API."
+    },
+    "fileList": {},
+    "fileRow": {},
+    "transcriptView": {
+      "recordedBadge": "Înregistrat",
+      "translatedTo": "Tradus în {{language}}",
+      "showOriginal": "Arată originalul",
+      "showingOriginal": "Se afișează originalul",
+      "showTranslation": "Arată traducerea",
+      "translationNoText": "Traducerea nu a returnat text. Încearcă din nou.",
+      "translationFailed": "Traducerea a eșuat. Verifică conexiunea și încearcă din nou."
+    },
+    "transcriptSidePanel": {},
+    "transcriptPlayer": {},
+    "errors": {
+      "loadTranscriptions": "Nu s-au putut încărca transcrierile",
+      "hint": "Verifică permisiunile aplicației sau repornește Whispr."
+    }
+  },
+  "import": {
+    "modal": {
+      "title": "Transcriere nouă",
+      "description": "Lipește un link sau trage un fișier — totul rămâne pe Mac-ul tău."
+    },
+    "urlInput": {
+      "label": "URL video",
+      "placeholder": "Lipește un URL YouTube, Vimeo sau alt video",
+      "errorEmpty": "Lipește mai întâi un URL",
+      "errorInvalid": "Nu pare a fi un URL valid"
+    },
+    "dropZone": {
+      "title": "Trage și plasează fișiere video sau audio",
+      "formats": "MP4, MOV, MKV, WebM, AVI, MP3, WAV, M4A, FLAC, OGG, AAC",
+      "chooseTitle": "Alege video sau audio"
+    },
+    "dropMedia": {
+      "pathWarning": "Unele fișiere nu au putut fi adăugate deoarece calea nu era disponibilă. Folosește Alege fișiere sau trage din Finder.",
+      "dialogTitle": "Whispr"
+    }
+  },
+  "setup": {
+    "welcome": {
+      "title": "Bun venit la Whispr",
+      "description": "Configurarea inițială descarcă ffmpeg, yt-dlp și modelul Whisper ales. Dacă whisper-cli nu este deja pe Mac, Whispr îl instalează prin Homebrew (ai nevoie de Homebrew de la brew.sh). Poți schimba modelul mai târziu în Setări.",
+      "offlineNote": "După configurare, transcrierea funcționează offline. Internetul este necesar doar la descărcare."
+    },
+    "model": {
+      "chooseLabel": "Alege modelul (multilingv)"
+    },
+    "button": {
+      "setup": "Configurează Whispr"
+    },
+    "loading": {
+      "title": "Se descarcă componentele…",
+      "homebrewNote": "Pasul de transcriere poate rula Homebrew pentru a instala whisper-cpp — prima dată poate dura câteva minute."
+    },
+    "component": {
+      "ffmpeg": "ffmpeg — audio/video",
+      "ytdlp": "yt-dlp — descărcare URL",
+      "whisperCli": "whisper-cli — transcriere",
+      "model": "Model Whisper"
+    }
+  },
+  "settings": {
+    "title": "Setări",
+    "browserOnly": "Setările care accesează Mac-ul (binare, spațiu pe disc, modele) necesită aplicația desktop. Rulează `bun run tauri dev` în loc de serverul din browser.",
+    "storageDescription": "Estimare a spațiului pe disc folosit de aplicație",
+    "general": {
+      "language": {
+        "label": "Limbă",
+        "description": "Alege limba interfeței Whispr"
+      },
+      "exportFormat": {
+        "label": "Format de export implicit",
+        "description": "Formatul folosit la exportul transcrierilor din panou"
+      },
+      "concurrent": {
+        "label": "Transcrieri simultane",
+        "description": "Câte joburi pot rula în același timp (1–3)"
+      }
+    },
+    "about": {},
+    "binaryStatus": {
+      "loading": "Se încarcă…",
+      "checkingToolStatus": "Se verifică starea instrumentelor",
+      "requiredMissing": "Componentă obligatorie. Whispr nu poate transcrie fără ea."
+    },
+    "modelSelector": {},
+    "diskBreakdown": {
+      "noData": "Nu există date de utilizare încă.",
+      "tooltip": "{{label}} · {{size}} ({{percent}}%)"
+    }
+  },
+  "record": {
+    "loading": "Se încarcă înregistrările…",
+    "emptyState": {
+      "title": "Înregistrează",
+      "description": "Capturează vorbirea cu transcriere live. Înregistrarea se salvează local și se finalizează când oprești. Apasă butonul de microfon de mai jos pentru a începe."
+    },
+    "live": {
+      "placeholder": "Începe să vorbești pentru transcriere live…"
+    },
+    "controls": {
+      "stopAndSave": "Oprește și salvează",
+      "discardRecording": "Renunță la înregistrare"
+    },
+    "navGuard": {
+      "title": "Înregistrare în curs",
+      "description": "Oprește și salvează înregistrarea, renunță la ea sau rămâi aici.",
+      "stopAndSave": "Oprește și salvează"
+    },
+    "errors": {
+      "startFailed": "Nu s-a putut începe înregistrarea",
+      "loadFailed": "Nu s-au putut încărca înregistrările",
+      "saveFailed": "Nu s-a putut salva înregistrarea",
+      "desktopRequired": "Înregistrarea necesită aplicația desktop."
+    }
+  },
+  "media": {
+    "browserOnly": "Redarea media este disponibilă în aplicația desktop.",
+    "loading": "Se încarcă media…",
+    "description": "Copii audio compacte pentru redare în aplicație. Ștergerea unui fișier eliberează spațiu; transcrierile rămân, dar redarea și sincronizarea segmentelor depind de aceste fișiere.",
+    "syncedPlayback": "Redare sincronizată",
+    "emptyState": {
+      "title": "Audio pentru redare",
+      "description": "Whispr păstrează aici copii compacte ale audio-ului ca să poți asculta în aplicație și urmări segmentele transcrierii cu marcaje temporale.",
+      "bullet1": "Fișierele apar după ce o transcriere se termină sau oprești o înregistrare.",
+      "bullet2": "Ștergerea audio-ului eliberează spațiu. Textul transcrierii rămâne; se elimină doar redarea și sincronizarea segmentelor.",
+      "hint": "Importă media sau înregistrează din celelalte file ale barei laterale."
+    },
+    "delete": {
+      "title": "Ștergi audio-ul pentru redare?",
+      "willRemove": "{{filename}} va fi eliminat de pe disc.",
+      "transcriptStays": "Textul transcrierii rămâne în Whispr, dar vei pierde redarea în aplicație",
+      "syncLoss": " și sincronizarea segmentelor cu marcaje temporale",
+      "retranscribe": " pentru acest element până transcrii din nou sursa.",
+      "confirm": "Șterge audio",
+      "thisFile": "Acest fișier"
+    },
+    "errors": {
+      "loadFailed": "Nu s-a putut încărca media",
+      "deleteFailed": "Nu s-a putut șterge media"
+    }
+  }
+}

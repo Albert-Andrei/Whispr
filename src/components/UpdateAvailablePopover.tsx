@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { dismissUpdate, isUpdateDismissed } from "../lib/appUpdate";
 import type { AppUpdateHandle } from "../hooks/useAppUpdate";
 
@@ -9,6 +10,7 @@ type UpdateAvailablePopoverProps = {
 export function UpdateAvailablePopover({
   update,
 }: UpdateAvailablePopoverProps) {
+  const { t } = useTranslation("common");
   const [hiddenThisSession, setHiddenThisSession] = useState(false);
 
   const latest = update.latestVersion;
@@ -46,7 +48,7 @@ export function UpdateAvailablePopover({
           type="button"
           onClick={dismiss}
           className="absolute -top-1.5 z-[110] -right-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-zinc-200/80 bg-white text-[11px] leading-none text-zinc-400 opacity-0 shadow-sm transition-opacity duration-300 ease-in-out pointer-events-none group-hover:pointer-events-auto group-hover:opacity-100 hover:bg-zinc-50 hover:text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
-          aria-label="Dismiss update notice"
+          aria-label={t("aria.dismissUpdate")}
         >
           ×
         </button>
@@ -57,8 +59,10 @@ export function UpdateAvailablePopover({
             <div className="flex flex-col gap-1">
               <span className="text-[13px] font-medium text-zinc-600 dark:text-zinc-400">
                 {update.status === "installing"
-                  ? "Installing update…"
-                  : `Downloading update… ${update.downloadProgress}%`}
+                  ? t("update.installingUpdate")
+                  : t("update.downloadingUpdate", {
+                      percent: update.downloadProgress,
+                    })}
               </span>
               <div className="h-1 w-36 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
                 <div
@@ -71,14 +75,14 @@ export function UpdateAvailablePopover({
         ) : (
           <>
             <span className="text-[13px] font-medium text-zinc-600 dark:text-zinc-400">
-              v{latest} available
+              {t("update.versionAvailable", { version: latest })}
             </span>
             <button
               type="button"
               onClick={update.installUpdate}
               className="shrink-0 rounded-md bg-zinc-900 px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
             >
-              Update &amp; Restart
+              {t("update.updateAndRestart")}
             </button>
           </>
         )}

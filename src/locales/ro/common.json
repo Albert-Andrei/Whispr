@@ -1,0 +1,178 @@
+{
+  "actions": {
+    "cancel": "Anulează",
+    "delete": "Șterge",
+    "discard": "Renunță",
+    "retry": "Reîncearcă",
+    "view": "Vezi",
+    "new": "Nou",
+    "close": "Închide",
+    "back": "Înapoi",
+    "tryAgain": "Încearcă din nou",
+    "use": "Folosește",
+    "download": "Descarcă",
+    "browseFiles": "Alege fișiere...",
+    "addToQueue": "Adaugă în coadă",
+    "checkAgain": "Verifică din nou",
+    "copyText": "Copiază textul",
+    "copied": "Copiat!",
+    "translate": "Traduce",
+    "copy": "Copiază"
+  },
+  "loading": "Se încarcă",
+  "loadingEllipsis": "Se încarcă…",
+  "deleting": "Se șterge…",
+  "translating": "Se traduce…",
+  "checking": "Se verifică…",
+  "downloading": "Se descarcă…",
+  "installing": "Se instalează…",
+  "or": "sau",
+  "emptyPlaceholder": "—",
+  "nav": {
+    "transcriptions": "Transcrieri",
+    "record": "Înregistrează",
+    "media": "Media",
+    "settings": "Setări",
+    "whispr": "Whispr"
+  },
+  "theme": {
+    "light": "Deschis",
+    "dark": "Întunecat",
+    "system": "Sistem",
+    "colorTheme": "Temă de culoare",
+    "colorThemeDescription": "Alege tema deschisă, întunecată sau cea a sistemului"
+  },
+  "exportFormats": {
+    "txt": "Text simplu",
+    "txtTimestamps": "Text cu marcaje temporale",
+    "srt": "Subtitrări SRT",
+    "pdf": "PDF",
+    "docx": "Word (DOCX)",
+    "txtWithExt": "Text simplu (.txt)",
+    "srtWithExt": "Subtitrări (.srt)",
+    "pdfWithExt": "PDF (.pdf)",
+    "docxWithExt": "Word (.docx)"
+  },
+  "dialogFilters": {
+    "srt": "SRT",
+    "pdf": "PDF",
+    "word": "Word",
+    "text": "Text",
+    "videoAudio": "Video și audio"
+  },
+  "models": {
+    "small": "Mică",
+    "medium": "Medie",
+    "large": "Mare",
+    "smallTitle": "Mică (~466 MB)",
+    "mediumTitle": "Medie (~1,5 GB)",
+    "largeTitle": "Mare (~3,1 GB)",
+    "smallHint": "Calitate bună, mai rapid",
+    "mediumHint": "Recomandat",
+    "largeHint": "Cea mai bună calitate",
+    "smallSize": "~466 MB",
+    "mediumSize": "~1,5 GB",
+    "largeSize": "~3,1 GB",
+    "active": "Activă",
+    "downloaded": "Descărcată"
+  },
+  "concurrentJobs": {
+    "one": "1 sarcină",
+    "two": "2 sarcini",
+    "three": "3 sarcini"
+  },
+  "languages": {
+    "en": "English",
+    "ru": "Русский",
+    "ro": "Română",
+    "es": "Español",
+    "fr": "Français"
+  },
+  "translateLanguages": {
+    "en": "Engleză",
+    "es": "Spaniolă",
+    "fr": "Franceză",
+    "de": "Germană",
+    "it": "Italiană",
+    "pt": "Portugheză",
+    "ro": "Română",
+    "ru": "Rusă",
+    "uk": "Ucraineană",
+    "ja": "Japoneză",
+    "zh": "Chineză"
+  },
+  "binaryStatus": {
+    "installed": "Instalat",
+    "missing": "Lipsă"
+  },
+  "playback": {
+    "play": "Redă",
+    "pause": "Pauză",
+    "volume": "Volum",
+    "rec": "REC",
+    "paused": "În pauză",
+    "resume": "Continuă"
+  },
+  "update": {
+    "available": "Actualizare disponibilă",
+    "upToDate": "La zi",
+    "error": "Eroare",
+    "updateAndRestart": "Actualizează și repornește",
+    "versionAvailable": "v{{version}} disponibilă",
+    "updateAvailableVersion": "Actualizare disponibilă: v{{version}}",
+    "latestRelease": "Ai cea mai recentă versiune",
+    "couldNotCheck": "Nu s-au putut verifica actualizările",
+    "inProgress": "Actualizare în curs…",
+    "installVersion": "Instalează v{{version}}",
+    "downloadingPercent": "Se descarcă {{percent}}%",
+    "installingUpdate": "Se instalează actualizarea…",
+    "downloadingUpdate": "Se descarcă actualizarea… {{percent}}%"
+  },
+  "desktopOnly": {
+    "sqliteShell": "SQLite rulează în aplicația desktop. Folosește `bun run tauri dev` în loc de serverul de dezvoltare din browser.",
+    "settingsShell": "Setările care accesează Mac-ul (binare, spațiu pe disc, modele) necesită aplicația desktop. Rulează `bun run tauri dev` în loc de serverul din browser.",
+    "recordingShell": "Înregistrarea necesită aplicația desktop.",
+    "playbackShell": "Redarea media este disponibilă în aplicația desktop."
+  },
+  "toasts": {
+    "recordingSaved": "Înregistrare salvată"
+  },
+  "table": {
+    "name": "Nume",
+    "duration": "Durată",
+    "date": "Dată",
+    "status": "Stare",
+    "actions": "Acțiuni"
+  },
+  "details": {
+    "source": "Sursă",
+    "created": "Creat",
+    "duration": "Durată",
+    "model": "Model",
+    "version": "Versiune",
+    "total": "Total"
+  },
+  "sections": {
+    "actions": "Acțiuni",
+    "exportAs": "Exportă ca",
+    "details": "Detalii",
+    "about": "Despre",
+    "general": "General",
+    "system": "Sistem",
+    "storage": "Stocare",
+    "whisperModels": "Modele Whisper"
+  },
+  "aria": {
+    "dismissNotification": "Închide notificarea",
+    "dismissUpdate": "Închide notificarea de actualizare",
+    "resizeSidebar": "Redimensionează bara laterală",
+    "rename": "Redenumește",
+    "editTitle": "Editează titlul",
+    "clickToRename": "Clic pentru a redenumi",
+    "backToTranscriptions": "Înapoi la transcrieri",
+    "startRecording": "Începe înregistrarea",
+    "checkingTools": "Se verifică instrumentele",
+    "checkingToolsTitle": "Se verifică instrumentele…",
+    "diskUsageByCategory": "Utilizarea discului pe categorii"
+  }
+}

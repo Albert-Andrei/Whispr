@@ -1,10 +1,11 @@
 import type { FC } from "react";
+import { useTranslation } from "react-i18next";
 import type { SidebarView } from "../types";
 import { windowDragPointerDown } from "../lib/windowDrag";
 
 type MainNavItem = {
   id: SidebarView;
-  label: string;
+  labelKey: string;
   Icon: FC;
 };
 
@@ -141,9 +142,9 @@ function IconMic() {
 }
 
 const MAIN_ITEMS: MainNavItem[] = [
-  { id: "history", label: "Transcriptions", Icon: IconTranscriptions },
-  { id: "record", label: "Record", Icon: IconMic },
-  { id: "media", label: "Media", Icon: IconMedia },
+  { id: "history", labelKey: "common:nav.transcriptions", Icon: IconTranscriptions },
+  { id: "record", labelKey: "common:nav.record", Icon: IconMic },
+  { id: "media", labelKey: "common:nav.media", Icon: IconMedia },
 ];
 
 const SIDEBAR_WIDTH_KEY = "whispr.sidebar.width";
@@ -156,9 +157,7 @@ type SidebarProps = {
   onChange: (view: SidebarView) => void;
   width: number;
   onWidthChange: (width: number) => void;
-  /** Height of the main column’s drag strip; resize hover rail starts here to line up with the white card. */
   mainColumnDragStripPx: number;
-  /** Extra top inset on macOS so the first row clears overlay traffic lights. */
   trafficInset?: boolean;
   updateAvailable?: boolean;
 };
@@ -181,7 +180,7 @@ export function Sidebar({
   trafficInset = false,
   updateAvailable = false,
 }: SidebarProps) {
-  /** Shell `p-2` is the only outer inset (8px); keep inner horizontal flush so left/bottom match the main card’s inset. */
+  const { t } = useTranslation(["common", "app"]);
   const gutter = "px-0";
   const topPad = trafficInset ? "pt-6" : "pt-2";
 
@@ -199,7 +198,7 @@ export function Sidebar({
           <div className="flex items-center gap-1.5 px-2.5 pt-3.5 pb-3.5">
             <IconWhisprMark />
             <p className="text-left text-[11px] font-semibold tracking-wide text-[var(--color-sidebar-text-muted-light)] dark:text-[var(--color-sidebar-text-muted-dark)]">
-              Whispr
+              {t("common:nav.whispr")}
             </p>
           </div>
 
@@ -214,7 +213,7 @@ export function Sidebar({
                 className={navButtonClass(isActive)}
               >
                 <Icon />
-                {item.label}
+                {t(item.labelKey)}
               </button>
             );
           })}
@@ -229,14 +228,14 @@ export function Sidebar({
           >
             <span className="flex min-w-0 items-center gap-2.5">
               <IconSettings />
-              Settings
+              {t("common:nav.settings")}
             </span>
             {updateAvailable ? (
               <span
                 className="inline-flex h-5 shrink-0 items-center rounded-full bg-zinc-900 px-2 text-[10px] font-semibold leading-none text-white dark:bg-zinc-100 dark:text-zinc-900"
-                aria-label="Update available"
+                aria-label={t("app:components.sidebar.updateAvailable")}
               >
-                New
+                {t("app:components.sidebar.updateBadge")}
               </span>
             ) : null}
           </button>
@@ -247,7 +246,7 @@ export function Sidebar({
         data-tauri-no-drag
         role="separator"
         aria-orientation="vertical"
-        aria-label="Resize sidebar"
+        aria-label={t("common:aria.resizeSidebar")}
         className="absolute -right-2.5 bottom-4 z-10 w-1 cursor-col-resize rounded-full hover:bg-zinc-400/40"
         style={{ top: mainColumnDragStripPx }}
         onMouseDown={(e) => {

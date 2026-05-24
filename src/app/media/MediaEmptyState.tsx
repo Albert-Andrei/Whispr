@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 function IconPlayback() {
   return (
     <svg
@@ -18,6 +20,7 @@ function IconPlayback() {
 }
 
 export function MediaEmptyState() {
+  const { t } = useTranslation("app");
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-5 py-16">
       <div className="max-w-md rounded-2xl border border-dashed border-zinc-300 bg-white/60 p-8 text-center dark:border-zinc-700 dark:bg-zinc-950/40">
@@ -25,30 +28,23 @@ export function MediaEmptyState() {
           <IconPlayback />
         </div>
         <h2 className="mt-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-          Playback audio
+          {t("media.emptyState.title")}
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
-          Whispr keeps compact copies of your audio here so you can listen inside
-          the app and follow along with timestamped transcript segments.
+          {t("media.emptyState.description")}
         </p>
         <ul className="mt-4 space-y-2 text-left text-[13px] leading-snug text-zinc-600 dark:text-zinc-400">
           <li className="flex gap-2">
             <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-zinc-400 dark:bg-zinc-500" />
-            <span>
-              Files appear after a transcription finishes or you stop a
-              recording.
-            </span>
+            <span>{t("media.emptyState.bullet1")}</span>
           </li>
           <li className="flex gap-2">
             <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-zinc-400 dark:bg-zinc-500" />
-            <span>
-              Deleting audio frees disk space. Your transcript text stays; only
-              playback and segment sync are removed.
-            </span>
+            <span>{t("media.emptyState.bullet2")}</span>
           </li>
         </ul>
         <p className="mt-4 text-[12px] text-zinc-400 dark:text-zinc-500">
-          Import media or record from the other sidebar tabs to get started.
+          {t("media.emptyState.hint")}
         </p>
       </div>
     </div>

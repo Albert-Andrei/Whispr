@@ -1,0 +1,30 @@
+{
+  "jobStatus": {
+    "pending": "В очереди",
+    "processing": "Обработка",
+    "completed": "Завершено",
+    "failed": "Ошибка"
+  },
+  "pipelineStage": {
+    "downloading": "Загрузка",
+    "extracting": "Извлечение",
+    "transcribing": "Транскрипция",
+    "progress": "{{stage}} · {{percent}}%"
+  },
+  "disk": {
+    "binaries": "Инструменты (ffmpeg, yt-dlp)",
+    "models": "Модели Whisper",
+    "audio": "Аудио для воспроизведения",
+    "database": "База данных",
+    "temp": "Временные файлы",
+    "app_core": "Исполняемый файл приложения"
+  },
+  "sourceType": {
+    "local": "Локальный файл",
+    "url": "URL",
+    "record": "Запись",
+    "urlImport": "Импорт по URL",
+    "transcription": "Транскрипция",
+    "unknown": "Неизвестно"
+  }
+}

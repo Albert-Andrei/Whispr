@@ -1,22 +1,24 @@
+import { useTranslation } from "react-i18next";
 import { useTheme } from "../hooks/useTheme";
 import type { ThemePreference } from "../lib/theme";
 
-const OPTIONS: { value: ThemePreference; label: string }[] = [
-  { value: "light", label: "Light" },
-  { value: "dark", label: "Dark" },
-  { value: "system", label: "System" },
-];
-
 export function ThemeToggle() {
+  const { t } = useTranslation("common");
   const { preference, setPreference } = useTheme();
+
+  const options: { value: ThemePreference; label: string }[] = [
+    { value: "light", label: t("theme.light") },
+    { value: "dark", label: t("theme.dark") },
+    { value: "system", label: t("theme.system") },
+  ];
 
   return (
     <div
       className="grid grid-cols-3 gap-1 p-1"
       role="radiogroup"
-      aria-label="Color theme"
+      aria-label={t("theme.colorTheme")}
     >
-      {OPTIONS.map(({ value, label }) => {
+      {options.map(({ value, label }) => {
         const selected = preference === value;
         return (
           <button

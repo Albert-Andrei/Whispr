@@ -1,5 +1,6 @@
 import { invoke, isTauri } from "@tauri-apps/api/core";
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useRecordStore } from "../record/store";
 import { useTranscriptionStore } from "../dashboard/store";
 import { DeleteMediaDialog } from "./DeleteMediaDialog";
@@ -17,6 +18,7 @@ type RawPlaybackMediaItem = {
 };
 
 export function Media() {
+  const { t } = useTranslation(["common", "app"]);
   const [items, setItems] = useState<PlaybackMediaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +41,7 @@ export function Media() {
       const raw = await invoke<RawPlaybackMediaItem[]>("list_playback_media");
       setItems(raw);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not load media");
+      setError(err instanceof Error ? err.message : t("app:media.errors.loadFailed"));
     } finally {
       setLoading(false);
     }
@@ -64,7 +66,7 @@ export function Media() {
       setDeleteTarget(null);
       await loadMedia();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not delete media");
+      setError(err instanceof Error ? err.message : t("app:media.errors.deleteFailed"));
     } finally {
       setDeleting(false);
     }
@@ -73,7 +75,7 @@ export function Media() {
   if (!isTauri()) {
     return (
       <div className="flex flex-1 items-center justify-center px-5 py-16 text-sm text-zinc-500 dark:text-zinc-400">
-        Playback media is available in the desktop app.
+        {t("app:media.browserOnly")}
       </div>
     );
   }
@@ -81,7 +83,7 @@ export function Media() {
   if (loading) {
     return (
       <div className="flex flex-1 items-center justify-center px-5 py-16 text-sm text-zinc-500 dark:text-zinc-400">
-        Loading media…
+        {t("app:media.loading")}
       </div>
     );
   }
@@ -95,7 +97,7 @@ export function Media() {
           onClick={() => void loadMedia()}
           className="text-sm font-medium text-zinc-900 hover:underline dark:text-zinc-200"
         >
-          Try again
+          {t("common:actions.tryAgain")}
         </button>
       </div>
     );
@@ -109,9 +111,7 @@ export function Media() {
     <>
       <div className="min-h-0 flex-1 overflow-y-auto px-5 py-6">
         <p className="mb-4 text-[13px] text-zinc-600 dark:text-zinc-400">
-          Compact audio copies for in-app playback. Deleting a file frees disk
-          space; transcripts stay, but playback and segment sync depend on these
-          files.
+          {t("app:media.description")}
         </p>
 
         <ul className="space-y-2">

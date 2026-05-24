@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 type URLInputProps = {
   onSubmitUrl: (url: string) => void;
@@ -15,6 +16,7 @@ export function URLInput({
   focusRequest = false,
   compact = false,
 }: URLInputProps) {
+  const { t } = useTranslation();
   const [value, setValue] = useState("");
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -28,13 +30,13 @@ export function URLInput({
   const submit = () => {
     const trimmed = value.trim();
     if (!trimmed) {
-      setError("Paste a URL first");
+      setError(t("import.urlInput.errorEmpty"));
       return;
     }
     try {
       new URL(trimmed);
     } catch {
-      setError("That does not look like a valid URL");
+      setError(t("import.urlInput.errorInvalid"));
       return;
     }
     setError(null);
@@ -50,14 +52,14 @@ export function URLInput({
     <div className={compact ? "space-y-2" : "space-y-3"}>
       <label className="block text-left">
         <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-          Video URL
+          {t("import.urlInput.label")}
         </span>
         <input
           ref={inputRef}
           type="url"
           value={value}
           disabled={disabled}
-          placeholder="Paste a YouTube, Vimeo, or other video URL"
+          placeholder={t("import.urlInput.placeholder")}
           className={inputClassName}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={(e) => {
@@ -78,7 +80,7 @@ export function URLInput({
             : "w-full rounded-xl bg-zinc-900 py-3 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100"
         }
       >
-        Add to queue
+        {t("common:actions.addToQueue")}
       </button>
     </div>
   );

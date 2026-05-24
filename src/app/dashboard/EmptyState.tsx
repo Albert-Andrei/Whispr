@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { DropZone } from "../import/DropZone";
 import { URLInput } from "../import/URLInput";
 
@@ -9,6 +10,7 @@ type EmptyStateProps = {
 };
 
 export function EmptyState({ onSubmitUrl, onLocalFiles, onLocalFilePaths }: EmptyStateProps) {
+  const { t } = useTranslation(["app", "common"]);
   const [busy, setBusy] = useState(false);
 
   const run = async (fn: () => Promise<void>) => {
@@ -25,11 +27,10 @@ export function EmptyState({ onSubmitUrl, onLocalFiles, onLocalFilePaths }: Empt
       <div className="w-full max-w-[380px]">
         <div className="text-center">
           <h2 className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-            No transcriptions yet
+            {t("app:dashboard.emptyState.title")}
           </h2>
           <p className="mt-1.5 text-xs leading-snug text-zinc-500 dark:text-zinc-400">
-            Paste a link or drop a file below. Everything runs offline on your Mac—no API
-            keys.
+            {t("app:dashboard.emptyState.description")}
           </p>
         </div>
 
@@ -44,7 +45,7 @@ export function EmptyState({ onSubmitUrl, onLocalFiles, onLocalFilePaths }: Empt
           <div className="relative flex items-center justify-center py-0.5" aria-hidden>
             <div className="absolute inset-x-0 top-1/2 h-px bg-zinc-200/90 dark:bg-zinc-700/80" />
             <span className="relative bg-white px-2 text-[11px] font-medium text-zinc-400 dark:bg-zinc-950 dark:text-zinc-500">
-              or
+              {t("common:or")}
             </span>
           </div>
 

@@ -1,0 +1,168 @@
+{
+  "components": {
+    "sidebar": {
+      "updateBadge": "Nouveau",
+      "updateAvailable": "Mise à jour disponible"
+    },
+    "header": {},
+    "appShell": {
+      "loading": "Chargement…"
+    },
+    "appFileDropLayer": {
+      "title": "Déposer pour importer",
+      "subtitle": "Fichiers vidéo ou audio"
+    },
+    "themeToggle": {},
+    "editableFileName": {},
+    "updatePopover": {}
+  },
+  "dashboard": {
+    "loading": "Chargement de vos transcriptions…",
+    "emptyState": {
+      "title": "Aucune transcription pour l'instant",
+      "description": "Collez un lien ou déposez un fichier ci-dessous. Tout fonctionne hors ligne sur votre Mac — sans clés API."
+    },
+    "fileList": {},
+    "fileRow": {},
+    "transcriptView": {
+      "recordedBadge": "Enregistré",
+      "translatedTo": "Traduit en {{language}}",
+      "showOriginal": "Afficher l'original",
+      "showingOriginal": "Original affiché",
+      "showTranslation": "Afficher la traduction",
+      "translationNoText": "La traduction n'a renvoyé aucun texte. Réessayez.",
+      "translationFailed": "Échec de la traduction. Vérifiez votre connexion et réessayez."
+    },
+    "transcriptSidePanel": {},
+    "transcriptPlayer": {},
+    "errors": {
+      "loadTranscriptions": "Impossible de charger les transcriptions",
+      "hint": "Vérifiez les autorisations de l'app ou redémarrez Whispr."
+    }
+  },
+  "import": {
+    "modal": {
+      "title": "Nouvelle transcription",
+      "description": "Collez un lien ou glissez un fichier — tout reste sur votre Mac."
+    },
+    "urlInput": {
+      "label": "URL de la vidéo",
+      "placeholder": "Collez une URL YouTube, Vimeo ou autre vidéo",
+      "errorEmpty": "Collez d'abord une URL",
+      "errorInvalid": "Cela ne ressemble pas à une URL valide"
+    },
+    "dropZone": {
+      "title": "Glissez-déposez des fichiers vidéo ou audio",
+      "formats": "MP4, MOV, MKV, WebM, AVI, MP3, WAV, M4A, FLAC, OGG, AAC",
+      "chooseTitle": "Choisir une vidéo ou un audio"
+    },
+    "dropMedia": {
+      "pathWarning": "Certains fichiers n'ont pas pu être ajoutés car leur chemin n'était pas disponible. Utilisez Parcourir ou déposez-les depuis le Finder.",
+      "dialogTitle": "Whispr"
+    }
+  },
+  "setup": {
+    "welcome": {
+      "title": "Bienvenue dans Whispr",
+      "description": "La configuration initiale télécharge ffmpeg, yt-dlp et le modèle Whisper choisi. Si whisper-cli n'est pas déjà sur votre Mac, Whispr l'installe via Homebrew (Homebrew requis depuis brew.sh). Vous pourrez changer de modèle plus tard dans les Réglages.",
+      "offlineNote": "Après la configuration, la transcription fonctionne hors ligne. Internet n'est requis que pendant le téléchargement."
+    },
+    "model": {
+      "chooseLabel": "Choisir le modèle (multilingue)"
+    },
+    "button": {
+      "setup": "Configurer Whispr"
+    },
+    "loading": {
+      "title": "Téléchargement des composants…",
+      "homebrewNote": "L'étape de transcription peut lancer Homebrew pour installer whisper-cpp — la première fois peut prendre plusieurs minutes."
+    },
+    "component": {
+      "ffmpeg": "ffmpeg — audio/vidéo",
+      "ytdlp": "yt-dlp — téléchargement URL",
+      "whisperCli": "whisper-cli — transcription",
+      "model": "Modèle Whisper"
+    }
+  },
+  "settings": {
+    "title": "Réglages",
+    "browserOnly": "Les réglages qui accèdent à votre Mac (binaires, disque, modèles) nécessitent l'application de bureau. Lancez `bun run tauri dev` au lieu du serveur navigateur.",
+    "storageDescription": "Répartition approximative de l'espace disque utilisé",
+    "general": {
+      "language": {
+        "label": "Langue",
+        "description": "Choisissez la langue de l'interface Whispr"
+      },
+      "exportFormat": {
+        "label": "Format d'export par défaut",
+        "description": "Format utilisé lors de l'export des transcriptions depuis le tableau de bord"
+      },
+      "concurrent": {
+        "label": "Transcriptions simultanées",
+        "description": "Nombre de tâches pouvant s'exécuter en parallèle (1–3)"
+      }
+    },
+    "about": {},
+    "binaryStatus": {
+      "loading": "Chargement…",
+      "checkingToolStatus": "Vérification de l'état des outils",
+      "requiredMissing": "Composant requis. Whispr ne peut pas transcrire sans lui."
+    },
+    "modelSelector": {},
+    "diskBreakdown": {
+      "noData": "Aucune donnée d'utilisation pour l'instant.",
+      "tooltip": "{{label}} · {{size}} ({{percent}} %)"
+    }
+  },
+  "record": {
+    "loading": "Chargement des enregistrements…",
+    "emptyState": {
+      "title": "Enregistrer",
+      "description": "Capturez la parole avec transcription en direct. L'enregistrement est sauvegardé localement et finalisé à l'arrêt. Appuyez sur le bouton micro ci-dessous pour commencer."
+    },
+    "live": {
+      "placeholder": "Commencez à parler pour voir la transcription en direct…"
+    },
+    "controls": {
+      "stopAndSave": "Arrêter et enregistrer",
+      "discardRecording": "Abandonner l'enregistrement"
+    },
+    "navGuard": {
+      "title": "Enregistrement en cours",
+      "description": "Arrêtez et enregistrez, abandonnez ou restez ici pour continuer.",
+      "stopAndSave": "Arrêter et enregistrer"
+    },
+    "errors": {
+      "startFailed": "Impossible de démarrer l'enregistrement",
+      "loadFailed": "Impossible de charger les enregistrements",
+      "saveFailed": "Impossible d'enregistrer l'enregistrement",
+      "desktopRequired": "L'enregistrement nécessite l'application de bureau."
+    }
+  },
+  "media": {
+    "browserOnly": "La lecture des médias est disponible dans l'application de bureau.",
+    "loading": "Chargement des médias…",
+    "description": "Copies audio compactes pour la lecture dans l'app. Supprimer un fichier libère de l'espace ; les transcriptions restent, mais la lecture et la synchronisation des segments en dépendent.",
+    "syncedPlayback": "Lecture synchronisée",
+    "emptyState": {
+      "title": "Audio de lecture",
+      "description": "Whispr conserve ici des copies compactes de votre audio pour écouter dans l'app et suivre les segments de transcription horodatés.",
+      "bullet1": "Les fichiers apparaissent après une transcription terminée ou l'arrêt d'un enregistrement.",
+      "bullet2": "Supprimer l'audio libère de l'espace. Le texte de la transcription reste ; seuls la lecture et la synchronisation des segments sont supprimées.",
+      "hint": "Importez des médias ou enregistrez depuis les autres onglets de la barre latérale."
+    },
+    "delete": {
+      "title": "Supprimer l'audio de lecture ?",
+      "willRemove": "{{filename}} sera supprimé du disque.",
+      "transcriptStays": "Le texte de la transcription reste dans Whispr, mais vous perdrez la lecture dans l'app",
+      "syncLoss": " et la synchronisation des segments horodatés",
+      "retranscribe": " pour cet élément jusqu'à ce que vous transcriviez à nouveau la source.",
+      "confirm": "Supprimer l'audio",
+      "thisFile": "Ce fichier"
+    },
+    "errors": {
+      "loadFailed": "Impossible de charger les médias",
+      "deleteFailed": "Impossible de supprimer le média"
+    }
+  }
+}

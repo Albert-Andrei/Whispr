@@ -1,5 +1,6 @@
 import { isTauri } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
+import { useTranslation } from "react-i18next";
 import {
   ACCEPT_INPUT_ATTRIBUTE,
   DIALOG_MEDIA_FILTER,
@@ -21,12 +22,14 @@ export function DropZone({
   disabled,
   compact = false,
 }: DropZoneProps) {
+  const { t } = useTranslation();
+
   const openNativePicker = async () => {
     if (disabled) return;
     try {
       const selected = await open({
         multiple: true,
-        title: "Choose video or audio",
+        title: t("import.dropZone.chooseTitle"),
         filters: [DIALOG_MEDIA_FILTER],
       });
       if (selected === null) return;
@@ -50,10 +53,10 @@ export function DropZone({
   return (
     <div className={shell}>
       <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-        Drag & drop video or audio files
+        {t("import.dropZone.title")}
       </p>
       <p className="mt-2 text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
-        MP4, MOV, MKV, WebM, AVI, MP3, WAV, M4A, FLAC, OGG, AAC
+        {t("import.dropZone.formats")}
       </p>
 
       <div
@@ -66,7 +69,7 @@ export function DropZone({
             className={browseButtonClass}
             onClick={() => void openNativePicker()}
           >
-            Browse files...
+            {t("common:actions.browseFiles")}
           </button>
         ) : (
           <label className="flex w-full cursor-pointer justify-center">
@@ -84,7 +87,7 @@ export function DropZone({
                   e.target.value = "";
                 }}
               />
-              Browse files...
+              {t("common:actions.browseFiles")}
             </span>
           </label>
         )}

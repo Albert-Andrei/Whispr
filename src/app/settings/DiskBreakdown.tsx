@@ -1,4 +1,6 @@
+import { useTranslation } from "react-i18next";
 import { Tooltip } from "../../components/Tooltip";
+import { diskCategoryLabel } from "../../lib/i18nLabels";
 import type { DiskUsageReport } from "../../types/types";
 
 /** Category colors (inspired by macOS storage, tuned for Whispr) */
@@ -53,10 +55,11 @@ function formatTooltipLabel(
 }
 
 export function DiskBreakdown({ report }: { report: DiskUsageReport | null }) {
+  const { t } = useTranslation(["common", "app"]);
   if (!report || report.totalBytes === 0) {
     return (
       <p className="text-[13px] text-zinc-500 dark:text-zinc-400">
-        No usage data yet.
+        {t("app:settings.diskBreakdown.noData")}
       </p>
     );
   }
@@ -80,7 +83,7 @@ export function DiskBreakdown({ report }: { report: DiskUsageReport | null }) {
       <div
         className="flex h-2 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800"
         role="img"
-        aria-label="Disk usage by category"
+        aria-label={t("common:aria.diskUsageByCategory")}
       >
         {barSegments.map((category, segmentIndex) => {
           const width = total > 0 ? (category.bytes / total) * 100 : 0;
@@ -99,7 +102,7 @@ export function DiskBreakdown({ report }: { report: DiskUsageReport | null }) {
           return (
             <Tooltip
               key={category.id}
-              label={formatTooltipLabel(category.label, category.bytes, total)}
+              label={formatTooltipLabel(diskCategoryLabel(t, category.id), category.bytes, total)}
               className="h-full"
               style={{ width: `${width}%` }}
             >
@@ -127,7 +130,7 @@ export function DiskBreakdown({ report }: { report: DiskUsageReport | null }) {
                   style={{ backgroundColor: color }}
                   aria-hidden
                 />
-                {category.label}
+                {diskCategoryLabel(t, category.id)}
               </span>
               <span className="shrink-0 font-medium text-zinc-900 dark:text-zinc-100">
                 {formatStorageSize(category.bytes)}
@@ -139,7 +142,7 @@ export function DiskBreakdown({ report }: { report: DiskUsageReport | null }) {
           );
         })}
         <li className="flex justify-between border-t border-zinc-100 pt-2 text-[13px] font-semibold dark:border-[var(--color-settings-border-dark)]">
-          <span>Total</span>
+          <span>{t("common:details.total")}</span>
           <span>{formatStorageSize(total)}</span>
         </li>
       </ul>

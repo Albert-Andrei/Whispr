@@ -1,0 +1,30 @@
+{
+  "jobStatus": {
+    "pending": "În așteptare",
+    "processing": "Se procesează",
+    "completed": "Finalizat",
+    "failed": "Eșuat"
+  },
+  "pipelineStage": {
+    "downloading": "Se descarcă",
+    "extracting": "Se extrage",
+    "transcribing": "Se transcrie",
+    "progress": "{{stage}} · {{percent}}%"
+  },
+  "disk": {
+    "binaries": "Instrumente (ffmpeg, yt-dlp)",
+    "models": "Modele Whisper",
+    "audio": "Audio pentru redare",
+    "database": "Bază de date",
+    "temp": "Fișiere temporare",
+    "app_core": "Executabil aplicație"
+  },
+  "sourceType": {
+    "local": "Fișier local",
+    "url": "URL",
+    "record": "Înregistrare",
+    "urlImport": "Import URL",
+    "transcription": "Transcriere",
+    "unknown": "Necunoscut"
+  }
+}

@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 type RecordFabProps = {
   onClick: () => void;
   disabled?: boolean;
@@ -24,13 +26,14 @@ function IconMic() {
 }
 
 export function RecordFab({ onClick, disabled }: RecordFabProps) {
+  const { t } = useTranslation("common");
   return (
     <div className="pointer-events-none absolute bottom-4 left-1/2 z-20 -translate-x-1/2">
       <button
         type="button"
         onClick={onClick}
         disabled={disabled}
-        aria-label="Start recording"
+        aria-label={t("aria.startRecording")}
         className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full bg-zinc-900 text-white shadow-lg transition hover:bg-zinc-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
       >
         <IconMic />

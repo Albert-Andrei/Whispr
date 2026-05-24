@@ -1,5 +1,6 @@
 import { invoke, isTauri } from "@tauri-apps/api/core";
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { AboutSettings } from "./AboutSettings";
 import { BinaryStatusRows } from "./BinaryStatusRow";
 import { DiskBreakdown } from "./DiskBreakdown";
@@ -15,6 +16,7 @@ type SettingsProps = {
 };
 
 export function Settings({ appUpdate }: SettingsProps) {
+  const { t } = useTranslation(["common", "app"]);
   const { health, checking: healthChecking } = useBinaryHealth();
   const [disk, setDisk] = useState<DiskUsageReport | null>(null);
 
@@ -32,12 +34,7 @@ export function Settings({ appUpdate }: SettingsProps) {
     return (
       <div className="px-8 py-8">
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Settings that talk to your Mac (binaries, disk usage, models) need the
-          desktop app. Run{" "}
-          <code className="rounded bg-zinc-100 px-1 dark:bg-zinc-800">
-            bun run tauri dev
-          </code>{" "}
-          instead of the browser-only dev server.
+          {t("app:settings.browserOnly")}
         </p>
       </div>
     );
@@ -51,31 +48,31 @@ export function Settings({ appUpdate }: SettingsProps) {
     <div className="min-h-0 flex-1 overflow-y-auto px-8 py-8 pb-16">
       <div className="mx-auto max-w-2xl space-y-8">
         <h1 className="text-[22px] font-semibold tracking-[-0.02em] text-zinc-900 dark:text-zinc-50">
-          Settings
+          {t("app:settings.title")}
         </h1>
 
-        <SettingsSection title="About">
+        <SettingsSection title={t("common:sections.about")}>
           <AboutSettings update={appUpdate} />
         </SettingsSection>
 
-        <SettingsSection title="General">
+        <SettingsSection title={t("common:sections.general")}>
           <GeneralSettings />
         </SettingsSection>
 
-        <SettingsSection title="System" syncing={healthChecking}>
+        <SettingsSection title={t("common:sections.system")} syncing={healthChecking}>
           <BinaryStatusRows health={binaries} loading={!health} />
         </SettingsSection>
 
-        <SettingsSection title="Storage">
+        <SettingsSection title={t("common:sections.storage")}>
           <SettingsBlock last>
             <p className="mb-3 text-[12px] text-zinc-500 dark:text-zinc-400">
-              Rough breakdown of disk usage for this app
+              {t("app:settings.storageDescription")}
             </p>
             <DiskBreakdown report={disk} />
           </SettingsBlock>
         </SettingsSection>
 
-        <SettingsSection title="Whisper models">
+        <SettingsSection title={t("common:sections.whisperModels")}>
           <ModelSelector onRefresh={loadDisk} />
         </SettingsSection>
       </div>

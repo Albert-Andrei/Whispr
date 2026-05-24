@@ -60,8 +60,8 @@ export function SettingsSection({
         {syncing ? (
           <span
             className="inline-flex"
-            title="Checking tools…"
-            aria-label="Checking tools"
+            title={title}
+            aria-label={title}
           >
             <SettingsSyncIcon />
           </span>

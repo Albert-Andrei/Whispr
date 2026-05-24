@@ -1,6 +1,7 @@
 import { invoke, isTauri } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { create } from "zustand";
+import i18n from "../../lib/i18n";
 import type { PipelineStage, TranscriptionJob } from "./types";
 import {
   deleteJob,
@@ -130,8 +131,7 @@ export const useTranscriptionStore = create<TranscriptionState>((set, get) => ({
   loadJobs: async () => {
     if (!isTauri()) {
       set({
-        error:
-          "SQLite runs in the desktop shell. Use `bun run tauri dev` instead of the browser-only dev server.",
+        error: i18n.t("common:desktopOnly.sqliteShell"),
         ready: true,
       });
       return;
@@ -156,7 +156,7 @@ export const useTranscriptionStore = create<TranscriptionState>((set, get) => ({
       await get().processPipelineQueue();
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Failed to load transcriptions";
+        err instanceof Error ? err.message : i18n.t("app:dashboard.errors.loadTranscriptions");
       set({ error: message, ready: true });
     }
   },

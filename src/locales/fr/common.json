@@ -1,0 +1,178 @@
+{
+  "actions": {
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "discard": "Abandonner",
+    "retry": "Réessayer",
+    "view": "Voir",
+    "new": "Nouveau",
+    "close": "Fermer",
+    "back": "Retour",
+    "tryAgain": "Réessayer",
+    "use": "Utiliser",
+    "download": "Télécharger",
+    "browseFiles": "Parcourir les fichiers...",
+    "addToQueue": "Ajouter à la file",
+    "checkAgain": "Vérifier à nouveau",
+    "copyText": "Copier le texte",
+    "copied": "Copié !",
+    "translate": "Traduire",
+    "copy": "Copier"
+  },
+  "loading": "Chargement",
+  "loadingEllipsis": "Chargement…",
+  "deleting": "Suppression…",
+  "translating": "Traduction…",
+  "checking": "Vérification…",
+  "downloading": "Téléchargement…",
+  "installing": "Installation…",
+  "or": "ou",
+  "emptyPlaceholder": "—",
+  "nav": {
+    "transcriptions": "Transcriptions",
+    "record": "Enregistrer",
+    "media": "Médias",
+    "settings": "Réglages",
+    "whispr": "Whispr"
+  },
+  "theme": {
+    "light": "Clair",
+    "dark": "Sombre",
+    "system": "Système",
+    "colorTheme": "Thème de couleur",
+    "colorThemeDescription": "Choisissez clair, sombre ou l'apparence du système"
+  },
+  "exportFormats": {
+    "txt": "Texte brut",
+    "txtTimestamps": "Texte avec horodatage",
+    "srt": "Sous-titres SRT",
+    "pdf": "PDF",
+    "docx": "Word (DOCX)",
+    "txtWithExt": "Texte brut (.txt)",
+    "srtWithExt": "Sous-titres (.srt)",
+    "pdfWithExt": "PDF (.pdf)",
+    "docxWithExt": "Word (.docx)"
+  },
+  "dialogFilters": {
+    "srt": "SRT",
+    "pdf": "PDF",
+    "word": "Word",
+    "text": "Texte",
+    "videoAudio": "Vidéo et audio"
+  },
+  "models": {
+    "small": "Petit",
+    "medium": "Moyen",
+    "large": "Grand",
+    "smallTitle": "Petit (~466 Mo)",
+    "mediumTitle": "Moyen (~1,5 Go)",
+    "largeTitle": "Grand (~3,1 Go)",
+    "smallHint": "Bonne qualité, plus rapide",
+    "mediumHint": "Recommandé",
+    "largeHint": "Meilleure qualité",
+    "smallSize": "~466 Mo",
+    "mediumSize": "~1,5 Go",
+    "largeSize": "~3,1 Go",
+    "active": "Actif",
+    "downloaded": "Téléchargé"
+  },
+  "concurrentJobs": {
+    "one": "1 tâche",
+    "two": "2 tâches",
+    "three": "3 tâches"
+  },
+  "languages": {
+    "en": "English",
+    "ru": "Русский",
+    "ro": "Română",
+    "es": "Español",
+    "fr": "Français"
+  },
+  "translateLanguages": {
+    "en": "Anglais",
+    "es": "Espagnol",
+    "fr": "Français",
+    "de": "Allemand",
+    "it": "Italien",
+    "pt": "Portugais",
+    "ro": "Roumain",
+    "ru": "Russe",
+    "uk": "Ukrainien",
+    "ja": "Japonais",
+    "zh": "Chinois"
+  },
+  "binaryStatus": {
+    "installed": "Installé",
+    "missing": "Manquant"
+  },
+  "playback": {
+    "play": "Lecture",
+    "pause": "Pause",
+    "volume": "Volume",
+    "rec": "ENR",
+    "paused": "En pause",
+    "resume": "Reprendre"
+  },
+  "update": {
+    "available": "Mise à jour disponible",
+    "upToDate": "À jour",
+    "error": "Erreur",
+    "updateAndRestart": "Mettre à jour et redémarrer",
+    "versionAvailable": "v{{version}} disponible",
+    "updateAvailableVersion": "Mise à jour disponible : v{{version}}",
+    "latestRelease": "Vous avez la dernière version",
+    "couldNotCheck": "Impossible de vérifier les mises à jour",
+    "inProgress": "Mise à jour en cours…",
+    "installVersion": "Installer v{{version}}",
+    "downloadingPercent": "Téléchargement {{percent}} %",
+    "installingUpdate": "Installation de la mise à jour…",
+    "downloadingUpdate": "Téléchargement de la mise à jour… {{percent}} %"
+  },
+  "desktopOnly": {
+    "sqliteShell": "SQLite fonctionne dans l'application de bureau. Utilisez `bun run tauri dev` au lieu du serveur de développement du navigateur.",
+    "settingsShell": "Les réglages qui accèdent à votre Mac (binaires, disque, modèles) nécessitent l'application de bureau. Lancez `bun run tauri dev` au lieu du serveur navigateur.",
+    "recordingShell": "L'enregistrement nécessite l'application de bureau.",
+    "playbackShell": "La lecture des médias est disponible dans l'application de bureau."
+  },
+  "toasts": {
+    "recordingSaved": "Enregistrement sauvegardé"
+  },
+  "table": {
+    "name": "Nom",
+    "duration": "Durée",
+    "date": "Date",
+    "status": "État",
+    "actions": "Actions"
+  },
+  "details": {
+    "source": "Source",
+    "created": "Créé",
+    "duration": "Durée",
+    "model": "Modèle",
+    "version": "Version",
+    "total": "Total"
+  },
+  "sections": {
+    "actions": "Actions",
+    "exportAs": "Exporter en",
+    "details": "Détails",
+    "about": "À propos",
+    "general": "Général",
+    "system": "Système",
+    "storage": "Stockage",
+    "whisperModels": "Modèles Whisper"
+  },
+  "aria": {
+    "dismissNotification": "Fermer la notification",
+    "dismissUpdate": "Fermer l'avis de mise à jour",
+    "resizeSidebar": "Redimensionner la barre latérale",
+    "rename": "Renommer",
+    "editTitle": "Modifier le titre",
+    "clickToRename": "Cliquer pour renommer",
+    "backToTranscriptions": "Retour aux transcriptions",
+    "startRecording": "Commencer l'enregistrement",
+    "checkingTools": "Vérification des outils",
+    "checkingToolsTitle": "Vérification des outils…",
+    "diskUsageByCategory": "Utilisation du disque par catégorie"
+  }
+}

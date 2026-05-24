@@ -1,0 +1,30 @@
+{
+  "jobStatus": {
+    "pending": "Pendiente",
+    "processing": "Procesando",
+    "completed": "Completado",
+    "failed": "Fallido"
+  },
+  "pipelineStage": {
+    "downloading": "Descargando",
+    "extracting": "Extrayendo",
+    "transcribing": "Transcribiendo",
+    "progress": "{{stage}} · {{percent}}%"
+  },
+  "disk": {
+    "binaries": "Herramientas (ffmpeg, yt-dlp)",
+    "models": "Modelos Whisper",
+    "audio": "Audio para reproducción",
+    "database": "Base de datos",
+    "temp": "Archivos temporales",
+    "app_core": "Ejecutable de la app"
+  },
+  "sourceType": {
+    "local": "Archivo local",
+    "url": "URL",
+    "record": "Grabación",
+    "urlImport": "Importación por URL",
+    "transcription": "Transcripción",
+    "unknown": "Desconocido"
+  }
+}

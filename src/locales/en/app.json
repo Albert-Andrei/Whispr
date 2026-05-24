@@ -1,0 +1,168 @@
+{
+  "components": {
+    "sidebar": {
+      "updateBadge": "New",
+      "updateAvailable": "Update available"
+    },
+    "header": {},
+    "appShell": {
+      "loading": "Loading…"
+    },
+    "appFileDropLayer": {
+      "title": "Drop to import",
+      "subtitle": "Video or audio files"
+    },
+    "themeToggle": {},
+    "editableFileName": {},
+    "updatePopover": {}
+  },
+  "dashboard": {
+    "loading": "Loading your transcriptions…",
+    "emptyState": {
+      "title": "No transcriptions yet",
+      "description": "Paste a link or drop a file below. Everything runs offline on your Mac—no API keys."
+    },
+    "fileList": {},
+    "fileRow": {},
+    "transcriptView": {
+      "recordedBadge": "Recorded",
+      "translatedTo": "Translated to {{language}}",
+      "showOriginal": "Show original",
+      "showingOriginal": "Showing original",
+      "showTranslation": "Show translation",
+      "translationNoText": "Translation returned no text. Try again.",
+      "translationFailed": "Translation failed. Check your connection and try again."
+    },
+    "transcriptSidePanel": {},
+    "transcriptPlayer": {},
+    "errors": {
+      "loadTranscriptions": "Failed to load transcriptions",
+      "hint": "Check app permissions or restart Whispr."
+    }
+  },
+  "import": {
+    "modal": {
+      "title": "New transcription",
+      "description": "Paste a link, or drag in a file — everything stays on your Mac."
+    },
+    "urlInput": {
+      "label": "Video URL",
+      "placeholder": "Paste a YouTube, Vimeo, or other video URL",
+      "errorEmpty": "Paste a URL first",
+      "errorInvalid": "That does not look like a valid URL"
+    },
+    "dropZone": {
+      "title": "Drag & drop video or audio files",
+      "formats": "MP4, MOV, MKV, WebM, AVI, MP3, WAV, M4A, FLAC, OGG, AAC",
+      "chooseTitle": "Choose video or audio"
+    },
+    "dropMedia": {
+      "pathWarning": "Some files could not be added because their path was not available. Use Browse to pick files, or drop them from Finder.",
+      "dialogTitle": "Whispr"
+    }
+  },
+  "setup": {
+    "welcome": {
+      "title": "Welcome to Whispr",
+      "description": "One-time setup downloads ffmpeg, yt-dlp, and your chosen Whisper model. If whisper-cli is not already on your Mac, Whispr installs it via Homebrew for you (you need Homebrew from brew.sh). You can change the model later in Settings.",
+      "offlineNote": "After setup, transcription works offline. Internet is only required during this download step."
+    },
+    "model": {
+      "chooseLabel": "Choose model (multilingual)"
+    },
+    "button": {
+      "setup": "Set up Whispr"
+    },
+    "loading": {
+      "title": "Downloading components…",
+      "homebrewNote": "The transcription step may run Homebrew to install whisper-cpp — first time can take several minutes."
+    },
+    "component": {
+      "ffmpeg": "ffmpeg — audio/video",
+      "ytdlp": "yt-dlp — URL download",
+      "whisperCli": "whisper-cli — transcription",
+      "model": "Whisper model"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "browserOnly": "Settings that talk to your Mac (binaries, disk usage, models) need the desktop app. Run `bun run tauri dev` instead of the browser-only dev server.",
+    "storageDescription": "Rough breakdown of disk usage for this app",
+    "general": {
+      "language": {
+        "label": "Language",
+        "description": "Choose the language for Whispr's interface"
+      },
+      "exportFormat": {
+        "label": "Default export format",
+        "description": "Format used when exporting transcripts from the dashboard"
+      },
+      "concurrent": {
+        "label": "Concurrent transcriptions",
+        "description": "How many jobs can run at the same time (1–3)"
+      }
+    },
+    "about": {},
+    "binaryStatus": {
+      "loading": "Loading…",
+      "checkingToolStatus": "Checking tool status",
+      "requiredMissing": "Required component. Whispr cannot transcribe without it."
+    },
+    "modelSelector": {},
+    "diskBreakdown": {
+      "noData": "No usage data yet.",
+      "tooltip": "{{label}} · {{size}} ({{percent}}%)"
+    }
+  },
+  "record": {
+    "loading": "Loading recordings…",
+    "emptyState": {
+      "title": "Record",
+      "description": "Capture speech with live transcription. Your recording is saved locally and finalized when you stop. Tap the mic button below to begin."
+    },
+    "live": {
+      "placeholder": "Start speaking to see live transcription…"
+    },
+    "controls": {
+      "stopAndSave": "Stop and save",
+      "discardRecording": "Discard recording"
+    },
+    "navGuard": {
+      "title": "Recording in progress",
+      "description": "Stop and save your recording, discard it, or stay here to continue.",
+      "stopAndSave": "Stop & save"
+    },
+    "errors": {
+      "startFailed": "Could not start recording",
+      "loadFailed": "Failed to load recordings",
+      "saveFailed": "Could not save recording",
+      "desktopRequired": "Recording requires the desktop app."
+    }
+  },
+  "media": {
+    "browserOnly": "Playback media is available in the desktop app.",
+    "loading": "Loading media…",
+    "description": "Compact audio copies for in-app playback. Deleting a file frees disk space; transcripts stay, but playback and segment sync depend on these files.",
+    "syncedPlayback": "Synced playback",
+    "emptyState": {
+      "title": "Playback audio",
+      "description": "Whispr keeps compact copies of your audio here so you can listen inside the app and follow along with timestamped transcript segments.",
+      "bullet1": "Files appear after a transcription finishes or you stop a recording.",
+      "bullet2": "Deleting audio frees disk space. Your transcript text stays; only playback and segment sync are removed.",
+      "hint": "Import media or record from the other sidebar tabs to get started."
+    },
+    "delete": {
+      "title": "Delete playback audio?",
+      "willRemove": "{{filename}} will be removed from disk.",
+      "transcriptStays": "Your transcript text stays in Whispr, but you will lose in-app playback",
+      "syncLoss": " and timestamp sync with transcript segments",
+      "retranscribe": " for this item until you transcribe the source again.",
+      "confirm": "Delete audio",
+      "thisFile": "This file"
+    },
+    "errors": {
+      "loadFailed": "Could not load media",
+      "deleteFailed": "Could not delete media"
+    }
+  }
+}

@@ -1,6 +1,7 @@
 import { isTauri } from "@tauri-apps/api/core";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   collectDroppedMedia,
   dispatchDroppedMedia,
@@ -13,7 +14,6 @@ type AppFileDropLayerProps = {
   modalOpen: boolean;
   onLocalFiles: (files: File[]) => Promise<void>;
   onLocalFilePaths?: (paths: string[]) => Promise<void>;
-  /** Called after a successful drop (e.g. close import modal). */
   onDropped?: () => void;
 };
 
@@ -24,6 +24,7 @@ export function AppFileDropLayer({
   onLocalFilePaths,
   onDropped,
 }: AppFileDropLayerProps) {
+  const { t } = useTranslation("app");
   const [dragActive, setDragActive] = useState(false);
   const busyRef = useRef(false);
 
@@ -98,7 +99,6 @@ export function AppFileDropLayer({
       };
     }
 
-    // Browser dev: HTML5 drag-and-drop
     let depth = 0;
 
     const onDragEnter = (e: DragEvent) => {
@@ -164,10 +164,10 @@ export function AppFileDropLayer({
     >
       <div className="rounded-2xl w-[80%] h-[70%] flex flex-col items-center justify-center border-2 border-dashed border-zinc-400/90 bg-zinc-900/10 px-10 py-8 text-center shadow-lg dark:border-zinc-500/70 dark:bg-zinc-100/5">
         <p className="text-3xl font-semibold text-zinc-900 dark:text-zinc-50">
-          Drop to import
+          {t("components.appFileDropLayer.title")}
         </p>
         <p className="mt-1.5 text-xl text-zinc-700/85 dark:text-zinc-200/80">
-          Video or audio files
+          {t("components.appFileDropLayer.subtitle")}
         </p>
       </div>
     </div>

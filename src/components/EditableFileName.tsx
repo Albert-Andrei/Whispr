@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type MouseEvent } from "react";
+import { useTranslation } from "react-i18next";
 
 function IconPencil() {
   return (
@@ -32,6 +33,7 @@ export function EditableFileName({
   variant = "header",
   onClick,
 }: EditableFileNameProps) {
+  const { t } = useTranslation("common");
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(fileName);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -43,9 +45,7 @@ export function EditableFileName({
   const inputClass = isRow
     ? "text-sm font-medium"
     : "text-[15px] font-semibold tracking-[-0.02em]";
-  const editBtnClass = isRow
-    ? "h-6 w-6"
-    : "h-7 w-7";
+  const editBtnClass = isRow ? "h-6 w-6" : "h-7 w-7";
 
   useEffect(() => {
     if (!editing) setDraft(fileName);
@@ -105,7 +105,7 @@ export function EditableFileName({
           }
         }}
         className={`min-w-0 max-w-full rounded-md border border-zinc-300 bg-white px-2 py-0.5 text-zinc-900 outline-none ring-2 ring-zinc-900/20 focus:border-zinc-900 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50 dark:ring-zinc-400/20 dark:focus:border-zinc-400 ${inputClass}`}
-        aria-label="Edit title"
+        aria-label={t("aria.editTitle")}
       />
     );
   }
@@ -120,14 +120,14 @@ export function EditableFileName({
         type="button"
         onClick={startEditing}
         className={`min-w-0 truncate rounded-md px-1 py-0.5 text-left transition hover:bg-zinc-100 dark:hover:bg-zinc-800 ${titleClass}`}
-        title="Click to rename"
+        title={t("aria.clickToRename")}
       >
         {fileName}
       </button>
       <button
         type="button"
         onClick={startEditing}
-        aria-label="Rename"
+        aria-label={t("aria.rename")}
         className={`flex shrink-0 items-center justify-center rounded-md text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200 ${editBtnClass}`}
       >
         <IconPencil />

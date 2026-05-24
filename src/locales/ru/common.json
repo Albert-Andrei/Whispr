@@ -1,0 +1,178 @@
+{
+  "actions": {
+    "cancel": "Отмена",
+    "delete": "Удалить",
+    "discard": "Отклонить",
+    "retry": "Повторить",
+    "view": "Открыть",
+    "new": "Создать",
+    "close": "Закрыть",
+    "back": "Назад",
+    "tryAgain": "Попробовать снова",
+    "use": "Использовать",
+    "download": "Скачать",
+    "browseFiles": "Выбрать файлы...",
+    "addToQueue": "Добавить в очередь",
+    "checkAgain": "Проверить снова",
+    "copyText": "Копировать текст",
+    "copied": "Скопировано!",
+    "translate": "Перевести",
+    "copy": "Копировать"
+  },
+  "loading": "Загрузка",
+  "loadingEllipsis": "Загрузка…",
+  "deleting": "Удаление…",
+  "translating": "Перевод…",
+  "checking": "Проверка…",
+  "downloading": "Загрузка…",
+  "installing": "Установка…",
+  "or": "или",
+  "emptyPlaceholder": "—",
+  "nav": {
+    "transcriptions": "Транскрипции",
+    "record": "Запись",
+    "media": "Медиа",
+    "settings": "Настройки",
+    "whispr": "Whispr"
+  },
+  "theme": {
+    "light": "Светлая",
+    "dark": "Тёмная",
+    "system": "Системная",
+    "colorTheme": "Цветовая тема",
+    "colorThemeDescription": "Выберите светлую, тёмную или системную тему оформления"
+  },
+  "exportFormats": {
+    "txt": "Обычный текст",
+    "txtTimestamps": "Текст с метками времени",
+    "srt": "Субтитры SRT",
+    "pdf": "PDF",
+    "docx": "Word (DOCX)",
+    "txtWithExt": "Обычный текст (.txt)",
+    "srtWithExt": "Субтитры (.srt)",
+    "pdfWithExt": "PDF (.pdf)",
+    "docxWithExt": "Word (.docx)"
+  },
+  "dialogFilters": {
+    "srt": "SRT",
+    "pdf": "PDF",
+    "word": "Word",
+    "text": "Текст",
+    "videoAudio": "Видео и аудио"
+  },
+  "models": {
+    "small": "Малая",
+    "medium": "Средняя",
+    "large": "Большая",
+    "smallTitle": "Малая (~466 МБ)",
+    "mediumTitle": "Средняя (~1,5 ГБ)",
+    "largeTitle": "Большая (~3,1 ГБ)",
+    "smallHint": "Хорошее качество, быстрее",
+    "mediumHint": "Рекомендуется",
+    "largeHint": "Лучшее качество",
+    "smallSize": "~466 МБ",
+    "mediumSize": "~1,5 ГБ",
+    "largeSize": "~3,1 ГБ",
+    "active": "Активная",
+    "downloaded": "Загружена"
+  },
+  "concurrentJobs": {
+    "one": "1 задача",
+    "two": "2 задачи",
+    "three": "3 задачи"
+  },
+  "languages": {
+    "en": "English",
+    "ru": "Русский",
+    "ro": "Română",
+    "es": "Español",
+    "fr": "Français"
+  },
+  "translateLanguages": {
+    "en": "Английский",
+    "es": "Испанский",
+    "fr": "Французский",
+    "de": "Немецкий",
+    "it": "Итальянский",
+    "pt": "Португальский",
+    "ro": "Румынский",
+    "ru": "Русский",
+    "uk": "Украинский",
+    "ja": "Японский",
+    "zh": "Китайский"
+  },
+  "binaryStatus": {
+    "installed": "Установлено",
+    "missing": "Отсутствует"
+  },
+  "playback": {
+    "play": "Воспроизвести",
+    "pause": "Пауза",
+    "volume": "Громкость",
+    "rec": "ЗАП",
+    "paused": "Пауза",
+    "resume": "Продолжить"
+  },
+  "update": {
+    "available": "Доступно обновление",
+    "upToDate": "Актуальная версия",
+    "error": "Ошибка",
+    "updateAndRestart": "Обновить и перезапустить",
+    "versionAvailable": "Доступна v{{version}}",
+    "updateAvailableVersion": "Доступно обновление: v{{version}}",
+    "latestRelease": "У вас установлена последняя версия",
+    "couldNotCheck": "Не удалось проверить обновления",
+    "inProgress": "Обновление выполняется…",
+    "installVersion": "Установить v{{version}}",
+    "downloadingPercent": "Загрузка {{percent}}%",
+    "installingUpdate": "Установка обновления…",
+    "downloadingUpdate": "Загрузка обновления… {{percent}}%"
+  },
+  "desktopOnly": {
+    "sqliteShell": "SQLite работает в десктопной оболочке. Используйте `bun run tauri dev` вместо браузерного dev-сервера.",
+    "settingsShell": "Настройки, связанные с вашим Mac (бинарники, диск, модели), доступны только в десктопном приложении. Запустите `bun run tauri dev` вместо браузерного dev-сервера.",
+    "recordingShell": "Запись доступна только в десктопном приложении.",
+    "playbackShell": "Воспроизведение медиа доступно только в десктопном приложении."
+  },
+  "toasts": {
+    "recordingSaved": "Запись сохранена"
+  },
+  "table": {
+    "name": "Имя",
+    "duration": "Длительность",
+    "date": "Дата",
+    "status": "Статус",
+    "actions": "Действия"
+  },
+  "details": {
+    "source": "Источник",
+    "created": "Создано",
+    "duration": "Длительность",
+    "model": "Модель",
+    "version": "Версия",
+    "total": "Итого"
+  },
+  "sections": {
+    "actions": "Действия",
+    "exportAs": "Экспорт как",
+    "details": "Сведения",
+    "about": "О приложении",
+    "general": "Общие",
+    "system": "Система",
+    "storage": "Хранилище",
+    "whisperModels": "Модели Whisper"
+  },
+  "aria": {
+    "dismissNotification": "Закрыть уведомление",
+    "dismissUpdate": "Закрыть уведомление об обновлении",
+    "resizeSidebar": "Изменить ширину боковой панели",
+    "rename": "Переименовать",
+    "editTitle": "Редактировать название",
+    "clickToRename": "Нажмите, чтобы переименовать",
+    "backToTranscriptions": "Назад к транскрипциям",
+    "startRecording": "Начать запись",
+    "checkingTools": "Проверка инструментов",
+    "checkingToolsTitle": "Проверка инструментов…",
+    "diskUsageByCategory": "Использование диска по категориям"
+  }
+}

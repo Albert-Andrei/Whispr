@@ -11,7 +11,7 @@ pub fn persist_playback_audio(
 ) -> Result<PathBuf, String> {
     let ffmpeg = paths::ffmpeg_path(app)?;
     if !ffmpeg.is_file() {
-        return Err("ffmpeg is not installed. Finish setup first.".into());
+        return Err("ffmpeg is not available. The bundled binary may be missing — try reinstalling Whispr.".into());
     }
     let audio_dir = paths::audio_dir(app)?;
     let out = audio_dir.join(format!("{job_id}.m4a"));

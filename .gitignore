@@ -26,3 +26,6 @@ dist-ssr
 .env
 # Signing keys (private key must never be committed)
 src-tauri/keys/
+
+# Sidecar binaries (fetched/built by scripts/fetch-sidecars.sh)
+src-tauri/binaries/

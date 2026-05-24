@@ -64,8 +64,8 @@
   "setup": {
     "welcome": {
       "title": "Welcome to Whispr",
-      "description": "One-time setup downloads ffmpeg, yt-dlp, and your chosen Whisper model. If whisper-cli is not already on your Mac, Whispr installs it via Homebrew for you (you need Homebrew from brew.sh). You can change the model later in Settings.",
-      "offlineNote": "After setup, transcription works offline. Internet is only required during this download step."
+      "description": "Pick a Whisper model to get started. You can change the model later in Settings.",
+      "offlineNote": "After setup, transcription works fully offline — no internet needed."
     },
     "model": {
       "chooseLabel": "Choose model (multilingual)"
@@ -74,13 +74,9 @@
       "setup": "Set up Whispr"
     },
     "loading": {
-      "title": "Downloading components…",
-      "homebrewNote": "The transcription step may run Homebrew to install whisper-cpp — first time can take several minutes."
+      "title": "Downloading model…"
     },
     "component": {
-      "ffmpeg": "ffmpeg — audio/video",
-      "ytdlp": "yt-dlp — URL download",
-      "whisperCli": "whisper-cli — transcription",
       "model": "Whisper model"
     }
   },
@@ -103,25 +99,19 @@
       }
     },
     "about": {},
-    "binaryStatus": {
-      "loading": "Loading…",
-      "checkingToolStatus": "Checking tool status",
-      "requiredMissing": "Required component. Whispr cannot transcribe without it."
-    },
     "modelSelector": {},
     "diskBreakdown": {
       "noData": "No usage data yet.",
       "tooltip": "{{label}} · {{size}} ({{percent}}%)"
     },
     "dangerZone": {
-      "title": "Delete all app data",
-      "description": "Removes all downloaded models, tools, audio files, and your transcription database. The app will need to run setup again.",
-      "button": "Delete everything",
+      "description": "An older version of Whispr downloaded tool files (ffmpeg, yt-dlp, whisper-cli) that are no longer needed — tools are now bundled with the app. These leftover files use {{size}} MB of disk space.",
+      "button": "Clean up legacy files",
       "dialog": {
-        "title": "Delete all Whispr data?",
-        "body": "This will permanently delete all models, tools (ffmpeg, yt-dlp), audio files, and your transcription history. You will need to run first-time setup again.",
-        "confirm": "Delete everything",
-        "deleting": "Deleting…"
+        "title": "Remove legacy tool files?",
+        "body": "This will delete the old ffmpeg, yt-dlp, and whisper-cli files ({{size}} MB) that were downloaded by a previous version. Your transcriptions, models, and audio are not affected.",
+        "confirm": "Delete legacy files",
+        "deleting": "Cleaning…"
       }
     }
   },

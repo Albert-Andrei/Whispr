@@ -101,10 +101,6 @@
     "ja": "Japoneză",
     "zh": "Chineză"
   },
-  "binaryStatus": {
-    "installed": "Instalat",
-    "missing": "Lipsă"
-  },
   "playback": {
     "play": "Redă",
     "pause": "Pauză",
@@ -158,7 +154,6 @@
     "details": "Detalii",
     "about": "Despre",
     "general": "General",
-    "system": "Sistem",
     "storage": "Stocare",
     "whisperModels": "Modele Whisper"
   },
@@ -171,8 +166,6 @@
     "clickToRename": "Clic pentru a redenumi",
     "backToTranscriptions": "Înapoi la transcrieri",
     "startRecording": "Începe înregistrarea",
-    "checkingTools": "Se verifică instrumentele",
-    "checkingToolsTitle": "Se verifică instrumentele…",
     "diskUsageByCategory": "Utilizarea discului pe categorii"
   }
 }

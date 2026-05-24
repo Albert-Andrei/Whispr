@@ -28,9 +28,7 @@ pub fn transcribe_file(
 ) -> Result<(String, String, Option<String>), String> {
     let cli = paths::whisper_cli_path(app)?;
     if !cli.exists() {
-        return Err(
-            "whisper-cli is not available. Open Whispr again so it can install whisper-cpp via Homebrew, or install Homebrew from https://brew.sh if needed.".into(),
-        );
+        return Err("whisper-cli is not available. The bundled binary may be missing or corrupted — try reinstalling Whispr.".into());
     }
 
     let tmp = paths::tmp_dir(app)?;

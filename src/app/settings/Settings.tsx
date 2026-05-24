@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AboutSettings } from "./AboutSettings";
 import { BinaryStatusRows } from "./BinaryStatusRow";
+import { DangerZone } from "./DangerZone";
 import { DiskBreakdown } from "./DiskBreakdown";
 import { GeneralSettings } from "./GeneralSettings";
 import { ModelSelector } from "./ModelSelector";
@@ -74,6 +75,12 @@ export function Settings({ appUpdate }: SettingsProps) {
 
         <SettingsSection title={t("common:sections.whisperModels")}>
           <ModelSelector onRefresh={loadDisk} />
+        </SettingsSection>
+
+        <SettingsSection title={t("common:sections.dangerZone")}>
+          <SettingsBlock last>
+            <DangerZone />
+          </SettingsBlock>
         </SettingsSection>
       </div>
     </div>

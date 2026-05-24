@@ -112,6 +112,17 @@
     "diskBreakdown": {
       "noData": "No usage data yet.",
       "tooltip": "{{label}} · {{size}} ({{percent}}%)"
+    },
+    "dangerZone": {
+      "title": "Delete all app data",
+      "description": "Removes all downloaded models, tools, audio files, and your transcription database. The app will need to run setup again.",
+      "button": "Delete everything",
+      "dialog": {
+        "title": "Delete all Whispr data?",
+        "body": "This will permanently delete all models, tools (ffmpeg, yt-dlp), audio files, and your transcription history. You will need to run first-time setup again.",
+        "confirm": "Delete everything",
+        "deleting": "Deleting…"
+      }
     }
   },
   "record": {

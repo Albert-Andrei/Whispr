@@ -23,20 +23,12 @@ pub fn audio_dir(app: &AppHandle) -> Result<PathBuf, String> {
     Ok(app_root(app)?.join("audio"))
 }
 
-fn target_triple() -> &'static str {
-    if cfg!(target_arch = "aarch64") {
-        "aarch64-apple-darwin"
-    } else {
-        "x86_64-apple-darwin"
-    }
-}
-
 /// Resolve a bundled sidecar binary. Tauri places sidecars alongside the main
 /// executable (Contents/MacOS/ in a .app, or target/debug/ during `tauri dev`).
 fn sidecar_path(name: &str) -> Result<PathBuf, String> {
     let exe = std::env::current_exe().map_err(|e| e.to_string())?;
     let dir = exe.parent().ok_or("Cannot determine executable directory")?;
-    Ok(dir.join(format!("{name}-{}", target_triple())))
+    Ok(dir.join(format!("{name}-aarch64-apple-darwin")))
 }
 
 pub fn ffmpeg_path(_app: &AppHandle) -> Result<PathBuf, String> {

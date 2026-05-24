@@ -16,8 +16,6 @@ jobs:
         include:
           - target: aarch64-apple-darwin
             runner: macos-latest
-          - target: x86_64-apple-darwin
-            runner: macos-latest
 
     runs-on: ${{ matrix.runner }}
     steps:
@@ -40,7 +38,7 @@ jobs:
           workspaces: src-tauri
 
       - name: Fetch sidecar binaries
-        run: ./scripts/fetch-sidecars.sh ${{ matrix.target }}
+        run: ./scripts/fetch-sidecars.sh
 
       - name: Build and release
         uses: tauri-apps/tauri-action@v0

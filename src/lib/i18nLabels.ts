@@ -1,5 +1,5 @@
 import type { TFunction } from "i18next";
-import type { JobStatus, PipelineStage, SourceType } from "../app/dashboard/types";
+import type { JobStatus, SourceType } from "../app/dashboard/types";
 
 export function jobStatusLabel(t: TFunction, status: JobStatus): string {
   return t(`backend:jobStatus.${status}`);

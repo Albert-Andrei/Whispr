@@ -24,6 +24,7 @@ pub fn run() {
             binaries::get_recommended_max_concurrent,
             binaries::delete_model_file,
             binaries::list_model_files,
+            binaries::reset_all_data,
             downloader::download_tools,
             downloader::download_model_file,
             pipeline::run_pipeline,

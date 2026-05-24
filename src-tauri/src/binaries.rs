@@ -212,6 +212,31 @@ pub fn delete_model_file(app: AppHandle, filename: String) -> Result<(), String>
 }
 
 #[tauri::command]
+pub async fn reset_all_data(app: AppHandle) -> Result<(), String> {
+    let root = paths::app_root(&app)?;
+    let dirs = ["bin", "models", "audio", "tmp"];
+    for name in dirs {
+        let d = root.join(name);
+        if d.exists() {
+            std::fs::remove_dir_all(&d).map_err(|e| format!("remove {name}: {e}"))?;
+        }
+    }
+    let db = root.join("whispr.db");
+    if db.exists() {
+        std::fs::remove_file(&db).map_err(|e| format!("remove db: {e}"))?;
+    }
+    let db_wal = root.join("whispr.db-wal");
+    if db_wal.exists() {
+        let _ = std::fs::remove_file(&db_wal);
+    }
+    let db_shm = root.join("whispr.db-shm");
+    if db_shm.exists() {
+        let _ = std::fs::remove_file(&db_shm);
+    }
+    Ok(())
+}
+
+#[tauri::command]
 pub async fn list_model_files(app: AppHandle) -> Result<Vec<String>, String> {
     let d = paths::models_dir(&app)?;
     tokio::task::spawn_blocking(move || {

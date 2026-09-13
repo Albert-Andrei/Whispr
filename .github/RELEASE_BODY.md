@@ -1,9 +1,9 @@
-## Whispr v0.1.10
+## Whispr v0.1.11
 
-Auto-detect app language from system locale on first launch.
+ffmpeg, yt-dlp and whisper-cli are now bundled inside the app. No Homebrew, no tool downloads: install, pick a model, transcribe. Apple Silicon (M-series) only, macOS 13 or newer.
 
 ---
 
 Offline transcription for video and audio on macOS
 
-Download the `.dmg` for your Mac (Apple Silicon or Intel) from the assets below.
+Download the `.dmg` for your Apple Silicon Mac from the assets below.

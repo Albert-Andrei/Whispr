@@ -12,7 +12,7 @@ Whispr is built for people who want transcripts without sending money and record
 
 - **Transcribe local files** — drag and drop or pick video/audio from your Mac
 - **Transcribe from URLs** — YouTube and other sites supported via yt-dlp
-- **Work offline** — after first-run setup, transcription runs entirely on-device
+- **Work offline** — the tools are bundled; after downloading a model, transcription runs entirely on-device
 - **Manage jobs** — track progress, rename files, view transcripts in a clean dashboard
 - **Export anywhere** — plain text, timestamped text, SRT, PDF, or Word (DOCX)
 - **Translate transcripts** — optional online translation to common languages (uses Lingva; requires internet)
@@ -47,7 +47,7 @@ Whispr runs a local pipeline in Rust (Tauri):
 3. **Transcribe** — `whisper-cli` runs inference with your chosen GGML model
 4. **Save & export** — transcript and optional SRT are stored in a local SQLite database
 
-On first run, Whispr downloads **ffmpeg**, **yt-dlp**, and your chosen Whisper model. If `whisper-cli` is not already on your Mac, Whispr installs it via **Homebrew** (`brew install whisper-cpp`).
+**ffmpeg**, **yt-dlp**, and **whisper-cli** ship inside the app bundle. No Homebrew, no tool downloads. On first launch Whispr copies them into its own data folder and the only thing it downloads is the Whisper model you pick.
 
 ---
 
@@ -55,43 +55,43 @@ On first run, Whispr downloads **ffmpeg**, **yt-dlp**, and your chosen Whisper m
 
 ### Requirements
 
-- **macOS** (Apple Silicon or Intel)
-- **Homebrew** — [brew.sh](https://brew.sh) (needed for `whisper-cli` on first setup)
-- **Internet** — only for first-run downloads, URL imports, translation, and update checks
+- **macOS 13 or newer** on **Apple Silicon** (M1 or later). Intel Macs are not supported from v0.1.11 on; the last Intel build is [v0.1.10](https://github.com/Albert-Andrei/Whispr/releases/tag/v0.1.10).
+- **Internet** — only for the one-time model download, URL imports, translation, and update checks
 - **Disk space** — model size plus working room for temp files (see **Settings → Storage** in the app)
 
 ### Install from a release
 
 1. Open **[Releases](https://github.com/Albert-Andrei/Whispr/releases)** on GitHub.
-2. Download the `.dmg` for your Mac:
-   - **Apple Silicon (M1/M2/M3/M4)** → `aarch64` build
-   - **Intel** → `x86_64` build
+2. Download `Whispr_<version>_aarch64.dmg`.
 3. Open the DMG and drag **Whispr** into **Applications**.
-4. Launch Whispr and complete the one-time setup wizard.
+4. Launch Whispr, pick a model, and you are done.
 
 ### Build from source
 
 For developers or if you prefer to run an unsigned local build:
 
 ```bash
-# Prerequisites: Bun, Rust, Xcode Command Line Tools
+# Prerequisites: Bun, Rust, CMake, Xcode Command Line Tools
 #   xcode-select --install
+#   brew install cmake
 #   curl -fsSL https://bun.sh/install | bash
 
 git clone https://github.com/Albert-Andrei/Whispr.git
 cd Whispr
 bun install
-bun run tauri dev    # development
-bun run tauri build  # production .app + .dmg in src-tauri/target/.../bundle/
+./scripts/fetch-sidecars.sh   # fetch ffmpeg + yt-dlp, build whisper-cli (once, ~2 min)
+bun run tauri dev             # development
+bun run tauri build           # production .app + .dmg in src-tauri/target/.../bundle/
 ```
+
+`fetch-sidecars.sh` places the three tools in `src-tauri/binaries/` (git-ignored). Tauri needs them there for both `dev` and `build`.
 
 ---
 
 ## First launch
 
-1. **Setup wizard** — choose a Whisper model; Whispr downloads tools and the model (this can take several minutes).
-2. **Homebrew / whisper-cli** — if Whisper is not installed yet, setup may run `brew install whisper-cpp`. The first Homebrew install can take a while.
-3. **Dashboard** — import a file or URL and start transcribing.
+1. **Setup** — choose a Whisper model. Whispr downloads it (466 MB to 3.1 GB depending on the tier). That is the only download.
+2. **Dashboard** — import a file or URL and start transcribing.
 
 After setup, day-to-day transcription works **offline**. You only need internet again for URL imports, translation, or checking for app updates.
 
@@ -149,8 +149,7 @@ Copy any error message when opening an issue on GitHub.
 
 | Symptom                     | What to try                                                                                                                        |
 | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| **whisper-cli missing**     | Install [Homebrew](https://brew.sh), then `brew install whisper-cpp`. Restart Whispr. Check **Settings → Components**.             |
-| **ffmpeg / yt-dlp missing** | Quit and reopen Whispr (it re-downloads on launch). Or delete `~/Library/Application Support/com.albert.whispr/bin/` and relaunch. |
+| **A tool is "not available"** | Quit and reopen Whispr; it re-copies ffmpeg, yt-dlp and whisper-cli from the app bundle on every launch. If that does not help, delete `~/Library/Application Support/com.albert.whispr/bin/` and relaunch, or reinstall from the DMG. |
 | **URL import fails**        | Confirm the link is public and supported by yt-dlp. Check your internet connection.                                                |
 | **Slow or stuck jobs**      | Large files and the Large model need time. Lower concurrent jobs in **Settings** if your Mac is under heavy load.                  |
 | **Out of disk space**       | Remove unused models in **Settings → Models**, or delete old jobs from the dashboard.                                              |
@@ -160,8 +159,9 @@ Whispr stores data under:
 ```text
 ~/Library/Application Support/com.albert.whispr/
 ├── whispr.db      # jobs & settings
-├── bin/           # ffmpeg, yt-dlp, whisper-cli
+├── bin/           # ffmpeg, yt-dlp, whisper-cli (copied from the app bundle)
 ├── models/        # Whisper GGML models
+├── audio/         # playback audio for finished jobs
 └── tmp/           # working files during jobs
 ```
 
@@ -175,6 +175,7 @@ What is planned or in progress:
 | ------------------------------------------ | --------------------------------------------------------- |
 | **Live recording / dictation**             | Coming soon (sidebar placeholder today)                   |
 | **Apple Developer signing & notarization** | Planned — removes Gatekeeper warnings for release builds  |
+| **Intel Mac builds**                       | Dropped in v0.1.11; may return if there is demand         |
 | **Windows support**                        | Explored in codebase; macOS is the primary target for now |
 
 Core transcription will stay **offline-first**. Optional features like translation may use the network, but sending your audio to a cloud API for transcription is not the goal.
@@ -198,6 +199,7 @@ Core transcription will stay **offline-first**. Optional features like translati
 | `bun run dev`         | Vite dev server only (limited without Tauri) |
 | `bun run tauri dev`   | Full desktop app in development              |
 | `bun run tauri build` | Production build (.app + .dmg)               |
+| `./scripts/fetch-sidecars.sh` | Fetch/build the bundled tools (required once) |
 | `cargo check`         | Rust typecheck (from `src-tauri/`)           |
 
 Stack: **Tauri 2**, **Rust**, **React 19**, **TypeScript**, **Vite**, **Tailwind CSS v4**, **SQLite**.

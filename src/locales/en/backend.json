@@ -12,6 +12,7 @@
     "progress": "{{stage}} · {{percent}}%"
   },
   "disk": {
+    "binaries": "Tools (ffmpeg, yt-dlp, whisper-cli)",
     "models": "Whisper models",
     "audio": "Playback audio",
     "database": "Database",

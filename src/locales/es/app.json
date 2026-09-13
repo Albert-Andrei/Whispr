@@ -103,6 +103,17 @@
     "diskBreakdown": {
       "noData": "Aún no hay datos de uso.",
       "tooltip": "{{label}} · {{size}} ({{percent}}%)"
+    },
+    "dangerZone": {
+      "title": "Eliminar todos los datos de la app",
+      "description": "Elimina todos los modelos descargados, las copias de herramientas, los archivos de audio y tu base de datos de transcripciones. La app tendrá que ejecutar la configuración de nuevo.",
+      "button": "Eliminar todo",
+      "dialog": {
+        "title": "¿Eliminar todos los datos de Whispr?",
+        "body": "Esto eliminará permanentemente todos los modelos, copias de herramientas, archivos de audio y tu historial de transcripciones. Tendrás que volver a hacer la configuración inicial.",
+        "confirm": "Eliminar todo",
+        "deleting": "Eliminando…"
+      }
     }
   },
   "record": {

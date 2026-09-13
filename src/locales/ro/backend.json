@@ -12,6 +12,7 @@
     "progress": "{{stage}} · {{percent}}%"
   },
   "disk": {
+    "binaries": "Unelte (ffmpeg, yt-dlp, whisper-cli)",
     "models": "Modele Whisper",
     "audio": "Audio pentru redare",
     "database": "Bază de date",

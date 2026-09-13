@@ -6,6 +6,7 @@ mod media;
 mod paths;
 mod pipeline;
 mod record;
+mod tools;
 mod translate;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -24,8 +25,7 @@ pub fn run() {
             binaries::delete_model_file,
             binaries::list_model_files,
             binaries::reset_all_data,
-            binaries::check_legacy_files,
-            binaries::clean_legacy_files,
+            tools::ensure_tools,
             downloader::download_model_file,
             pipeline::run_pipeline,
             pipeline::fetch_url_title,
@@ -42,6 +42,20 @@ pub fn run() {
             media::list_playback_media,
             media::delete_playback_media,
         ])
+        .setup(|app| {
+            // Copy the bundled ffmpeg / yt-dlp / whisper-cli into the app's
+            // bin/ directory (no-op when already up to date). Failures are
+            // logged, not fatal: the pipeline reports a clear error later.
+            let h = app.handle().clone();
+            match tools::install_bundled_tools(&h) {
+                Ok(installed) if !installed.is_empty() => {
+                    eprintln!("Whispr: installed bundled tools: {}", installed.join(", "));
+                }
+                Ok(_) => {}
+                Err(e) => eprintln!("Whispr: could not install bundled tools:\n{e}"),
+            }
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

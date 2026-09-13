@@ -105,13 +105,14 @@
       "tooltip": "{{label}} · {{size}} ({{percent}}%)"
     },
     "dangerZone": {
-      "description": "An older version of Whispr downloaded tool files (ffmpeg, yt-dlp, whisper-cli) that are no longer needed — tools are now bundled with the app. These leftover files use {{size}} MB of disk space.",
-      "button": "Clean up legacy files",
+      "title": "Delete all app data",
+      "description": "Removes all downloaded models, bundled tool copies, audio files, and your transcription database. The app will need to run setup again.",
+      "button": "Delete everything",
       "dialog": {
-        "title": "Remove legacy tool files?",
-        "body": "This will delete the old ffmpeg, yt-dlp, and whisper-cli files ({{size}} MB) that were downloaded by a previous version. Your transcriptions, models, and audio are not affected.",
-        "confirm": "Delete legacy files",
-        "deleting": "Cleaning…"
+        "title": "Delete all Whispr data?",
+        "body": "This will permanently delete all models, tool copies, audio files, and your transcription history. You will need to run first-time setup again.",
+        "confirm": "Delete everything",
+        "deleting": "Deleting…"
       }
     }
   },

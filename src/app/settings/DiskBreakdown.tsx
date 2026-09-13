@@ -5,6 +5,7 @@ import type { DiskUsageReport } from "../../types/types";
 
 /** Category colors (inspired by macOS storage, tuned for Whispr) */
 const CATEGORY_COLORS: Record<string, string> = {
+  binaries: "#2F80ED",
   models: "#e85625",
   audio: "#E8C825",
   database: "#8E8E93",

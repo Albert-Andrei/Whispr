@@ -8,9 +8,9 @@ Context for AI agents and contributors working on this repo.
 
 ## Transcription stack (implemented)
 
-- **yt-dlp** — bundled as a Tauri **sidecar** binary (`src-tauri/binaries/`). Fetched by `scripts/fetch-sidecars.sh` before build; Tauri places it alongside the app executable at runtime.
-- **ffmpeg** — same; bundled as a sidecar.
-- **whisper-cli** — same; built from [whisper.cpp](https://github.com/ggerganov/whisper.cpp) source with Metal enabled, bundled as a sidecar. **No Homebrew dependency.**
+- **yt-dlp** — bundled as a Tauri **sidecar** (`bundle.externalBin`; files in git-ignored `src-tauri/binaries/`, produced by `scripts/fetch-sidecars.sh` before any build). Tauri copies it to `Whispr.app/Contents/MacOS/yt-dlp`. On **every launch** `tools.rs` copies the bundled tools into the app's `bin/` dir (version-stamped, idempotent) and the pipeline runs them from there — running them straight out of a downloaded, quarantined `.app` is refused by macOS for non-notarized binaries.
+- **ffmpeg** — same; bundled as a sidecar (static build from eugeneware/ffmpeg-static).
+- **whisper-cli** — same; built from [whisper.cpp](https://github.com/ggml-org/whisper.cpp) (pinned tag in the script) as a fully static arm64 binary with Metal embedded, macOS 13+. **No Homebrew dependency.** Apple Silicon only.
 - **Models** — GGML `.bin` files (small / medium / large-v3) downloaded from Hugging Face URLs in Rust (`downloader.rs`); stored under the app’s models directory.
 
 ### Language / errors
@@ -37,8 +37,9 @@ Context for AI agents and contributors working on this repo.
 **`src-tauri/src/`** (Rust):
 
 - **`lib.rs`** — Tauri app entry; registers commands.
-- **`paths.rs`** — App config dirs (`models/`, `tmp/`, `audio/`), DB path, sidecar binary resolution.
-- **`binaries.rs`** — `get_app_disk_usage`, `get_recommended_max_concurrent`, `list_model_files`, `delete_model_file`, `reset_all_data`.
+- **`paths.rs`** — App config dirs (`bin/`, `models/`, `tmp/`, `audio/`), DB path, `bundled_tool_path` (sidecar next to the executable) and `tool_path` (runnable copy in `bin/`).
+- **`tools.rs`** — `install_bundled_tools` (launch-time copy of sidecars into `bin/`), `ensure_tools` command.
+- **`binaries.rs`** — `get_app_disk_usage`, `get_recommended_max_concurrent`, `list_model_files`, `delete_model_file`, `reset_all_data` (wipes data, then re-installs the bundled tools).
 - **`jobs_db.rs`** — Direct SQLite access from Rust for job updates (must stay consistent with TS schema in `src/lib/db.ts`).
 - **`downloader.rs`** — `download_model_file`, setup progress events.
 - **`pipeline/`** — Orchestration: download → extract audio → `whisper-cli` → write transcript / SRT; emits `pipeline:progress`.
@@ -48,7 +49,7 @@ Context for AI agents and contributors working on this repo.
 
 ## First-run setup
 
-- **`AppShell`** reads `app_config.setup_completed`. If unset/false in Tauri, **`SetupScreen`** runs (model tier pick, `download_model_file`, then `setup_completed=true` and `selected_model`). Tools (ffmpeg, yt-dlp, whisper-cli) are bundled as sidecars — no downloads needed.
+- **`AppShell`** reads `app_config.setup_completed`. If unset/false in Tauri, **`SetupScreen`** runs (model tier pick, `ensure_tools`, `download_model_file`, then `setup_completed=true` and `selected_model`). Tools (ffmpeg, yt-dlp, whisper-cli) are bundled — only the model is downloaded.
 - After setup (or when already complete), the shell initializes pipeline event listeners, refreshes `max_concurrent_jobs`, and loads jobs.
 
 ## `app_config` keys (SQLite)
@@ -68,6 +69,7 @@ SQLite `transcription_jobs` (see `src/lib/db.ts` migrations): core fields plus *
 
 - `get_app_disk_usage` — rough category breakdown + total.
 - `get_recommended_max_concurrent` — CPU-based hint (capped 1–3).
+- `ensure_tools` — copy bundled tools into `bin/` if missing/outdated (also run at launch).
 - `download_model_file`, `delete_model_file`, `list_model_files`.
 - `reset_all_data` — wipe models, audio, tmp, DB (danger zone).
 - `run_pipeline` — start job pipeline (by `jobId` + source fields).

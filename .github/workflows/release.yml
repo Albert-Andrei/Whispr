@@ -55,3 +55,15 @@ jobs:
           prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
           args: --target ${{ matrix.target }}
           updaterJsonPreferNsis: false
+
+      - name: Verify bundled tools in Whispr.app
+        run: |
+          APP=src-tauri/target/${{ matrix.target }}/release/bundle/macos/Whispr.app
+          ls -la "$APP/Contents/MacOS"
+          for t in ffmpeg yt-dlp whisper-cli; do
+            test -x "$APP/Contents/MacOS/$t" || { echo "missing sidecar: $t"; exit 1; }
+          done
+          "$APP/Contents/MacOS/ffmpeg" -version | head -1
+          "$APP/Contents/MacOS/yt-dlp" --version
+          "$APP/Contents/MacOS/whisper-cli" --help >/dev/null 2>&1 || test $? -le 1
+          codesign -dv "$APP" 2>&1 | grep -E 'Signature|flags' || true

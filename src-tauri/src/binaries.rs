@@ -21,18 +21,25 @@ pub struct DiskUsageReport {
 #[tauri::command]
 pub async fn get_app_disk_usage(app: AppHandle) -> Result<DiskUsageReport, String> {
     paths::ensure_layout(&app)?;
+    let bin = paths::bin_dir(&app)?;
     let models = paths::models_dir(&app)?;
     let tmp = paths::tmp_dir(&app)?;
     let audio = paths::audio_dir(&app)?;
     let db = paths::db_path(&app)?;
 
     tokio::task::spawn_blocking(move || {
+        let bin_bytes = jobs_db::dir_size(&bin);
         let models_bytes = jobs_db::dir_size(&models);
         let tmp_bytes = jobs_db::dir_size(&tmp);
         let audio_bytes = jobs_db::dir_size(&audio);
         let db_bytes = jobs_db::file_size64(&db);
 
         let mut categories = vec![
+            DiskCategory {
+                id: "binaries".into(),
+                label: "Tools (ffmpeg, yt-dlp, whisper-cli)".into(),
+                bytes: bin_bytes,
+            },
             DiskCategory {
                 id: "models".into(),
                 label: "Whisper models".into(),
@@ -93,24 +100,6 @@ pub fn delete_model_file(app: AppHandle, filename: String) -> Result<(), String>
     Ok(())
 }
 
-/// Check if the legacy `bin/` directory (from pre-sidecar versions) exists and
-/// contains files. Returns the total size in bytes, or 0 if absent.
-#[tauri::command]
-pub async fn check_legacy_files(app: AppHandle) -> Result<u64, String> {
-    let bin = paths::app_root(&app)?.join("bin");
-    Ok(if bin.is_dir() { jobs_db::dir_size(&bin) } else { 0 })
-}
-
-/// Remove legacy `bin/` directory left over from pre-sidecar versions.
-#[tauri::command]
-pub async fn clean_legacy_files(app: AppHandle) -> Result<(), String> {
-    let bin = paths::app_root(&app)?.join("bin");
-    if bin.is_dir() {
-        std::fs::remove_dir_all(&bin).map_err(|e| format!("remove bin: {e}"))?;
-    }
-    Ok(())
-}
-
 #[tauri::command]
 pub async fn reset_all_data(app: AppHandle) -> Result<(), String> {
     let root = paths::app_root(&app)?;
@@ -133,6 +122,9 @@ pub async fn reset_all_data(app: AppHandle) -> Result<(), String> {
     if db_shm.exists() {
         let _ = std::fs::remove_file(&db_shm);
     }
+    // bin/ was wiped above; restore the bundled tools so the app keeps working
+    // without a relaunch.
+    crate::tools::install_bundled_tools(&app)?;
     Ok(())
 }
 

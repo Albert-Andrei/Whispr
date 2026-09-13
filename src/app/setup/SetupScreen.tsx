@@ -49,6 +49,7 @@ export function SetupScreen({ onComplete }: { onComplete: () => void }) {
     setError(null);
     setModelProgress(null);
     try {
+      await invoke("ensure_tools");
       await invoke("download_model_file", { tier });
       await setConfig("selected_model", MODEL_FILE[tier]);
       await setConfig("setup_completed", "true");

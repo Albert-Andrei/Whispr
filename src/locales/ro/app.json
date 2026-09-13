@@ -103,6 +103,17 @@
     "diskBreakdown": {
       "noData": "Nu există date de utilizare încă.",
       "tooltip": "{{label}} · {{size}} ({{percent}}%)"
+    },
+    "dangerZone": {
+      "title": "Șterge toate datele aplicației",
+      "description": "Șterge toate modelele descărcate, copiile uneltelor, fișierele audio și baza de date cu transcrieri. Aplicația va trebui să ruleze din nou configurarea.",
+      "button": "Șterge tot",
+      "dialog": {
+        "title": "Ștergi toate datele Whispr?",
+        "body": "Aceasta va șterge definitiv toate modelele, copiile uneltelor, fișierele audio și istoricul transcrierilor. Va trebui să refaci configurarea inițială.",
+        "confirm": "Șterge tot",
+        "deleting": "Se șterge…"
+      }
     }
   },
   "record": {

@@ -10,6 +10,7 @@ import { Settings } from "../app/settings/Settings";
 import { SetupScreen } from "../app/setup/SetupScreen";
 import { useTranscriptionStore } from "../app/dashboard/store";
 import type { AppUpdateHandle } from "../hooks/useAppUpdate";
+import { prefetchBinaryHealth } from "../hooks/useBinaryHealth";
 import { useIsMacTauri } from "../hooks/useIsMacTauri";
 import { getConfig } from "../lib/db";
 import { windowDragPointerDown } from "../lib/windowDrag";
@@ -98,6 +99,7 @@ export function AppShell({ appUpdate }: AppShellProps) {
     void refreshMaxConcurrent();
     void loadJobs();
     void loadRecordJobs();
+    prefetchBinaryHealth();
   }, [
     setupGate,
     initPipelineListeners,

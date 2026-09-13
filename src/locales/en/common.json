@@ -101,6 +101,10 @@
     "ja": "Japanese",
     "zh": "Chinese"
   },
+  "binaryStatus": {
+    "installed": "Installed",
+    "missing": "Missing"
+  },
   "playback": {
     "play": "Play",
     "pause": "Pause",
@@ -154,9 +158,9 @@
     "details": "Details",
     "about": "About",
     "general": "General",
+    "system": "System",
     "storage": "Storage",
-    "whisperModels": "Whisper models",
-    "dangerZone": "Danger zone"
+    "whisperModels": "Whisper models"
   },
   "aria": {
     "dismissNotification": "Dismiss notification",
@@ -167,6 +171,8 @@
     "clickToRename": "Click to rename",
     "backToTranscriptions": "Back to transcriptions",
     "startRecording": "Start recording",
+    "checkingTools": "Checking tools",
+    "checkingToolsTitle": "Checking tools…",
     "diskUsageByCategory": "Disk usage by category"
   }
 }

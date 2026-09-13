@@ -31,22 +31,8 @@ const resources = {
   fr: { common: frCommon, app: frApp, backend: frBackend },
 } as const;
 
-function matchSystemLocale(): AppLocale | null {
-  const candidates = Array.isArray(navigator.languages)
-    ? navigator.languages
-    : [navigator.language];
-  for (const tag of candidates) {
-    const prefix = tag.split("-")[0].toLowerCase();
-    if (SUPPORTED_LOCALES.includes(prefix as AppLocale)) {
-      return prefix as AppLocale;
-    }
-  }
-  return null;
-}
-
 function detectLocale(): AppLocale {
   if (typeof window === "undefined") return "en";
-
   try {
     const stored = localStorage.getItem(LOCALE_STORAGE_KEY);
     if (stored && SUPPORTED_LOCALES.includes(stored as AppLocale)) {
@@ -55,16 +41,11 @@ function detectLocale(): AppLocale {
   } catch {
     /* ignore */
   }
-
-  const detected = matchSystemLocale() ?? "en";
-
-  try {
-    localStorage.setItem(LOCALE_STORAGE_KEY, detected);
-  } catch {
-    /* ignore */
+  const prefix = navigator.language.split("-")[0];
+  if (SUPPORTED_LOCALES.includes(prefix as AppLocale)) {
+    return prefix as AppLocale;
   }
-
-  return detected;
+  return "en";
 }
 
 void i18n.use(initReactI18next).init({

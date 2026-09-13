@@ -64,8 +64,8 @@
   "setup": {
     "welcome": {
       "title": "Bienvenue dans Whispr",
-      "description": "Choisissez un modèle Whisper pour commencer. Vous pourrez changer de modèle plus tard dans les Réglages.",
-      "offlineNote": "Après la configuration, la transcription fonctionne entièrement hors ligne — aucun internet requis."
+      "description": "La configuration initiale télécharge ffmpeg, yt-dlp et le modèle Whisper choisi. Si whisper-cli n'est pas déjà sur votre Mac, Whispr l'installe via Homebrew (Homebrew requis depuis brew.sh). Vous pourrez changer de modèle plus tard dans les Réglages.",
+      "offlineNote": "Après la configuration, la transcription fonctionne hors ligne. Internet n'est requis que pendant le téléchargement."
     },
     "model": {
       "chooseLabel": "Choisir le modèle (multilingue)"
@@ -74,9 +74,13 @@
       "setup": "Configurer Whispr"
     },
     "loading": {
-      "title": "Téléchargement du modèle…"
+      "title": "Téléchargement des composants…",
+      "homebrewNote": "L'étape de transcription peut lancer Homebrew pour installer whisper-cpp — la première fois peut prendre plusieurs minutes."
     },
     "component": {
+      "ffmpeg": "ffmpeg — audio/vidéo",
+      "ytdlp": "yt-dlp — téléchargement URL",
+      "whisperCli": "whisper-cli — transcription",
       "model": "Modèle Whisper"
     }
   },
@@ -99,6 +103,11 @@
       }
     },
     "about": {},
+    "binaryStatus": {
+      "loading": "Chargement…",
+      "checkingToolStatus": "Vérification de l'état des outils",
+      "requiredMissing": "Composant requis. Whispr ne peut pas transcrire sans lui."
+    },
     "modelSelector": {},
     "diskBreakdown": {
       "noData": "Aucune donnée d'utilisation pour l'instant.",

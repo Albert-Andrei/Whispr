@@ -2,11 +2,12 @@ import { invoke, isTauri } from "@tauri-apps/api/core";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AboutSettings } from "./AboutSettings";
-import { DangerZone } from "./DangerZone";
+import { BinaryStatusRows } from "./BinaryStatusRow";
 import { DiskBreakdown } from "./DiskBreakdown";
 import { GeneralSettings } from "./GeneralSettings";
 import { ModelSelector } from "./ModelSelector";
 import { SettingsBlock, SettingsSection } from "./SettingsLayout";
+import { useBinaryHealth } from "../../hooks/useBinaryHealth";
 import type { AppUpdateHandle } from "../../hooks/useAppUpdate";
 import type { DiskUsageReport } from "../../types/types";
 
@@ -16,6 +17,7 @@ type SettingsProps = {
 
 export function Settings({ appUpdate }: SettingsProps) {
   const { t } = useTranslation(["common", "app"]);
+  const { health, checking: healthChecking } = useBinaryHealth();
   const [disk, setDisk] = useState<DiskUsageReport | null>(null);
 
   const loadDisk = useCallback(async () => {
@@ -38,6 +40,10 @@ export function Settings({ appUpdate }: SettingsProps) {
     );
   }
 
+  const binaries = health
+    ? [health.ffmpeg, health.ytdlp, health.whisper]
+    : null;
+
   return (
     <div className="min-h-0 flex-1 overflow-y-auto px-8 py-8 pb-16">
       <div className="mx-auto max-w-2xl space-y-8">
@@ -53,6 +59,10 @@ export function Settings({ appUpdate }: SettingsProps) {
           <GeneralSettings />
         </SettingsSection>
 
+        <SettingsSection title={t("common:sections.system")} syncing={healthChecking}>
+          <BinaryStatusRows health={binaries} loading={!health} />
+        </SettingsSection>
+
         <SettingsSection title={t("common:sections.storage")}>
           <SettingsBlock last>
             <p className="mb-3 text-[12px] text-zinc-500 dark:text-zinc-400">
@@ -65,8 +75,6 @@ export function Settings({ appUpdate }: SettingsProps) {
         <SettingsSection title={t("common:sections.whisperModels")}>
           <ModelSelector onRefresh={loadDisk} />
         </SettingsSection>
-
-        <DangerZone />
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
-## Whispr v0.1.11
+## Whispr v0.1.9
 
-Drop x86_64 build target, build only for Apple Silicon.
+Add @types/bun and tsconfig.scripts.json for script typechecking, remove unused PipelineStage import to fix tsc build.
 
 ---
 

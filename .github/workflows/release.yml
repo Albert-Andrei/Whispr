@@ -56,6 +56,20 @@ jobs:
           args: --target ${{ matrix.target }}
           updaterJsonPreferNsis: false
 
+      # A copy of the DMG without the version in its name makes
+      # https://github.com/Albert-Andrei/Whispr/releases/latest/download/Whispr_aarch64.dmg
+      # a permanent link to the newest release (used by the GitHub Pages site).
+      # Prereleases never become "latest", so beta tags don't change it.
+      - name: Upload version-free DMG for the permanent download link
+        if: matrix.target == 'aarch64-apple-darwin'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          DMG=$(ls src-tauri/target/${{ matrix.target }}/release/bundle/dmg/*.dmg | head -1)
+          test -n "$DMG" || { echo "no DMG found"; exit 1; }
+          cp "$DMG" Whispr_aarch64.dmg
+          gh release upload "${{ github.ref_name }}" Whispr_aarch64.dmg --clobber
+
       - name: Verify bundled tools in Whispr.app
         run: |
           APP=src-tauri/target/${{ matrix.target }}/release/bundle/macos/Whispr.app

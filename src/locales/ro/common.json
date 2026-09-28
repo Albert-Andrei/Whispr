@@ -17,7 +17,8 @@
     "copyText": "Copiază textul",
     "copied": "Copiat!",
     "translate": "Traduce",
-    "copy": "Copiază"
+    "copy": "Copiază",
+    "start": "Pornește"
   },
   "loading": "Se încarcă",
   "loadingEllipsis": "Se încarcă…",
@@ -147,7 +148,8 @@
     "duration": "Durată",
     "model": "Model",
     "version": "Versiune",
-    "total": "Total"
+    "total": "Total",
+    "section": "Secțiune"
   },
   "sections": {
     "actions": "Acțiuni",

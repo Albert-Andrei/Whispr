@@ -17,7 +17,8 @@
     "copyText": "Copier le texte",
     "copied": "Copié !",
     "translate": "Traduire",
-    "copy": "Copier"
+    "copy": "Copier",
+    "start": "Démarrer"
   },
   "loading": "Chargement",
   "loadingEllipsis": "Chargement…",
@@ -147,7 +148,8 @@
     "duration": "Durée",
     "model": "Modèle",
     "version": "Version",
-    "total": "Total"
+    "total": "Total",
+    "section": "Passage"
   },
   "sections": {
     "actions": "Actions",

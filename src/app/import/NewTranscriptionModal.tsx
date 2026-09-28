@@ -2,8 +2,11 @@ import { Dialog } from "@base-ui-components/react/dialog";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { NewImportStep } from "../../types";
+import { useTranscriptionStore } from "../dashboard/store";
+import { ClipEditor, importSourceOfJob } from "./ClipEditor";
 import { DropZone } from "./DropZone";
 import { URLInput } from "./URLInput";
+import { basenameFromPath } from "./constants";
 
 type NewTranscriptionModalProps = {
   open: boolean;
@@ -13,7 +16,6 @@ type NewTranscriptionModalProps = {
   onLocalFiles: (files: File[]) => Promise<void>;
   /** Desktop: absolute paths from the native file dialog. */
   onLocalFilePaths?: (paths: string[]) => Promise<void>;
-  onUrl: (url: string) => Promise<void>;
 };
 
 export function NewTranscriptionModal({
@@ -22,9 +24,17 @@ export function NewTranscriptionModal({
   initialFocus = null,
   onLocalFiles,
   onLocalFilePaths,
-  onUrl,
 }: NewTranscriptionModalProps) {
   const { t } = useTranslation();
+  const clipEditor = useTranscriptionStore((s) => s.clipEditor);
+  const jobs = useTranscriptionStore((s) => s.jobs);
+  const createDraft = useTranscriptionStore((s) => s.createDraft);
+  const startDraft = useTranscriptionStore((s) => s.startDraft);
+  const discardDraft = useTranscriptionStore((s) => s.discardDraft);
+  const setDraftDuration = useTranscriptionStore((s) => s.setDraftDuration);
+  // A link or single file becomes a "Not started" row, edited here until confirmed.
+  const draft =
+    clipEditor?.where === "modal" ? jobs.find((j) => j.id === clipEditor.jobId) : undefined;
   const [busy, setBusy] = useState(false);
   const [focusUrl, setFocusUrl] = useState(false);
 
@@ -39,11 +49,11 @@ export function NewTranscriptionModal({
     if (open) setFocusUrl(initialFocus === "url");
   }, [open, initialFocus]);
 
-  const run = async (fn: () => Promise<void>) => {
+  const run = async (fn: () => Promise<void>, close = true) => {
     setBusy(true);
     try {
       await fn();
-      onOpenChange(false);
+      if (close) onOpenChange(false);
     } finally {
       setBusy(false);
     }
@@ -54,7 +64,7 @@ export function NewTranscriptionModal({
       <Dialog.Portal>
         <Dialog.Backdrop className="fixed inset-0 z-40 bg-black/40" />
         <Dialog.Viewport className="fixed inset-0 z-50 grid place-items-center p-4">
-          <Dialog.Popup className="w-full max-w-lg rounded-2xl border border-zinc-200 bg-white p-8 shadow-[0_8px_30px_rgb(0,0,0,0.08)] outline-none dark:border-zinc-700 dark:bg-zinc-950 dark:shadow-none">
+          <Dialog.Popup className={`max-h-[calc(100dvh-2rem)] w-full overflow-y-auto ${draft ? "max-w-4xl p-6" : "max-w-lg p-8"} rounded-2xl border border-zinc-200 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.08)] outline-none dark:border-zinc-700 dark:bg-zinc-950 dark:shadow-none`}>
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <Dialog.Title className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
@@ -72,12 +82,25 @@ export function NewTranscriptionModal({
               </Dialog.Close>
             </div>
 
+            {draft ? (
+              <div className="mt-5">
+                <ClipEditor
+                  key={draft.id}
+                  source={importSourceOfJob(draft)}
+                  draftId={draft.id}
+                  onDuration={(secs) => setDraftDuration(draft.id, secs)}
+                  busy={busy}
+                  onBack={() => void run(() => discardDraft(draft.id), false)}
+                  onConfirm={(clip, title) => void run(() => startDraft(draft.id, clip, title))}
+                />
+              </div>
+            ) : (
             <div className="mt-8 space-y-6">
               <URLInput
                 disabled={busy}
                 focusRequest={focusUrl}
                 onSubmitUrl={(url) => {
-                  void run(() => onUrl(url));
+                  void run(() => createDraft({ kind: "url", url }, "modal"), false);
                 }}
               />
 
@@ -95,7 +118,17 @@ export function NewTranscriptionModal({
                 disabled={busy}
                 onPaths={
                   onLocalFilePaths
-                    ? (paths) => void run(() => onLocalFilePaths(paths))
+                    ? (paths) =>
+                        paths.length === 1
+                          ? void run(
+                              () =>
+                                createDraft(
+                                  { kind: "local", path: paths[0], name: basenameFromPath(paths[0]) },
+                                  "modal",
+                                ),
+                              false,
+                            )
+                          : void run(() => onLocalFilePaths(paths))
                     : undefined
                 }
                 onFiles={(files) => {
@@ -103,6 +136,7 @@ export function NewTranscriptionModal({
                 }}
               />
             </div>
+            )}
           </Dialog.Popup>
         </Dialog.Viewport>
       </Dialog.Portal>

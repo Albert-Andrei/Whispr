@@ -1,4 +1,4 @@
-import type { JobStatus, NewJobInput, PipelineStage, SourceType, TranscriptionJob } from "./types";
+import type { ClipRange, JobStatus, NewJobInput, PipelineStage, SourceType, TranscriptionJob } from "./types";
 import { getDatabase } from "../../lib/db";
 
 type JobRow = {
@@ -21,6 +21,9 @@ type JobRow = {
   audio_path: string | null;
   translated_text: string | null;
   translated_lang: string | null;
+  clip_start_ms: number | null;
+  clip_end_ms: number | null;
+  draft: number | null;
 };
 
 function rowToJob(row: JobRow): TranscriptionJob {
@@ -38,6 +41,9 @@ function rowToJob(row: JobRow): TranscriptionJob {
     audio_path: row.audio_path ?? null,
     translated_text: row.translated_text ?? null,
     translated_lang: row.translated_lang ?? null,
+    clip_start_ms: row.clip_start_ms ?? null,
+    clip_end_ms: row.clip_end_ms ?? null,
+    draft: row.draft === 1,
   };
 }
 
@@ -67,8 +73,9 @@ export async function insertJob(input: NewJobInput): Promise<TranscriptionJob> {
     `INSERT INTO transcription_jobs (
       id, filename, source_type, source_path, source_url,
       file_size, duration, status, transcript, created_at, updated_at,
-      error_message, progress, pipeline_stage, srt_output, model_used, audio_path
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`,
+      error_message, progress, pipeline_stage, srt_output, model_used, audio_path,
+      clip_start_ms, clip_end_ms, draft
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)`,
     [
       id,
       input.filename,
@@ -87,6 +94,9 @@ export async function insertJob(input: NewJobInput): Promise<TranscriptionJob> {
       input.srt_output ?? null,
       null,
       input.audio_path ?? null,
+      input.clip ? Math.round(input.clip.startMs) : null,
+      input.clip ? Math.round(input.clip.endMs) : null,
+      input.draft ? 1 : 0,
     ],
   );
   const rows = await db.select<JobRow[]>(
@@ -98,6 +108,34 @@ export async function insertJob(input: NewJobInput): Promise<TranscriptionJob> {
     throw new Error("Failed to read inserted job");
   }
   return rowToJob(row);
+}
+
+/** Confirms a draft from the clip editor: stores its section and makes it queueable. */
+export async function startDraftJob(
+  id: string,
+  clip: ClipRange | null,
+  filename: string | null,
+): Promise<void> {
+  const db = await getDatabase();
+  await db.execute(
+    `UPDATE transcription_jobs SET draft = 0, status = 'pending', clip_start_ms = $1, clip_end_ms = $2,
+      filename = COALESCE($3, filename), updated_at = $4 WHERE id = $5`,
+    [
+      clip ? Math.round(clip.startMs) : null,
+      clip ? Math.round(clip.endMs) : null,
+      filename,
+      new Date().toISOString(),
+      id,
+    ],
+  );
+}
+
+export async function updateJobDuration(id: string, duration: string): Promise<void> {
+  const db = await getDatabase();
+  await db.execute(
+    "UPDATE transcription_jobs SET duration = $1, updated_at = $2 WHERE id = $3",
+    [duration, new Date().toISOString(), id],
+  );
 }
 
 export async function updateJobFilename(id: string, filename: string): Promise<void> {

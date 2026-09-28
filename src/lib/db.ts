@@ -3,7 +3,7 @@ import Database from "@tauri-apps/plugin-sql";
 const DB_PATH = "sqlite:whispr.db";
 
 const SCHEMA_VERSION_KEY = "db_schema_version";
-const LATEST_SCHEMA_VERSION = 5;
+const LATEST_SCHEMA_VERSION = 7;
 
 let dbPromise: Promise<Database> | null = null;
 
@@ -76,6 +76,21 @@ const migrations: Migration[] = [
   {
     version: 5,
     up: migrateRecordSourceType,
+  },
+  {
+    version: 6,
+    up: async (db) => {
+      // Optional section of the source to transcribe (null = whole media).
+      await alterColumn(db, "ALTER TABLE transcription_jobs ADD COLUMN clip_start_ms INTEGER;");
+      await alterColumn(db, "ALTER TABLE transcription_jobs ADD COLUMN clip_end_ms INTEGER;");
+    },
+  },
+  {
+    version: 7,
+    up: async (db) => {
+      // 1 = added but waiting in the clip editor ("Not started"); never queued.
+      await alterColumn(db, "ALTER TABLE transcription_jobs ADD COLUMN draft INTEGER NOT NULL DEFAULT 0;");
+    },
   },
 ];
 

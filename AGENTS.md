@@ -63,7 +63,7 @@ Context for AI agents and contributors working on this repo.
 
 ## Data model
 
-SQLite `transcription_jobs` (see `src/lib/db.ts` migrations): core fields plus **`error_message`**, **`progress`**, **`pipeline_stage`**, **`srt_output`**, **`model_used`**.
+SQLite `transcription_jobs` (see `src/lib/db.ts` migrations): core fields plus **`error_message`**, **`progress`**, **`pipeline_stage`**, **`srt_output`**, **`model_used`**, **`clip_start_ms`** / **`clip_end_ms`** (section to transcribe; null = whole media), **`draft`** (1 = "Not started": added via the clip editor, never queued until confirmed). Cancelled jobs are stored as `failed` with `error_message = "Cancelled"`.
 
 ## Tauri commands (Rust)
 
@@ -72,7 +72,9 @@ SQLite `transcription_jobs` (see `src/lib/db.ts` migrations): core fields plus *
 - `ensure_tools` — copy bundled tools into `bin/` if missing/outdated (also run at launch).
 - `download_model_file`, `delete_model_file`, `list_model_files`.
 - `reset_all_data` — wipe models, audio, tmp, DB (danger zone).
-- `run_pipeline` — start job pipeline (by `jobId` + source fields).
+- `run_pipeline` — start job pipeline (by `jobId` + source fields + optional `clipStartMs`/`clipEndMs`). URL sections are cut by yt-dlp `--download-sections`; local ones by ffmpeg `-ss/-t`.
+- `cancel_pipeline` — kill the job's running tool (own process group) and mark it cancelled.
+- `probe_url` / `probe_local_media` — clip editor preview: title, duration, HLS preview manifest (WebKit can't open YouTube's split DASH MP4s).
 - `export_transcript` — write chosen format to user path (dialog from frontend).
 
 Events: **`pipeline:progress`**, **`setup:progress`** (model download only).
@@ -83,6 +85,7 @@ Events: **`pipeline:progress`**, **`setup:progress`** (model download only).
 - **Sidebar:** Resizable; width persisted in `localStorage` (`whispr.sidebar.width`).
 - **Theme:** Light + dark; class `dark` on `<html>`. User choice in `whispr.theme`.
 - **Dashboard:** Import modal; pipeline progress on rows; **TranscriptView** for completed jobs with export actions.
+- **Import:** a link or single file opens the **ClipEditor** (`src/app/import/`) — inline from the empty state, else in the modal — as a draft row; several files go straight to the queue.
 
 ## Supported media (import validation)
 

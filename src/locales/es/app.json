@@ -59,6 +59,22 @@
     "dropMedia": {
       "pathWarning": "Algunos archivos no se pudieron añadir porque su ruta no estaba disponible. Usa Explorar o suéltalos desde Finder.",
       "dialogTitle": "Whispr"
+    },
+    "clipEditor": {
+      "loading": "Cargando vista previa…",
+      "noPreview": "No hay vista previa para este tipo de archivo, pero aún puedes elegir un fragmento.",
+      "previewFailed": "No se pudo reproducir la vista previa, pero aún puedes elegir un fragmento.",
+      "loadError": "No se pudo cargar la vista previa. Aún puedes transcribirlo completo.",
+      "start": "Inicio",
+      "end": "Fin",
+      "setToCurrent": "Usar la posición actual de la vista previa",
+      "position": "Posición",
+      "selected": "{{length}} seleccionado de {{total}}",
+      "selectAll": "Seleccionar todo",
+      "preview": "Vista previa",
+      "stopPreview": "Detener",
+      "transcribe": "Transcribir",
+      "transcribeSection": "Transcribir fragmento"
     }
   },
   "setup": {

@@ -1,7 +1,10 @@
+use super::extract_audio::{parse_time_field, split_cr_lf};
 use crate::paths;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
+use std::sync::mpsc;
+use std::thread;
 use tauri::AppHandle;
 
 /// One yt-dlp progress update.
@@ -18,10 +21,14 @@ pub struct DownloadProgress {
 /// Machine-readable progress line: downloaded, total, total estimate, eta, media duration.
 const PROGRESS_TEMPLATE: &str = "download:WHISPR %(progress.downloaded_bytes)s %(progress.total_bytes)s %(progress.total_bytes_estimate)s %(progress.eta)s %(info.duration)s";
 
+/// Downloads the audio of `url` into tmp/. With `section` (start, end seconds)
+/// only that part is fetched; yt-dlp hands the cut to ffmpeg, whose `time=`
+/// output is then the progress signal.
 pub fn download_url_to_tmp(
     app: &AppHandle,
     job_id: &str,
     url: &str,
+    section: Option<(f64, f64)>,
     on_progress: &dyn Fn(DownloadProgress),
 ) -> Result<PathBuf, String> {
     paths::ensure_layout(app)?;
@@ -35,32 +42,72 @@ pub fn download_url_to_tmp(
 
     let mut cmd = Command::new(&ytdlp);
     super::own_process_group(&mut cmd);
-    let mut child = cmd
-        .current_dir(&tmp)
-        .arg("-f")
-        .arg("bestaudio/best")
-        .arg("--no-playlist")
-        .arg("--newline")
+    cmd.current_dir(&tmp)
+        .args(["-f", "bestaudio/best", "--no-playlist", "--newline"])
         .arg("--progress-template")
-        .arg(PROGRESS_TEMPLATE)
+        .arg(PROGRESS_TEMPLATE);
+    if let Some((start, end)) = section {
+        let ffmpeg = paths::ffmpeg_path(app)?;
+        cmd.arg("--ffmpeg-location")
+            .arg(ffmpeg)
+            .arg("--download-sections")
+            .arg(format!("*{start:.3}-{end:.3}"))
+            // Cut exactly where the user asked, not at the nearest keyframe.
+            .arg("--force-keyframes-at-cuts");
+    }
+    let mut child = cmd
         .arg("-o")
         .arg(tpl)
         .arg(url)
         .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
         .spawn()
         .map_err(|e| format!("yt-dlp failed to start: {e}"))?;
 
     super::register_child(job_id, child.id());
 
-    // Progress lines go to stdout, one per update thanks to --newline.
-    if let Some(stdout) = child.stdout.take() {
-        let reader = BufReader::new(stdout);
-        for line in reader.lines().map_while(Result::ok) {
-            if let Some(p) = parse_ytdlp_progress(&line) {
-                on_progress(p);
+    let (tx, rx) = mpsc::channel::<DownloadProgress>();
+    // stdout: our progress template, one line per update thanks to --newline.
+    let stdout_reader = child.stdout.take().map(|stdout| {
+        let tx = tx.clone();
+        thread::spawn(move || {
+            for line in BufReader::new(stdout).lines().map_while(Result::ok) {
+                if let Some(p) = parse_ytdlp_progress(&line) {
+                    let _ = tx.send(p);
+                }
             }
-        }
+        })
+    });
+    // stderr: ffmpeg's `time=` while cutting a section, and yt-dlp's error text.
+    let section_len = section.map(|(s, e)| (e - s).max(0.001));
+    let stderr_reader = child.stderr.take().map(|stderr| {
+        let tx = tx.clone();
+        thread::spawn(move || {
+            let mut last_error = None;
+            for line in split_cr_lf(BufReader::new(stderr)) {
+                if let (Some(len), Some(done)) = (section_len, parse_time_field(&line)) {
+                    let _ = tx.send(DownloadProgress {
+                        fraction: (done / len).clamp(0.0, 1.0),
+                        eta_secs: None,
+                        media_secs: Some(len),
+                    });
+                }
+                if let Some(msg) = line.trim().strip_prefix("ERROR: ") {
+                    last_error = Some(msg.to_string());
+                }
+            }
+            last_error
+        })
+    });
+    drop(tx);
+
+    for p in rx {
+        on_progress(p);
     }
+    if let Some(h) = stdout_reader {
+        let _ = h.join();
+    }
+    let last_error = stderr_reader.and_then(|h| h.join().ok()).flatten();
 
     let status = child.wait().map_err(|e| format!("yt-dlp wait failed: {e}"))?;
     super::unregister_child(job_id);
@@ -69,7 +116,10 @@ pub fn download_url_to_tmp(
         return Err("Cancelled".into());
     }
     if !status.success() {
-        return Err("yt-dlp exited with an error".into());
+        return Err(match last_error {
+            Some(msg) => format!("yt-dlp: {msg}"),
+            None => "yt-dlp exited with an error".into(),
+        });
     }
 
     find_downloaded_file(&tmp, job_id)

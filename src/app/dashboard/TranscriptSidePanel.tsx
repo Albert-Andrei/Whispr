@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { formatTimecode } from "../import/TimeField";
 import type { ReactNode } from "react";
 import { Menu } from "@base-ui-components/react/menu";
 import { useTranslation } from "react-i18next";
@@ -168,6 +169,11 @@ export function TranscriptSidePanel({
 
   if (job.duration) {
     detailRows.push({ label: t("common:details.duration"), value: job.duration });
+  if (job.clip_start_ms !== null && job.clip_end_ms !== null)
+    detailRows.push({
+      label: t("common:details.section"),
+      value: `${formatTimecode(job.clip_start_ms / 1000)} – ${formatTimecode(job.clip_end_ms / 1000)}`,
+    });
   }
   if (job.model_used) {
     detailRows.push({ label: t("common:details.model"), value: job.model_used });

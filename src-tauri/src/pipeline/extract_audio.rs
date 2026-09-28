@@ -9,12 +9,16 @@ use tauri::AppHandle;
 /// `with_playback` is set, a compact M4A copy for in-app playback. Reports
 /// 0..1 progress from ffmpeg's own `time=` output.
 ///
+/// With `clip` (start, end seconds) only that part of the input is decoded, so
+/// both outputs — and the transcript's timestamps — start at the clip start.
+///
 /// Returns the WAV path and the playback copy (None if it was not requested or
 /// could not be encoded — playback is optional, transcription is not).
 pub fn extract_audio(
     app: &AppHandle,
     job_id: &str,
     input: &Path,
+    clip: Option<(f64, f64)>,
     with_playback: bool,
     on_progress: &dyn Fn(f64),
 ) -> Result<(PathBuf, Option<PathBuf>), String> {
@@ -28,10 +32,10 @@ pub fn extract_audio(
     if with_playback {
         let m4a = persist_audio::playback_audio_path(app, job_id)?;
         let mut cmd = Command::new(&ffmpeg);
-        cmd.arg("-y").arg("-nostdin").arg("-i").arg(input);
+        push_input(&mut cmd, input, clip);
         push_playback_output(&mut cmd, &m4a);
         push_wav_output(&mut cmd, &wav);
-        match run_ffmpeg(cmd, job_id, on_progress) {
+        match run_ffmpeg(cmd, job_id, clip_len(clip), on_progress) {
             Ok(()) => return Ok((wav, Some(m4a))),
             Err(e) if e == "Cancelled" => {
                 let _ = std::fs::remove_file(&m4a);
@@ -45,10 +49,26 @@ pub fn extract_audio(
     }
 
     let mut cmd = Command::new(&ffmpeg);
-    cmd.arg("-y").arg("-nostdin").arg("-i").arg(input);
+    push_input(&mut cmd, input, clip);
     push_wav_output(&mut cmd, &wav);
-    run_ffmpeg(cmd, job_id, on_progress)?;
+    run_ffmpeg(cmd, job_id, clip_len(clip), on_progress)?;
     Ok((wav, None))
+}
+
+fn clip_len(clip: Option<(f64, f64)>) -> Option<f64> {
+    clip.map(|(start, end)| (end - start).max(0.001))
+}
+
+fn push_input(cmd: &mut Command, input: &Path, clip: Option<(f64, f64)>) {
+    cmd.arg("-y").arg("-nostdin");
+    if let Some((start, end)) = clip {
+        // Input-side seek: fast, and accurate because we re-encode.
+        cmd.arg("-ss")
+            .arg(format!("{start:.3}"))
+            .arg("-t")
+            .arg(format!("{:.3}", (end - start).max(0.001)));
+    }
+    cmd.arg("-i").arg(input);
 }
 
 fn push_playback_output(cmd: &mut Command, out: &Path) {
@@ -61,7 +81,13 @@ fn push_wav_output(cmd: &mut Command, out: &Path) {
         .arg(out);
 }
 
-fn run_ffmpeg(mut cmd: Command, job_id: &str, on_progress: &dyn Fn(f64)) -> Result<(), String> {
+/// `known_total` overrides the input's Duration when only part of it is decoded.
+fn run_ffmpeg(
+    mut cmd: Command,
+    job_id: &str,
+    known_total: Option<f64>,
+    on_progress: &dyn Fn(f64),
+) -> Result<(), String> {
     super::own_process_group(&mut cmd);
     let mut child = cmd
         .stdout(Stdio::null())
@@ -73,7 +99,7 @@ fn run_ffmpeg(mut cmd: Command, job_id: &str, on_progress: &dyn Fn(f64)) -> Resu
 
     let mut tail = String::new();
     if let Some(stderr) = child.stderr.take() {
-        let mut total_secs: Option<f64> = None;
+        let mut total_secs: Option<f64> = known_total;
         // ffmpeg rewrites its stats line with '\r', so split on both line endings.
         for line in split_cr_lf(BufReader::new(stderr)) {
             if total_secs.is_none() {
@@ -105,7 +131,7 @@ fn run_ffmpeg(mut cmd: Command, job_id: &str, on_progress: &dyn Fn(f64)) -> Resu
     Ok(())
 }
 
-fn split_cr_lf<R: Read>(reader: R) -> impl Iterator<Item = String> {
+pub(super) fn split_cr_lf<R: Read>(reader: R) -> impl Iterator<Item = String> {
     let mut bytes = reader.bytes();
     std::iter::from_fn(move || {
         let mut buf = Vec::new();
@@ -131,13 +157,13 @@ fn split_cr_lf<R: Read>(reader: R) -> impl Iterator<Item = String> {
 }
 
 /// "  Duration: 00:47:25.12, start: 0.000000, bitrate: 128 kb/s"
-fn parse_duration_line(line: &str) -> Option<f64> {
+pub(super) fn parse_duration_line(line: &str) -> Option<f64> {
     let rest = line.trim_start().strip_prefix("Duration:")?;
     parse_clock(rest.split(',').next()?.trim())
 }
 
 /// "size=  1024kB time=00:01:23.45 bitrate=..." → seconds
-fn parse_time_field(line: &str) -> Option<f64> {
+pub(super) fn parse_time_field(line: &str) -> Option<f64> {
     let idx = line.find("time=")?;
     let value = line[idx + 5..].split_whitespace().next()?;
     parse_clock(value)

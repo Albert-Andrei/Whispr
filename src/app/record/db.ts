@@ -40,6 +40,9 @@ function rowToJob(row: JobRow): TranscriptionJob {
     audio_path: row.audio_path ?? null,
     translated_text: row.translated_text ?? null,
     translated_lang: row.translated_lang ?? null,
+    clip_start_ms: null,
+    clip_end_ms: null,
+    draft: false,
   };
 }
 

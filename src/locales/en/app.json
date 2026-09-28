@@ -59,6 +59,22 @@
     "dropMedia": {
       "pathWarning": "Some files could not be added because their path was not available. Use Browse to pick files, or drop them from Finder.",
       "dialogTitle": "Whispr"
+    },
+    "clipEditor": {
+      "loading": "Loading preview…",
+      "noPreview": "There's no preview for this file type, but you can still pick a section.",
+      "previewFailed": "The preview couldn't play, but you can still pick a section.",
+      "loadError": "Couldn't load a preview. You can still transcribe all of it.",
+      "start": "Start",
+      "end": "End",
+      "setToCurrent": "Use the preview's current position",
+      "position": "Position",
+      "selected": "{{length}} selected of {{total}}",
+      "selectAll": "Select all",
+      "preview": "Preview",
+      "stopPreview": "Stop",
+      "transcribe": "Transcribe",
+      "transcribeSection": "Transcribe section"
     }
   },
   "setup": {

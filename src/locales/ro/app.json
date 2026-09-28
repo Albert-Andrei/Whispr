@@ -59,6 +59,22 @@
     "dropMedia": {
       "pathWarning": "Unele fișiere nu au putut fi adăugate deoarece calea nu era disponibilă. Folosește Alege fișiere sau trage din Finder.",
       "dialogTitle": "Whispr"
+    },
+    "clipEditor": {
+      "loading": "Se încarcă previzualizarea…",
+      "noPreview": "Nu există previzualizare pentru acest tip de fișier, dar poți alege totuși o secțiune.",
+      "previewFailed": "Previzualizarea nu a putut fi redată, dar poți alege totuși o secțiune.",
+      "loadError": "Nu s-a putut încărca previzualizarea. Poți totuși transcrie totul.",
+      "start": "Început",
+      "end": "Sfârșit",
+      "setToCurrent": "Folosește poziția curentă din previzualizare",
+      "position": "Poziție",
+      "selected": "{{length}} selectat din {{total}}",
+      "selectAll": "Selectează tot",
+      "preview": "Previzualizare",
+      "stopPreview": "Oprește",
+      "transcribe": "Transcrie",
+      "transcribeSection": "Transcrie secțiunea"
     }
   },
   "setup": {

@@ -4,7 +4,8 @@
     "processing": "Se procesează",
     "completed": "Finalizat",
     "failed": "Eșuat",
-    "cancelled": "Anulat"
+    "cancelled": "Anulat",
+    "notStarted": "Neînceput"
   },
   "pipelineStage": {
     "fetching": "Se preiau informațiile",

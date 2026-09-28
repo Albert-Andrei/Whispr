@@ -59,6 +59,22 @@
     "dropMedia": {
       "pathWarning": "Certains fichiers n'ont pas pu être ajoutés car leur chemin n'était pas disponible. Utilisez Parcourir ou déposez-les depuis le Finder.",
       "dialogTitle": "Whispr"
+    },
+    "clipEditor": {
+      "loading": "Chargement de l'aperçu…",
+      "noPreview": "Pas d'aperçu pour ce type de fichier, mais vous pouvez quand même choisir un passage.",
+      "previewFailed": "L'aperçu n'a pas pu être lu, mais vous pouvez quand même choisir un passage.",
+      "loadError": "Impossible de charger l'aperçu. Vous pouvez quand même tout transcrire.",
+      "start": "Début",
+      "end": "Fin",
+      "setToCurrent": "Utiliser la position actuelle de l'aperçu",
+      "position": "Position",
+      "selected": "{{length}} sélectionné sur {{total}}",
+      "selectAll": "Tout sélectionner",
+      "preview": "Aperçu",
+      "stopPreview": "Arrêter",
+      "transcribe": "Transcrire",
+      "transcribeSection": "Transcrire le passage"
     }
   },
   "setup": {

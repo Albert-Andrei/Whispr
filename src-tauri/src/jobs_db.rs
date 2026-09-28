@@ -42,7 +42,7 @@ pub fn set_job_processing(app: &AppHandle, id: &str) -> Result<bool, String> {
     let conn = open_conn(app)?;
     let changed = conn
         .execute(
-            "UPDATE transcription_jobs SET status = 'processing', progress = 0, pipeline_stage = NULL, error_message = NULL, updated_at = ?1 WHERE id = ?2 AND status = 'pending'",
+            "UPDATE transcription_jobs SET status = 'processing', progress = 0, pipeline_stage = NULL, error_message = NULL, updated_at = ?1 WHERE id = ?2 AND status = 'pending' AND draft = 0",
             params![chrono::Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Secs, true), id],
         )
         .map_err(|e| e.to_string())?;

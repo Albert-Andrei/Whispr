@@ -2,15 +2,25 @@ import { invoke, isTauri } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { create } from "zustand";
 import i18n from "../../lib/i18n";
-import { CANCELLED_ERROR, type PipelineStage, type TranscriptionJob } from "./types";
+import {
+  CANCELLED_ERROR,
+  type ClipRange,
+  type PipelineStage,
+  type TranscriptionJob,
+} from "./types";
 import {
   deleteJob,
   getJobById,
   insertJob,
   listJobs,
   resetJobForRetry,
+  startDraftJob,
+  updateJobDuration,
   updateJobFilename,
 } from "./db";
+import type { ImportSource } from "../import/types";
+import { probeSource } from "../import/useSourceProbe";
+import { formatDurationLabel } from "../../lib/duration";
 import { getConfig, setConfig } from "../../lib/db";
 import { isRecordSessionActive, useRecordStore } from "../record/store";
 
@@ -30,14 +40,29 @@ type TranscriptionState = {
   activePipelines: number;
   maxConcurrent: number;
   listenersReady: boolean;
+  /** Draft open in the clip editor: inline (empty state) or in the New modal. */
+  clipEditor: { jobId: string; where: "inline" | "modal" } | null;
 
   loadJobs: () => Promise<void>;
   setSelectedJob: (id: string | null) => void;
   addLocalFiles: (files: File[]) => Promise<void>;
-  addLocalFilePaths: (paths: string[]) => Promise<void>;
-  addUrlImport: (url: string) => Promise<void>;
+  /** `clip` applies when a single path is added (the clip editor flow). */
+  addLocalFilePaths: (paths: string[], clip?: ClipRange | null) => Promise<void>;
+  /** `title` skips the title lookup when the clip editor already probed the link. */
+  addUrlImport: (
+    url: string,
+    options?: { clip?: ClipRange | null; title?: string | null },
+  ) => Promise<void>;
   retryJob: (id: string) => Promise<void>;
   cancelJob: (id: string) => Promise<void>;
+  /** Adds a "Not started" row for the clip editor; nothing runs until `startDraft`. */
+  createDraft: (source: ImportSource, where: "inline" | "modal") => Promise<void>;
+  startDraft: (id: string, clip: ClipRange | null, title: string | null) => Promise<void>;
+  discardDraft: (id: string) => Promise<void>;
+  /** Shows the media length on a draft's row once the editor knows it. */
+  setDraftDuration: (id: string, secs: number) => void;
+  openClipEditor: (jobId: string, where: "inline" | "modal") => void;
+  closeClipEditor: () => void;
   removeJob: (id: string) => Promise<void>;
   renameJob: (id: string, filename: string) => Promise<void>;
   patchJob: (id: string, patch: Partial<TranscriptionJob>) => void;
@@ -88,6 +113,7 @@ export const useTranscriptionStore = create<TranscriptionState>((set, get) => ({
   activePipelines: 0,
   maxConcurrent: 1,
   listenersReady: false,
+  clipEditor: null,
 
   refreshMaxConcurrent: async () => {
     const raw = await getConfig("max_concurrent_jobs");
@@ -143,7 +169,7 @@ export const useTranscriptionStore = create<TranscriptionState>((set, get) => ({
     try {
       const jobs = await listJobs();
       const pendingIds = jobs
-        .filter((j) => j.status === "pending")
+        .filter((j) => j.status === "pending" && !j.draft)
         .sort(
           (a, b) =>
             new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
@@ -170,7 +196,7 @@ export const useTranscriptionStore = create<TranscriptionState>((set, get) => ({
   enqueuePipeline: (jobId) => {
     const { pipelineQueue, jobs } = get();
     const job = jobs.find((j) => j.id === jobId);
-    if (!job || job.status !== "pending") return;
+    if (!job || job.status !== "pending" || job.draft) return;
     if (pipelineQueue.includes(jobId)) return;
     set({ pipelineQueue: [...pipelineQueue, jobId] });
     void get().processPipelineQueue();
@@ -200,13 +226,13 @@ export const useTranscriptionStore = create<TranscriptionState>((set, get) => ({
       if (!job) {
         job = (await getJobById(jobId)) ?? undefined;
       }
-      if (!job || job.status !== "pending") continue;
+      if (!job || job.status !== "pending" || job.draft) continue;
 
       set((s) => ({ activePipelines: s.activePipelines + 1 }));
 
       void (async () => {
         const current = (await getJobById(jobId)) ?? job;
-        if (!current || current.status !== "pending") {
+        if (!current || current.status !== "pending" || current.draft) {
           set((s) => ({
             activePipelines: Math.max(0, s.activePipelines - 1),
           }));
@@ -219,6 +245,8 @@ export const useTranscriptionStore = create<TranscriptionState>((set, get) => ({
             sourceType: current.source_type,
             sourcePath: current.source_path,
             sourceUrl: current.source_url,
+            clipStartMs: current.clip_start_ms,
+            clipEndMs: current.clip_end_ms,
           });
         } catch {
           /* errors recorded in DB */
@@ -253,8 +281,9 @@ export const useTranscriptionStore = create<TranscriptionState>((set, get) => ({
     for (const j of created) get().enqueuePipeline(j.id);
   },
 
-  addLocalFilePaths: async (paths: string[]) => {
+  addLocalFilePaths: async (paths: string[], clip?: ClipRange | null) => {
     const created: TranscriptionJob[] = [];
+    const single = paths.length === 1;
     for (const sourcePath of paths) {
       const trimmed = sourcePath.trim();
       if (!trimmed) continue;
@@ -265,6 +294,7 @@ export const useTranscriptionStore = create<TranscriptionState>((set, get) => ({
         file_size: null,
         duration: null,
         status: "pending",
+        clip: single ? clip : null,
       });
       created.push(job);
     }
@@ -272,18 +302,21 @@ export const useTranscriptionStore = create<TranscriptionState>((set, get) => ({
     for (const j of created) get().enqueuePipeline(j.id);
   },
 
-  addUrlImport: async (url: string) => {
+  addUrlImport: async (url, options) => {
     const trimmed = url.trim();
+    const knownTitle = options?.title?.trim();
     const job = await insertJob({
-      filename: urlDisplayName(trimmed),
+      filename: knownTitle || urlDisplayName(trimmed),
       source_type: "url",
       source_url: trimmed,
       file_size: null,
       duration: null,
       status: "pending",
+      clip: options?.clip ?? null,
     });
     set((s) => ({ jobs: [job, ...s.jobs], error: null }));
     get().enqueuePipeline(job.id);
+    if (knownTitle) return;
 
     invoke<string | null>("fetch_url_title", { url: trimmed, jobId: job.id }).then((title) => {
       if (!title) return;
@@ -322,11 +355,77 @@ export const useTranscriptionStore = create<TranscriptionState>((set, get) => ({
     await get().loadJobs();
   },
 
+  createDraft: async (source, where) => {
+    // Start reading the link/file right away; the editor reuses the result.
+    void probeSource(source);
+    const job =
+      source.kind === "url"
+        ? await insertJob({
+            filename: urlDisplayName(source.url),
+            source_type: "url",
+            source_url: source.url,
+            status: "pending",
+            draft: true,
+          })
+        : await insertJob({
+            filename: source.name,
+            source_type: "local",
+            source_path: source.path,
+            status: "pending",
+            draft: true,
+          });
+    set((s) => ({ jobs: [job, ...s.jobs], error: null, clipEditor: { jobId: job.id, where } }));
+    if (source.kind === "url") {
+      void invoke<string | null>("fetch_url_title", { url: source.url, jobId: job.id })
+        .then((title) => {
+          if (title) get().patchJob(job.id, { filename: title });
+        })
+        .catch(() => {});
+    }
+  },
+
+  startDraft: async (id, clip, title) => {
+    const filename = title?.trim() || null;
+    await startDraftJob(id, clip, filename);
+    set((s) => ({
+      clipEditor: s.clipEditor?.jobId === id ? null : s.clipEditor,
+      jobs: s.jobs.map((j) =>
+        j.id === id
+          ? {
+              ...j,
+              draft: false,
+              status: "pending",
+              clip_start_ms: clip ? Math.round(clip.startMs) : null,
+              clip_end_ms: clip ? Math.round(clip.endMs) : null,
+              filename: filename ?? j.filename,
+            }
+          : j,
+      ),
+    }));
+    get().enqueuePipeline(id);
+  },
+
+  discardDraft: async (id) => {
+    set((s) => ({ clipEditor: s.clipEditor?.jobId === id ? null : s.clipEditor }));
+    await get().removeJob(id);
+  },
+
+  setDraftDuration: (id, secs) => {
+    const job = get().jobs.find((j) => j.id === id);
+    const label = formatDurationLabel(secs);
+    if (!job || !job.draft || job.duration === label) return;
+    get().patchJob(id, { duration: label });
+    void updateJobDuration(id, label).catch(() => {});
+  },
+
+  openClipEditor: (jobId, where) => set({ clipEditor: { jobId, where } }),
+  closeClipEditor: () => set({ clipEditor: null }),
+
   removeJob: async (id: string) => {
     const job =
       get().jobs.find((j) => j.id === id) ??
       useRecordStore.getState().jobs.find((j) => j.id === id);
-    if (job && (job.status === "processing" || job.status === "pending")) {
+    if (job && !job.draft && (job.status === "processing" || job.status === "pending")) {
       await invoke("cancel_pipeline", { jobId: id }).catch(() => {});
     }
     await invoke("delete_job_assets", { jobId: id }).catch(() => {});
@@ -335,6 +434,7 @@ export const useTranscriptionStore = create<TranscriptionState>((set, get) => ({
       jobs: s.jobs.filter((j) => j.id !== id),
       selectedJobId: s.selectedJobId === id ? null : s.selectedJobId,
       pipelineQueue: s.pipelineQueue.filter((x) => x !== id),
+      clipEditor: s.clipEditor?.jobId === id ? null : s.clipEditor,
     }));
     useRecordStore.setState((s) => ({
       jobs: s.jobs.filter((j) => j.id !== id),

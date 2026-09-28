@@ -39,9 +39,12 @@ export function isAcceptedMediaFile(file: File): boolean {
   return ACCEPTED_EXTENSIONS.has(extensionOf(file.name));
 }
 
+export function basenameFromPath(path: string): string {
+  return path.replace(/\\/g, "/").split("/").pop() || path;
+}
+
 export function isAcceptedMediaPath(path: string): boolean {
-  const name = path.replace(/\\/g, "/").split("/").pop() ?? path;
-  return ACCEPTED_EXTENSIONS.has(extensionOf(name));
+  return ACCEPTED_EXTENSIONS.has(extensionOf(basenameFromPath(path)));
 }
 
 export const ACCEPT_INPUT_ATTRIBUTE =

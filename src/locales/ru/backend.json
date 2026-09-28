@@ -4,7 +4,8 @@
     "processing": "Обработка",
     "completed": "Завершено",
     "failed": "Ошибка",
-    "cancelled": "Отменено"
+    "cancelled": "Отменено",
+    "notStarted": "Не начато"
   },
   "pipelineStage": {
     "fetching": "Получение данных",

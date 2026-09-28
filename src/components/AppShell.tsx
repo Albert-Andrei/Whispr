@@ -15,6 +15,7 @@ import { getConfig } from "../lib/db";
 import { windowDragPointerDown } from "../lib/windowDrag";
 import type { NewImportStep, SidebarView } from "../types";
 import { AppFileDropLayer } from "./AppFileDropLayer";
+import { basenameFromPath } from "../app/import/constants";
 import { AppToasts } from "./AppToasts";
 import { Header } from "./Header";
 import { readInitialSidebarWidth, Sidebar } from "./Sidebar";
@@ -65,7 +66,9 @@ export function AppShell({ appUpdate }: AppShellProps) {
   const addLocalFilePaths = useTranscriptionStore(
     (state) => state.addLocalFilePaths,
   );
-  const addUrlImport = useTranscriptionStore((state) => state.addUrlImport);
+  const clipEditor = useTranscriptionStore((state) => state.clipEditor);
+  const createDraft = useTranscriptionStore((state) => state.createDraft);
+  const closeClipEditor = useTranscriptionStore((state) => state.closeClipEditor);
   const selectedJobId = useTranscriptionStore((state) => state.selectedJobId);
   const jobs = useTranscriptionStore((state) => state.jobs);
   const setSelectedJob = useTranscriptionStore((state) => state.setSelectedJob);
@@ -127,6 +130,21 @@ export function AppShell({ appUpdate }: AppShellProps) {
   const openModal = (focus?: NewImportStep | null) => {
     setModalInitialFocus(focus ?? null);
     setModalOpen(true);
+  };
+
+  // A single dropped file opens the clip editor; several go straight to the queue.
+  const onDroppedPaths = async (paths: string[]) => {
+    if (paths.length === 1) {
+      await createDraft(
+        { kind: "local", path: paths[0], name: basenameFromPath(paths[0]) },
+        "modal",
+      );
+      setModalInitialFocus(null);
+      setModalOpen(true);
+      return;
+    }
+    await addLocalFilePaths(paths);
+    setModalOpen(false);
   };
 
   if (setupGate === "loading" && isTauri()) {
@@ -248,9 +266,8 @@ export function AppShell({ appUpdate }: AppShellProps) {
         enabled={setupGate === "ready"}
         modalOpen={modalOpen}
         onLocalFiles={addLocalFiles}
-        onLocalFilePaths={addLocalFilePaths}
+        onLocalFilePaths={onDroppedPaths}
         onDropped={() => {
-          setModalOpen(false);
           if (view === "record") {
             setRecordSelectedJob(null);
             setView("history");
@@ -261,12 +278,15 @@ export function AppShell({ appUpdate }: AppShellProps) {
       <AppToasts />
 
       <NewTranscriptionModal
-        open={modalOpen}
+        open={modalOpen || clipEditor?.where === "modal"}
         initialFocus={modalInitialFocus}
-        onOpenChange={setModalOpen}
+        onOpenChange={(open) => {
+          setModalOpen(open);
+          // Closing keeps the draft in the table as "Not started".
+          if (!open && clipEditor?.where === "modal") closeClipEditor();
+        }}
         onLocalFiles={addLocalFiles}
         onLocalFilePaths={addLocalFilePaths}
-        onUrl={addUrlImport}
       />
     </>
   );

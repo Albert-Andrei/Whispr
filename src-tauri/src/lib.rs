@@ -31,6 +31,8 @@ pub fn run() {
             pipeline::fetch_url_title,
             pipeline::cancel_pipeline,
             pipeline::delete_job_assets,
+            pipeline::probe::probe_url,
+            pipeline::probe::probe_local_media,
             export::export_transcript,
             translate::translate_text,
             record::record_start,

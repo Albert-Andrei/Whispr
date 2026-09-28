@@ -1,6 +1,7 @@
 mod download;
 mod extract_audio;
 mod persist_audio;
+pub mod probe;
 pub mod progress;
 mod transcribe;
 
@@ -204,6 +205,7 @@ pub fn run_pipeline_blocking(
     source_type: String,
     source_path: Option<String>,
     source_url: Option<String>,
+    clip: Option<(f64, f64)>,
 ) -> Result<(), String> {
     paths::ensure_layout(&app)?;
     set_running(&job_id, true);
@@ -227,7 +229,7 @@ pub fn run_pipeline_blocking(
         let media_path = if source_type == "url" {
             let url = source_url.ok_or_else(|| "Missing URL".to_string())?;
             reporter.report(FETCH_RANGE, 0.0);
-            let p = download::download_url_to_tmp(&app, &job_id, &url, &|p| {
+            let p = download::download_url_to_tmp(&app, &job_id, &url, clip, &|p| {
                 plan.fit_download(&p, &model_file);
                 reporter.report(plan.download(), p.fraction);
             })?;
@@ -251,6 +253,8 @@ pub fn run_pipeline_blocking(
             &app,
             &job_id,
             &media_path,
+            // A URL section is already cut by yt-dlp; local files are cut here.
+            if source_type == "local" { clip } else { None },
             source_type != "record",
             &|pct| reporter.report(plan.extract(), pct),
         )?;
@@ -314,9 +318,17 @@ pub async fn run_pipeline(
     source_type: String,
     source_path: Option<String>,
     source_url: Option<String>,
+    clip_start_ms: Option<i64>,
+    clip_end_ms: Option<i64>,
 ) -> Result<(), String> {
+    let clip = match (clip_start_ms, clip_end_ms) {
+        (Some(start), Some(end)) if end > start => {
+            Some((start.max(0) as f64 / 1000.0, end as f64 / 1000.0))
+        }
+        _ => None,
+    };
     tokio::task::spawn_blocking(move || {
-        run_pipeline_blocking(app, job_id, source_type, source_path, source_url)
+        run_pipeline_blocking(app, job_id, source_type, source_path, source_url, clip)
     })
     .await
     .map_err(|e| e.to_string())?

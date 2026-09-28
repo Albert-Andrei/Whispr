@@ -4,7 +4,8 @@
     "processing": "Procesando",
     "completed": "Completado",
     "failed": "Fallido",
-    "cancelled": "Cancelado"
+    "cancelled": "Cancelado",
+    "notStarted": "Sin iniciar"
   },
   "pipelineStage": {
     "fetching": "Obteniendo info",

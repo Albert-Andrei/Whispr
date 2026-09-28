@@ -22,12 +22,22 @@ export interface TranscriptionJob {
   audio_path: string | null;
   translated_text: string | null;
   translated_lang: string | null;
+  /** Section of the source to transcribe; both null = the whole media. */
+  clip_start_ms: number | null;
+  clip_end_ms: number | null;
+  /** Added from the clip editor but not started yet; shown as "Not started". */
+  draft: boolean;
   /** Live progress within the current pipeline stage (from events only, not stored). */
   stage_progress?: number;
 }
 
 /** `error_message` of a job the user cancelled; it is stored as failed so it can be retried. */
 export const CANCELLED_ERROR = "Cancelled";
+
+/** Queued or running (drafts are neither). */
+export function isInFlightJob(job: Pick<TranscriptionJob, "status" | "draft">): boolean {
+  return !job.draft && (job.status === "pending" || job.status === "processing");
+}
 
 export function isCancelledJob(job: Pick<TranscriptionJob, "status" | "error_message">): boolean {
   return job.status === "failed" && job.error_message === CANCELLED_ERROR;
@@ -45,4 +55,9 @@ export type NewJobInput = {
   transcript?: string | null;
   audio_path?: string | null;
   srt_output?: string | null;
+  clip?: ClipRange | null;
+  draft?: boolean;
 };
+
+/** A section of a media source, in milliseconds. */
+export type ClipRange = { startMs: number; endMs: number };

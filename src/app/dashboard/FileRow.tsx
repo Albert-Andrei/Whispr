@@ -3,7 +3,7 @@ import { EditableFileName } from "../../components/EditableFileName";
 import i18n from "../../lib/i18n";
 import { jobStatusLabel } from "../../lib/i18nLabels";
 import { useTranscriptionStore } from "./store";
-import { isCancelledJob, type TranscriptionJob } from "./types";
+import { isCancelledJob, isInFlightJob, type TranscriptionJob } from "./types";
 import { PipelineStatus } from "./PipelineStatus";
 
 const STATUS_STYLES: Record<
@@ -47,27 +47,30 @@ export function FileRow({ job, setSelectedJob, onJobsChanged }: FileRowProps) {
   const storeRetryJob = useTranscriptionStore((state) => state.retryJob);
   const storeRemoveJob = useTranscriptionStore((state) => state.removeJob);
   const storeCancelJob = useTranscriptionStore((state) => state.cancelJob);
+  const openClipEditor = useTranscriptionStore((state) => state.openClipEditor);
   const storeRenameJob = useTranscriptionStore((state) => state.renameJob);
 
   const setSelected = setSelectedJob ?? storeSetSelected;
   const cancelled = isCancelledJob(job);
-  const inFlight = job.status === "pending" || job.status === "processing";
+  const inFlight = isInFlightJob(job);
+  const openDraft = () => openClipEditor(job.id, "modal");
+  const clickable = job.status === "completed" || job.draft;
 
   const onRowClick = () => {
-    if (job.status === "completed") setSelected(job.id);
+    if (job.draft) openDraft();
+    else if (job.status === "completed") setSelected(job.id);
   };
 
   return (
     <tr
-      role={job.status === "completed" ? "button" : undefined}
-      tabIndex={job.status === "completed" ? 0 : undefined}
+      role={clickable ? "button" : undefined}
+      tabIndex={clickable ? 0 : undefined}
       onClick={onRowClick}
       onKeyDown={(e) => {
-        if (job.status === "completed" && (e.key === "Enter" || e.key === " "))
-          setSelected(job.id);
+        if (clickable && (e.key === "Enter" || e.key === " ")) onRowClick();
       }}
       className={`border-b border-zinc-100 transition dark:border-zinc-800/80 ${
-        job.status === "completed"
+        clickable
           ? "cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
           : "hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
       }`}
@@ -89,7 +92,7 @@ export function FileRow({ job, setSelectedJob, onJobsChanged }: FileRowProps) {
       </td>
       <td className="whitespace-nowrap px-4 py-3 align-middle">
         <div className="flex flex-col gap-1">
-          {job.status === "processing" ? (
+          {job.status === "processing" && !job.draft ? (
             <PipelineStatus
               chipClassName={STATUS_STYLES.processing}
               progress={job.progress}
@@ -98,11 +101,13 @@ export function FileRow({ job, setSelectedJob, onJobsChanged }: FileRowProps) {
             />
           ) : (
             <span
-              className={`inline-flex w-fit rounded-full border px-2.5 py-0.5 text-xs font-medium ${cancelled ? CANCELLED_STYLE : STATUS_STYLES[job.status]}`}
+              className={`inline-flex w-fit rounded-full border px-2.5 py-0.5 text-xs font-medium ${cancelled || job.draft ? CANCELLED_STYLE : STATUS_STYLES[job.status]}`}
             >
-              {cancelled
-                ? t("backend:jobStatus.cancelled")
-                : jobStatusLabel(t, job.status)}
+              {job.draft
+                ? t("backend:jobStatus.notStarted")
+                : cancelled
+                  ? t("backend:jobStatus.cancelled")
+                  : jobStatusLabel(t, job.status)}
             </span>
           )}
           {job.status === "failed" && job.error_message && !cancelled ? (
@@ -127,6 +132,18 @@ export function FileRow({ job, setSelectedJob, onJobsChanged }: FileRowProps) {
               className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-[11px] font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
             >
               {t("common:actions.view")}
+            </button>
+          ) : null}
+          {job.draft ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                openDraft();
+              }}
+              className="rounded-md border border-zinc-900 bg-zinc-900 px-2 py-1 text-[11px] font-medium text-white hover:bg-zinc-800 dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+            >
+              {t("common:actions.start")}
             </button>
           ) : null}
           {inFlight ? (

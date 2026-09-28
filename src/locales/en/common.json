@@ -17,7 +17,8 @@
     "copyText": "Copy text",
     "copied": "Copied!",
     "translate": "Translate",
-    "copy": "Copy"
+    "copy": "Copy",
+    "start": "Start"
   },
   "loading": "Loading",
   "loadingEllipsis": "Loading…",
@@ -147,7 +148,8 @@
     "duration": "Duration",
     "model": "Model",
     "version": "Version",
-    "total": "Total"
+    "total": "Total",
+    "section": "Section"
   },
   "sections": {
     "actions": "Actions",

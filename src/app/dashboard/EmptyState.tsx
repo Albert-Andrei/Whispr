@@ -2,14 +2,17 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { DropZone } from "../import/DropZone";
 import { URLInput } from "../import/URLInput";
+import { basenameFromPath } from "../import/constants";
+import type { ImportSource } from "../import/types";
 
 type EmptyStateProps = {
-  onSubmitUrl: (url: string) => Promise<void>;
+  /** A link or single file opens the clip editor first. */
+  onPickSource: (source: ImportSource) => Promise<void>;
   onLocalFiles: (files: File[]) => Promise<void>;
   onLocalFilePaths?: (paths: string[]) => Promise<void>;
 };
 
-export function EmptyState({ onSubmitUrl, onLocalFiles, onLocalFilePaths }: EmptyStateProps) {
+export function EmptyState({ onPickSource, onLocalFiles, onLocalFilePaths }: EmptyStateProps) {
   const { t } = useTranslation(["app", "common"]);
   const [busy, setBusy] = useState(false);
 
@@ -39,7 +42,7 @@ export function EmptyState({ onSubmitUrl, onLocalFiles, onLocalFilePaths }: Empt
             compact
             disabled={busy}
             focusRequest
-            onSubmitUrl={(url) => void run(() => onSubmitUrl(url))}
+            onSubmitUrl={(url) => void run(() => onPickSource({ kind: "url", url }))}
           />
 
           <div className="relative flex items-center justify-center py-0.5" aria-hidden>
@@ -54,7 +57,12 @@ export function EmptyState({ onSubmitUrl, onLocalFiles, onLocalFilePaths }: Empt
             disabled={busy}
             onPaths={
               onLocalFilePaths
-                ? (paths) => void run(() => onLocalFilePaths(paths))
+                ? (paths) =>
+                    void run(() =>
+                      paths.length === 1
+                        ? onPickSource({ kind: "local", path: paths[0], name: basenameFromPath(paths[0]) })
+                        : onLocalFilePaths(paths),
+                    )
                 : undefined
             }
             onFiles={(files) => void run(() => onLocalFiles(files))}

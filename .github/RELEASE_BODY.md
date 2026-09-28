@@ -1,9 +1,9 @@
-## Whispr v0.1.11
+## Whispr v0.1.12
 
-ffmpeg, yt-dlp and whisper-cli are now bundled inside the app. No Homebrew, no tool downloads: install, pick a model, transcribe. Apple Silicon (M-series) only, macOS 13 or newer.
+Pick a section of a link or file to transcribe, follow-along transcript, job cancel, real pipeline progress, rEADME for bundled tools (v0.1.11).
 
 ---
 
 Offline transcription for video and audio on macOS
 
-Download the `.dmg` for your Apple Silicon Mac from the assets below.
+Download the `.dmg` for your Mac (Apple Silicon or Intel) from the assets below.

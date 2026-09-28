@@ -107,7 +107,8 @@
     "volume": "Volume",
     "rec": "REC",
     "paused": "Paused",
-    "resume": "Resume"
+    "resume": "Resume",
+    "jumpToCurrent": "Jump to current"
   },
   "update": {
     "available": "Update available",

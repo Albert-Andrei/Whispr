@@ -3,11 +3,13 @@
     "pending": "Pendiente",
     "processing": "Procesando",
     "completed": "Completado",
-    "failed": "Fallido"
+    "failed": "Fallido",
+    "cancelled": "Cancelado"
   },
   "pipelineStage": {
+    "fetching": "Obteniendo info",
     "downloading": "Descargando",
-    "extracting": "Extrayendo",
+    "extracting": "Convirtiendo audio",
     "transcribing": "Transcribiendo",
     "progress": "{{stage}} · {{percent}}%"
   },

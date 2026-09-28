@@ -107,7 +107,8 @@
     "volume": "Volum",
     "rec": "REC",
     "paused": "În pauză",
-    "resume": "Continuă"
+    "resume": "Continuă",
+    "jumpToCurrent": "Mergi la fragmentul curent"
   },
   "update": {
     "available": "Actualizare disponibilă",

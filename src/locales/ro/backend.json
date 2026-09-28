@@ -3,11 +3,13 @@
     "pending": "În așteptare",
     "processing": "Se procesează",
     "completed": "Finalizat",
-    "failed": "Eșuat"
+    "failed": "Eșuat",
+    "cancelled": "Anulat"
   },
   "pipelineStage": {
+    "fetching": "Se preiau informațiile",
     "downloading": "Se descarcă",
-    "extracting": "Se extrage",
+    "extracting": "Conversie audio",
     "transcribing": "Se transcrie",
     "progress": "{{stage}} · {{percent}}%"
   },

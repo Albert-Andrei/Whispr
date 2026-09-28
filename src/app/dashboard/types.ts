@@ -1,6 +1,6 @@
 export type JobStatus = "pending" | "processing" | "completed" | "failed";
 export type SourceType = "local" | "url" | "record";
-export type PipelineStage = "downloading" | "extracting" | "transcribing";
+export type PipelineStage = "fetching" | "downloading" | "extracting" | "transcribing";
 
 export interface TranscriptionJob {
   id: string;
@@ -22,6 +22,15 @@ export interface TranscriptionJob {
   audio_path: string | null;
   translated_text: string | null;
   translated_lang: string | null;
+  /** Live progress within the current pipeline stage (from events only, not stored). */
+  stage_progress?: number;
+}
+
+/** `error_message` of a job the user cancelled; it is stored as failed so it can be retried. */
+export const CANCELLED_ERROR = "Cancelled";
+
+export function isCancelledJob(job: Pick<TranscriptionJob, "status" | "error_message">): boolean {
+  return job.status === "failed" && job.error_message === CANCELLED_ERROR;
 }
 
 export type NewJobInput = {

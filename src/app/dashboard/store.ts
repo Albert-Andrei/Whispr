@@ -2,7 +2,7 @@ import { invoke, isTauri } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { create } from "zustand";
 import i18n from "../../lib/i18n";
-import type { PipelineStage, TranscriptionJob } from "./types";
+import { CANCELLED_ERROR, type PipelineStage, type TranscriptionJob } from "./types";
 import {
   deleteJob,
   getJobById,
@@ -18,6 +18,7 @@ export type PipelineProgressEvt = {
   jobId: string;
   stage: string;
   percent: number;
+  stagePercent?: number;
 };
 
 type TranscriptionState = {
@@ -36,6 +37,7 @@ type TranscriptionState = {
   addLocalFilePaths: (paths: string[]) => Promise<void>;
   addUrlImport: (url: string) => Promise<void>;
   retryJob: (id: string) => Promise<void>;
+  cancelJob: (id: string) => Promise<void>;
   removeJob: (id: string) => Promise<void>;
   renameJob: (id: string, filename: string) => Promise<void>;
   patchJob: (id: string, patch: Partial<TranscriptionJob>) => void;
@@ -114,12 +116,14 @@ export const useTranscriptionStore = create<TranscriptionState>((set, get) => ({
       const p = ev.payload;
       set((s) => ({
         jobs: s.jobs.map((j) =>
-          j.id === p.jobId
+          // Late events from a cancelled or finished run must not revive the row.
+          j.id === p.jobId && (j.status === "pending" || j.status === "processing")
             ? {
                 ...j,
                 status: "processing",
                 pipeline_stage: p.stage as PipelineStage,
                 progress: p.percent,
+                stage_progress: p.stagePercent,
               }
             : j,
         ),
@@ -295,6 +299,27 @@ export const useTranscriptionStore = create<TranscriptionState>((set, get) => ({
     await resetJobForRetry(id);
     await get().loadJobs();
     get().enqueuePipeline(id);
+  },
+
+  cancelJob: async (id: string) => {
+    set((s) => ({
+      pipelineQueue: s.pipelineQueue.filter((x) => x !== id),
+      jobs: s.jobs.map((j) =>
+        j.id === id
+          ? {
+              ...j,
+              status: "failed",
+              error_message: CANCELLED_ERROR,
+              progress: 0,
+              pipeline_stage: null,
+              stage_progress: undefined,
+            }
+          : j,
+      ),
+    }));
+    await invoke("cancel_pipeline", { jobId: id }).catch(() => {});
+    // A running job reloads when its pipeline returns; a queued one never started.
+    await get().loadJobs();
   },
 
   removeJob: async (id: string) => {

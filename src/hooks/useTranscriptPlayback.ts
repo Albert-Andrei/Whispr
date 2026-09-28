@@ -85,6 +85,18 @@ export function useTranscriptPlayback(
     setActiveIdx(activeSegmentIndex(segments, timeMs));
   }, [segments]);
 
+  /** Seek to a segment and start playing from there. */
+  const playFrom = useCallback((timeMs: number) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    seek(timeMs);
+    if (audio.paused) {
+      void audio.play();
+      setPlaying(true);
+      setExpanded(true);
+    }
+  }, [seek]);
+
   const seekFraction = useCallback((fraction: number) => {
     const audio = audioRef.current;
     if (!audio || !duration) return;
@@ -107,6 +119,7 @@ export function useTranscriptPlayback(
     setExpanded,
     togglePlay,
     seek,
+    playFrom,
     seekFraction,
   };
 }

@@ -6869,6 +6869,7 @@ dependencies = [
  "docx-rs",
  "futures-util",
  "hound",
+ "libc",
  "printpdf",
  "reqwest 0.12.28",
  "rusqlite",

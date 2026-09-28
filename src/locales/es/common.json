@@ -107,7 +107,8 @@
     "volume": "Volumen",
     "rec": "GRAB",
     "paused": "En pausa",
-    "resume": "Reanudar"
+    "resume": "Reanudar",
+    "jumpToCurrent": "Ir al fragmento actual"
   },
   "update": {
     "available": "Actualización disponible",

@@ -3,11 +3,13 @@
     "pending": "В очереди",
     "processing": "Обработка",
     "completed": "Завершено",
-    "failed": "Ошибка"
+    "failed": "Ошибка",
+    "cancelled": "Отменено"
   },
   "pipelineStage": {
+    "fetching": "Получение данных",
     "downloading": "Загрузка",
-    "extracting": "Извлечение",
+    "extracting": "Конвертация аудио",
     "transcribing": "Транскрипция",
     "progress": "{{stage}} · {{percent}}%"
   },

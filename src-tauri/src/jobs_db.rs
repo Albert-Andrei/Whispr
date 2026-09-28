@@ -33,11 +33,31 @@ pub fn open_conn(app: &AppHandle) -> Result<Connection, String> {
     Connection::open(dbp).map_err(|e| e.to_string())
 }
 
-pub fn set_job_processing(app: &AppHandle, id: &str) -> Result<(), String> {
+/// Error message that marks a job the user cancelled (stored as a failed job so it can be retried).
+pub const CANCELLED_MESSAGE: &str = "Cancelled";
+
+/// Moves a pending job to processing. Returns false when the job is no longer
+/// pending (e.g. cancelled before it started), in which case it must not run.
+pub fn set_job_processing(app: &AppHandle, id: &str) -> Result<bool, String> {
+    let conn = open_conn(app)?;
+    let changed = conn
+        .execute(
+            "UPDATE transcription_jobs SET status = 'processing', progress = 0, pipeline_stage = NULL, error_message = NULL, updated_at = ?1 WHERE id = ?2 AND status = 'pending'",
+            params![chrono::Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Secs, true), id],
+        )
+        .map_err(|e| e.to_string())?;
+    Ok(changed > 0)
+}
+
+pub fn set_job_cancelled(app: &AppHandle, id: &str) -> Result<(), String> {
     let conn = open_conn(app)?;
     conn.execute(
-        "UPDATE transcription_jobs SET status = 'processing', progress = 0, pipeline_stage = NULL, error_message = NULL, updated_at = ?1 WHERE id = ?2",
-        params![chrono::Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Secs, true), id],
+        "UPDATE transcription_jobs SET status = 'failed', error_message = ?1, progress = 0, pipeline_stage = NULL, updated_at = ?2 WHERE id = ?3 AND status IN ('pending', 'processing')",
+        params![
+            CANCELLED_MESSAGE,
+            chrono::Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Secs, true),
+            id
+        ],
     )
     .map_err(|e| e.to_string())?;
     Ok(())

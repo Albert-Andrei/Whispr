@@ -3,8 +3,8 @@ import { EditableFileName } from "../../components/EditableFileName";
 import i18n from "../../lib/i18n";
 import { jobStatusLabel } from "../../lib/i18nLabels";
 import { useTranscriptionStore } from "./store";
-import type { TranscriptionJob } from "./types";
-import { ProgressBar } from "./ProgressBar";
+import { isCancelledJob, type TranscriptionJob } from "./types";
+import { PipelineStatus } from "./PipelineStatus";
 
 const STATUS_STYLES: Record<
   TranscriptionJob["status"],
@@ -18,6 +18,9 @@ const STATUS_STYLES: Record<
     "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/25",
   failed: "bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/25",
 };
+
+const CANCELLED_STYLE =
+  "bg-zinc-500/10 text-zinc-600 dark:text-zinc-300 border-zinc-500/25";
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
@@ -43,9 +46,12 @@ export function FileRow({ job, setSelectedJob, onJobsChanged }: FileRowProps) {
   const storeSetSelected = useTranscriptionStore((state) => state.setSelectedJob);
   const storeRetryJob = useTranscriptionStore((state) => state.retryJob);
   const storeRemoveJob = useTranscriptionStore((state) => state.removeJob);
+  const storeCancelJob = useTranscriptionStore((state) => state.cancelJob);
   const storeRenameJob = useTranscriptionStore((state) => state.renameJob);
 
   const setSelected = setSelectedJob ?? storeSetSelected;
+  const cancelled = isCancelledJob(job);
+  const inFlight = job.status === "pending" || job.status === "processing";
 
   const onRowClick = () => {
     if (job.status === "completed") setSelected(job.id);
@@ -66,7 +72,7 @@ export function FileRow({ job, setSelectedJob, onJobsChanged }: FileRowProps) {
           : "hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
       }`}
     >
-      <td className="max-w-[280px] px-4 py-3">
+      <td className="w-full max-w-0 px-4 py-3">
         <EditableFileName
           fileName={job.filename}
           onRename={(filename) => {
@@ -75,24 +81,32 @@ export function FileRow({ job, setSelectedJob, onJobsChanged }: FileRowProps) {
           variant="row"
         />
       </td>
-      <td className="px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400">
+      <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400">
         {job.duration ?? t("common:emptyPlaceholder")}
       </td>
       <td className="whitespace-nowrap px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400">
         {formatDate(job.created_at)}
       </td>
-      <td className="px-4 py-3 align-middle">
+      <td className="whitespace-nowrap px-4 py-3 align-middle">
         <div className="flex flex-col gap-1">
-          <span
-            className={`inline-flex w-fit rounded-full border px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLES[job.status]}`}
-          >
-            {jobStatusLabel(t, job.status)}
-          </span>
           {job.status === "processing" ? (
-            <ProgressBar progress={job.progress} stage={job.pipeline_stage} />
-          ) : null}
-          {job.status === "failed" && job.error_message ? (
-            <p className="max-w-xs text-[11px] text-red-600 dark:text-red-400">
+            <PipelineStatus
+              chipClassName={STATUS_STYLES.processing}
+              progress={job.progress}
+              stage={job.pipeline_stage}
+              stageProgress={job.stage_progress}
+            />
+          ) : (
+            <span
+              className={`inline-flex w-fit rounded-full border px-2.5 py-0.5 text-xs font-medium ${cancelled ? CANCELLED_STYLE : STATUS_STYLES[job.status]}`}
+            >
+              {cancelled
+                ? t("backend:jobStatus.cancelled")
+                : jobStatusLabel(t, job.status)}
+            </span>
+          )}
+          {job.status === "failed" && job.error_message && !cancelled ? (
+            <p className="max-w-xs whitespace-normal text-[11px] text-red-600 dark:text-red-400">
               {job.error_message}
             </p>
           ) : null}
@@ -113,6 +127,18 @@ export function FileRow({ job, setSelectedJob, onJobsChanged }: FileRowProps) {
               className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-[11px] font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
             >
               {t("common:actions.view")}
+            </button>
+          ) : null}
+          {inFlight ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                void storeCancelJob(job.id).then(() => onJobsChanged?.());
+              }}
+              className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-[11px] font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+            >
+              {t("common:actions.cancel")}
             </button>
           ) : null}
           {job.status === "failed" ? (

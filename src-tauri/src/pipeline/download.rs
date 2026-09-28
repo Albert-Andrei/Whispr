@@ -4,11 +4,25 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use tauri::AppHandle;
 
+/// One yt-dlp progress update.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DownloadProgress {
+    /// 0..1 of the file downloaded.
+    pub fraction: f64,
+    /// yt-dlp's own estimate of seconds left in the download.
+    pub eta_secs: Option<f64>,
+    /// Length of the media itself, in seconds.
+    pub media_secs: Option<f64>,
+}
+
+/// Machine-readable progress line: downloaded, total, total estimate, eta, media duration.
+const PROGRESS_TEMPLATE: &str = "download:WHISPR %(progress.downloaded_bytes)s %(progress.total_bytes)s %(progress.total_bytes_estimate)s %(progress.eta)s %(info.duration)s";
+
 pub fn download_url_to_tmp(
     app: &AppHandle,
     job_id: &str,
     url: &str,
-    on_progress: &dyn Fn(f64),
+    on_progress: &dyn Fn(DownloadProgress),
 ) -> Result<PathBuf, String> {
     paths::ensure_layout(app)?;
     let ytdlp = paths::ytdlp_path(app)?;
@@ -19,12 +33,16 @@ pub fn download_url_to_tmp(
     let template = tmp.join(format!("{job_id}.%(ext)s"));
     let tpl = template.to_str().ok_or("Bad tmp path")?;
 
-    let mut child = Command::new(&ytdlp)
+    let mut cmd = Command::new(&ytdlp);
+    super::own_process_group(&mut cmd);
+    let mut child = cmd
         .current_dir(&tmp)
         .arg("-f")
         .arg("bestaudio/best")
         .arg("--no-playlist")
         .arg("--newline")
+        .arg("--progress-template")
+        .arg(PROGRESS_TEMPLATE)
         .arg("-o")
         .arg(tpl)
         .arg(url)
@@ -34,12 +52,12 @@ pub fn download_url_to_tmp(
 
     super::register_child(job_id, child.id());
 
-    // Progress lines go to stdout with --newline (no --print flag)
+    // Progress lines go to stdout, one per update thanks to --newline.
     if let Some(stdout) = child.stdout.take() {
         let reader = BufReader::new(stdout);
         for line in reader.lines().map_while(Result::ok) {
-            if let Some(pct) = parse_ytdlp_progress(&line) {
-                on_progress(pct);
+            if let Some(p) = parse_ytdlp_progress(&line) {
+                on_progress(p);
             }
         }
     }
@@ -57,15 +75,21 @@ pub fn download_url_to_tmp(
     find_downloaded_file(&tmp, job_id)
 }
 
-fn parse_ytdlp_progress(line: &str) -> Option<f64> {
-    // Lines look like: "[download]  45.2% of 5.23MiB at 2.34MiB/s ETA 00:01"
-    let line = line.trim();
-    if !line.starts_with("[download]") {
-        return None;
-    }
-    let rest = line.strip_prefix("[download]")?.trim();
-    let pct_str = rest.split('%').next()?.trim();
-    pct_str.parse::<f64>().ok().map(|v| v / 100.0)
+fn parse_ytdlp_progress(line: &str) -> Option<DownloadProgress> {
+    // "WHISPR <downloaded> <total> <total_estimate> <eta> <duration>", "NA" when unknown.
+    let mut fields = line.trim().strip_prefix("WHISPR ")?.split_whitespace();
+    let num = |f: Option<&str>| f.and_then(|v| v.parse::<f64>().ok());
+    let downloaded = num(fields.next())?;
+    let total = num(fields.next());
+    let estimate = num(fields.next());
+    let eta_secs = num(fields.next());
+    let media_secs = num(fields.next()).filter(|d| *d > 0.0);
+    let size = total.or(estimate).filter(|t| *t > 0.0)?;
+    Some(DownloadProgress {
+        fraction: (downloaded / size).clamp(0.0, 1.0),
+        eta_secs,
+        media_secs,
+    })
 }
 
 fn find_downloaded_file(tmp: &Path, job_id: &str) -> Result<PathBuf, String> {
@@ -147,4 +171,23 @@ fn fetch_title_ytdlp(app: &AppHandle, url: &str) -> Option<String> {
 
 pub fn resolve_media_path(app: &AppHandle, source_path: &str) -> PathBuf {
     paths::resolve_local_media(app, source_path)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parses_progress_template() {
+        assert_eq!(
+            parse_ytdlp_progress("WHISPR 1024 4096 NA 12 600"),
+            Some(DownloadProgress { fraction: 0.25, eta_secs: Some(12.0), media_secs: Some(600.0) })
+        );
+        assert_eq!(
+            parse_ytdlp_progress("WHISPR 50 NA 200 NA NA"),
+            Some(DownloadProgress { fraction: 0.25, eta_secs: None, media_secs: None })
+        );
+        assert_eq!(parse_ytdlp_progress("WHISPR 50 NA NA NA NA"), None);
+        assert_eq!(parse_ytdlp_progress("[download] Destination: x.webm"), None);
+    }
 }

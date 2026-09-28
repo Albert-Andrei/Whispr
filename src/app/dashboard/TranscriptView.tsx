@@ -133,7 +133,7 @@ export function TranscriptView(props: TranscriptViewProps = {}) {
 
   return (
     <div className="flex min-h-0 flex-1 overflow-hidden">
-      <div className="relative min-h-0 min-w-0 flex-1">
+      <div className="relative flex min-h-0 min-w-0 flex-1 flex-col">
         {showRecordedBadge ? (
           <div className="px-5 pt-2">
             <span className="inline-flex rounded-full border border-zinc-200 bg-zinc-100 px-2.5 py-0.5 text-[11px] font-medium text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
@@ -186,7 +186,8 @@ export function TranscriptView(props: TranscriptViewProps = {}) {
           <TranscriptSegments
             segments={segments}
             activeIndex={playback.activeIdx}
-            onSeek={playback.seek}
+            playing={playback.playing}
+            onSeek={playback.playFrom}
           />
         ) : (
           <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 pt-2">

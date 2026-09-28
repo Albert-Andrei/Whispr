@@ -30,7 +30,7 @@ function rowToJob(row: JobRow): TranscriptionJob {
     error_message: row.error_message ?? null,
     progress: row.progress ?? 0,
     pipeline_stage:
-      stage === "downloading" || stage === "extracting" || stage === "transcribing"
+      stage === "fetching" || stage === "downloading" || stage === "extracting" || stage === "transcribing"
         ? stage
         : null,
     srt_output: row.srt_output ?? null,

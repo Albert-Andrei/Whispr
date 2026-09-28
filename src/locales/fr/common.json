@@ -107,7 +107,8 @@
     "volume": "Volume",
     "rec": "ENR",
     "paused": "En pause",
-    "resume": "Reprendre"
+    "resume": "Reprendre",
+    "jumpToCurrent": "Aller au passage en cours"
   },
   "update": {
     "available": "Mise à jour disponible",

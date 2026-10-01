@@ -1,9 +1,14 @@
 use std::path::{Path, PathBuf};
 use tauri::{AppHandle, Manager};
 
-/// Tools bundled with the app as Tauri sidecars (see `bundle.externalBin` in
-/// `tauri.conf.json` and `scripts/fetch-sidecars.sh`).
-pub const TOOL_NAMES: [&str; 3] = ["ffmpeg", "yt-dlp", "whisper-cli"];
+/// Single-file tools bundled as Tauri sidecars (see `bundle.externalBin` in
+/// `tauri.conf.json` and `scripts/fetch-sidecars.sh`). yt-dlp is not one of
+/// them: it ships as a directory, see [`bundled_ytdlp_dir`].
+pub const TOOL_NAMES: [&str; 2] = ["ffmpeg", "whisper-cli"];
+
+/// Directory name of the yt-dlp package, both in the bundle's resources and
+/// inside `bin/`. It holds the `yt-dlp` launcher plus its `_internal/` runtime.
+pub const YTDLP_DIR: &str = "yt-dlp";
 
 pub fn app_root(app: &AppHandle) -> Result<PathBuf, String> {
     app.path()
@@ -46,8 +51,42 @@ pub fn ffmpeg_path(app: &AppHandle) -> Result<PathBuf, String> {
     tool_path(app, "ffmpeg")
 }
 
+/// Runnable yt-dlp launcher: `bin/yt-dlp/yt-dlp` (its runtime lives next to it).
 pub fn ytdlp_path(app: &AppHandle) -> Result<PathBuf, String> {
-    tool_path(app, "yt-dlp")
+    Ok(ytdlp_dir(app)?.join("yt-dlp"))
+}
+
+/// The installed yt-dlp package directory inside `bin/`.
+pub fn ytdlp_dir(app: &AppHandle) -> Result<PathBuf, String> {
+    Ok(bin_dir(app)?.join(YTDLP_DIR))
+}
+
+/// The yt-dlp package as shipped: `Whispr.app/Contents/Resources/yt-dlp/` in a
+/// release build (`bundle.resources`), or next to the target binary under
+/// `tauri dev`, where tauri-build copies resources.
+pub fn bundled_ytdlp_dir(app: &AppHandle) -> Result<PathBuf, String> {
+    let from_resources = app
+        .path()
+        .resource_dir()
+        .map(|d| d.join(YTDLP_DIR))
+        .ok()
+        .filter(|d| d.join("yt-dlp").is_file());
+    if let Some(d) = from_resources {
+        return Ok(d);
+    }
+    // Fallbacks: next to the executable, then the raw fetch output in the
+    // source tree (running `cargo run` straight from src-tauri).
+    let exe = std::env::current_exe().map_err(|e| e.to_string())?;
+    let beside = exe
+        .parent()
+        .map(|d| d.join(YTDLP_DIR))
+        .filter(|d| d.join("yt-dlp").is_file());
+    if let Some(d) = beside {
+        return Ok(d);
+    }
+    Ok(PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("binaries")
+        .join("yt-dlp-pkg"))
 }
 
 pub fn whisper_cli_path(app: &AppHandle) -> Result<PathBuf, String> {

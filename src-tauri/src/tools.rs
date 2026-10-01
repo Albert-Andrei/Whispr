@@ -1,5 +1,5 @@
-//! Installs the bundled sidecar tools (ffmpeg, yt-dlp, whisper-cli) from the
-//! app bundle into the app's own `bin/` directory.
+//! Installs the bundled tools (ffmpeg, whisper-cli, and the yt-dlp package)
+//! from the app bundle into the app's own `bin/` directory.
 //!
 //! Why copy instead of running them in place: every file inside a DMG the user
 //! downloaded carries the `com.apple.quarantine` attribute. Whispr is not
@@ -12,7 +12,7 @@ use crate::paths;
 use std::fs::{self, File};
 use std::io;
 use std::path::Path;
-use tauri::{AppHandle, Manager};
+use tauri::AppHandle;
 
 const STAMP_FILE: &str = ".tools-version";
 
@@ -43,11 +43,12 @@ fn chmod755(_path: &Path) -> io::Result<()> {
     Ok(())
 }
 
-/// Best effort: make sure no quarantine flag survives on the installed copy.
+/// Best effort: make sure no quarantine flag survives on the installed copy
+/// (recursive, so it also covers the yt-dlp package directory).
 #[cfg(target_os = "macos")]
 fn strip_quarantine(path: &Path) {
     let _ = std::process::Command::new("/usr/bin/xattr")
-        .args(["-d", "com.apple.quarantine"])
+        .args(["-dr", "com.apple.quarantine"])
         .arg(path)
         .stdin(std::process::Stdio::null())
         .stdout(std::process::Stdio::null())
@@ -80,6 +81,51 @@ fn copy_fresh(src: &Path, dest: &Path) -> Result<(), String> {
     let _ = fs::remove_file(dest);
     fs::rename(&tmp, dest).map_err(|e| format!("rename into place: {e}"))?;
     strip_quarantine(dest);
+    Ok(())
+}
+
+/// Recursively copy a directory tree, streaming each file like [`copy_fresh`].
+/// Symlinks are recreated as symlinks (the Python framework inside the yt-dlp
+/// package relies on them).
+fn copy_tree(src: &Path, dest: &Path) -> Result<(), String> {
+    fs::create_dir_all(dest).map_err(|e| format!("mkdir {}: {e}", dest.display()))?;
+    for entry in fs::read_dir(src).map_err(|e| format!("read {}: {e}", src.display()))? {
+        let entry = entry.map_err(|e| e.to_string())?;
+        let from = entry.path();
+        let to = dest.join(entry.file_name());
+        let meta = fs::symlink_metadata(&from).map_err(|e| e.to_string())?;
+        if meta.file_type().is_symlink() {
+            let target = fs::read_link(&from).map_err(|e| e.to_string())?;
+            #[cfg(unix)]
+            std::os::unix::fs::symlink(&target, &to).map_err(|e| format!("symlink {}: {e}", to.display()))?;
+        } else if meta.is_dir() {
+            copy_tree(&from, &to)?;
+        } else {
+            let mut reader = File::open(&from).map_err(|e| format!("open {}: {e}", from.display()))?;
+            let mut writer = File::create(&to).map_err(|e| format!("create {}: {e}", to.display()))?;
+            io::copy(&mut reader, &mut writer).map_err(|e| format!("copy {}: {e}", from.display()))?;
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                let _ = fs::set_permissions(&to, fs::Permissions::from_mode(meta.permissions().mode() & 0o777));
+            }
+        }
+    }
+    Ok(())
+}
+
+/// Install the yt-dlp package directory into `bin/yt-dlp/`, building it in a
+/// temp directory first and swapping it into place when complete.
+fn install_ytdlp_package(src_dir: &Path, dest_dir: &Path) -> Result<(), String> {
+    let tmp = dest_dir.with_file_name(".yt-dlp.tmp");
+    let _ = fs::remove_dir_all(&tmp);
+    copy_tree(src_dir, &tmp)?;
+    chmod755(&tmp.join("yt-dlp")).map_err(|e| format!("chmod launcher: {e}"))?;
+    let _ = fs::remove_dir_all(dest_dir);
+    // Legacy single-file yt-dlp from older versions sits at the same path.
+    let _ = fs::remove_file(dest_dir);
+    fs::rename(&tmp, dest_dir).map_err(|e| format!("rename into place: {e}"))?;
+    strip_quarantine(dest_dir);
     Ok(())
 }
 
@@ -117,6 +163,26 @@ pub fn install_bundled_tools(app: &AppHandle) -> Result<Vec<String>, String> {
                 Err(e) => errors.push(format!("{name}: {e}")),
             }
         }
+    }
+
+    // yt-dlp: a directory package rather than a single file. Reinstalled on
+    // app update or when its launcher is missing.
+    match paths::bundled_ytdlp_dir(app) {
+        Ok(src_dir) if src_dir.join("yt-dlp").is_file() => {
+            let dest_dir = paths::ytdlp_dir(app)?;
+            let launcher_missing = !dest_dir.join("yt-dlp").is_file();
+            if force || launcher_missing {
+                match install_ytdlp_package(&src_dir, &dest_dir) {
+                    Ok(()) => installed.push("yt-dlp".to_string()),
+                    Err(e) => errors.push(format!("yt-dlp: {e}")),
+                }
+            }
+        }
+        Ok(src_dir) => errors.push(format!(
+            "yt-dlp: bundled package not found at {}",
+            src_dir.display()
+        )),
+        Err(e) => errors.push(format!("yt-dlp: {e}")),
     }
 
     if !errors.is_empty() {

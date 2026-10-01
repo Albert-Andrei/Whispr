@@ -115,32 +115,18 @@ write_release_body() {
     echo ""
     if [[ ${#subjects[@]} -eq 0 ]]; then
       echo "Maintenance and improvements."
-    elif [[ ${#subjects[@]} -eq 1 ]]; then
-      echo "$(friendly_subject "${subjects[0]}")."
     else
-      local summary=""
       local s
       for s in "${subjects[@]}"; do
-        local friendly
-        friendly="$(friendly_subject "$s")"
-        # lowercase first char for joining
-        local lower_first
-        lower_first="$(printf '%s' "${friendly:0:1}" | tr '[:upper:]' '[:lower:]')${friendly:1}"
-        if [[ -z "$summary" ]]; then
-          # Re-capitalize for sentence start
-          summary="$(printf '%s' "${lower_first:0:1}" | tr '[:lower:]' '[:upper:]')${lower_first:1}"
-        else
-          summary="${summary}, ${lower_first}"
-        fi
+        echo "- $(friendly_subject "$s")"
       done
-      echo "${summary}."
     fi
     echo ""
     echo "---"
     echo ""
-    echo "Offline transcription for video and audio on macOS"
+    echo "Offline transcription for video and audio on macOS. Apple Silicon (M1 or newer), macOS 13 or later."
     echo ""
-    echo "Download the \`.dmg\` for your Mac (Apple Silicon or Intel) from the assets below."
+    echo "Download \`Whispr_aarch64.dmg\` below."
   } >"$RELEASE_BODY"
 }
 

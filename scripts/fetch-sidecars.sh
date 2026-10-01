@@ -6,12 +6,19 @@ set -euo pipefail
 #
 # Output (git-ignored):
 #   src-tauri/binaries/ffmpeg-aarch64-apple-darwin
-#   src-tauri/binaries/yt-dlp-aarch64-apple-darwin
 #   src-tauri/binaries/whisper-cli-aarch64-apple-darwin
+#   src-tauri/binaries/yt-dlp-pkg/            (directory: launcher + _internal/)
 #
-# Tauri copies each file into Whispr.app/Contents/MacOS/ *without* the
-# "-aarch64-apple-darwin" suffix; the app then copies them into its own bin/
-# directory on launch (see src-tauri/src/tools.rs).
+# Tauri copies each single-file tool into Whispr.app/Contents/MacOS/ *without*
+# the "-aarch64-apple-darwin" suffix, and the yt-dlp directory into
+# Contents/Resources/yt-dlp/ (bundle.resources). The app then copies all of
+# them into its own bin/ directory on launch (see src-tauri/src/tools.rs).
+#
+# yt-dlp is shipped as the *unpacked* (PyInstaller "onedir") build on purpose:
+# the single-file build unpacks a whole Python runtime into a fresh temp folder
+# on every run, and macOS's malware scan of those new files costs ~12 s per
+# run. The unpacked folder is scanned once after install, then starts in
+# ~0.3 s.
 #
 # Every binary is checked to be arm64, to link only against system libraries,
 # to actually run, and is ad-hoc signed.
@@ -25,7 +32,7 @@ MACOS_MIN="13.0"
 FFMPEG_URL="https://github.com/eugeneware/ffmpeg-static/releases/download/b6.1.1/ffmpeg-darwin-arm64"
 # yt-dlp is deliberately taken from the latest release at build time: it must
 # stay fresh for sites like YouTube to keep working.
-YTDLP_URL="https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos"
+YTDLP_URL="https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos.zip"
 WHISPER_CPP_REPO="https://github.com/ggml-org/whisper.cpp"
 WHISPER_CPP_TAG="v1.9.4"
 
@@ -34,7 +41,7 @@ DEST="$SCRIPT_DIR/../src-tauri/binaries"
 FORCE="${1:-}"
 mkdir -p "$DEST"
 
-for tool in curl git cmake codesign file otool; do
+for tool in curl git cmake codesign file otool lipo unzip; do
   command -v "$tool" >/dev/null 2>&1 || { echo "ERROR: '$tool' is required" >&2; exit 1; }
 done
 
@@ -59,12 +66,54 @@ fetch_ffmpeg() {
   download "$FFMPEG_URL" "$out"
 }
 
-# ── yt-dlp (PyInstaller one-file, universal) ─────────────────────────
+# ── yt-dlp (PyInstaller one-dir, trimmed to arm64) ───────────────────
 fetch_ytdlp() {
-  local out="$DEST/yt-dlp-$TARGET"
-  if present "$out"; then echo "  yt-dlp already present"; return; fi
+  local out="$DEST/yt-dlp-pkg"
+  if [[ "$FORCE" != "--force" && -x "$out/yt-dlp" && -d "$out/_internal" ]]; then
+    echo "  yt-dlp package already present"; return
+  fi
+  rm -rf "$out" "$out.tmp"
+  local work
+  work="$(mktemp -d)"
+  trap 'rm -rf "$work"' RETURN
+
   echo "  downloading $YTDLP_URL"
-  download "$YTDLP_URL" "$out"
+  curl -fL --retry 3 --retry-delay 2 --progress-bar -o "$work/yt-dlp.zip" "$YTDLP_URL"
+  unzip -q "$work/yt-dlp.zip" -d "$work/unzipped"
+
+  # Zip layout: yt-dlp_macos (launcher) + _internal/ at the top level.
+  # The launcher finds _internal/ next to itself whatever it is called.
+  mkdir -p "$out.tmp"
+  mv "$work/unzipped/yt-dlp_macos" "$out.tmp/yt-dlp"
+  mv "$work/unzipped/_internal" "$out.tmp/_internal"
+  chmod 755 "$out.tmp/yt-dlp"
+
+  # Drop the x86_64 slices: we only ship Apple Silicon and this halves the
+  # size. Each slice carries its own ad-hoc signature, which survives lipo
+  # intact, so nothing is re-signed (codesign cannot re-sign the embedded
+  # Python.framework anyway: "bundle format is ambiguous"). Every Mach-O is
+  # verified instead, so a broken signature fails the build here, loudly.
+  local f thinned=0 checked=0
+  while IFS= read -r -d '' f; do
+    if file "$f" | grep -q 'universal'; then
+      lipo -thin arm64 "$f" -output "$f.thin"
+      mv "$f.thin" "$f"
+      thinned=$((thinned + 1))
+    fi
+    if file "$f" | grep -q 'Mach-O'; then
+      # Verify a plain copy: inside a *.framework directory codesign treats
+      # the path as a bundle and demands a resource seal the file never had.
+      cp "$f" "$work/sigcheck.bin"
+      if ! codesign --verify "$work/sigcheck.bin"; then
+        echo "ERROR: invalid code signature after thinning: $f" >&2
+        exit 1
+      fi
+      checked=$((checked + 1))
+    fi
+  done < <(find "$out.tmp" -type f -print0)
+  echo "  thinned $thinned universal files, verified $checked Mach-O signatures"
+
+  mv "$out.tmp" "$out"
 }
 
 # ── whisper-cli (built from source, fully static, Metal) ─────────────
@@ -154,8 +203,13 @@ log "whisper-cli";  build_whisper_cli
 
 log "Verifying"
 verify ffmpeg      "$DEST/ffmpeg-$TARGET"      "-version"
-verify yt-dlp      "$DEST/yt-dlp-$TARGET"      "--version"
+verify yt-dlp      "$DEST/yt-dlp-pkg/yt-dlp"   "--version"
 verify whisper-cli "$DEST/whisper-cli-$TARGET" "--help"
+# No stray universal binaries left in the yt-dlp package.
+if find "$DEST/yt-dlp-pkg" -type f -exec file {} + | grep -q 'universal'; then
+  echo "ERROR: yt-dlp package still contains universal binaries" >&2; exit 1
+fi
 
 log "Done"
 ls -lh "$DEST"/*-"$TARGET"
+du -sh "$DEST/yt-dlp-pkg"

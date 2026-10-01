@@ -8,8 +8,8 @@ Context for AI agents and contributors working on this repo.
 
 ## Transcription stack (implemented)
 
-- **yt-dlp** — bundled as a Tauri **sidecar** (`bundle.externalBin`; files in git-ignored `src-tauri/binaries/`, produced by `scripts/fetch-sidecars.sh` before any build). Tauri copies it to `Whispr.app/Contents/MacOS/yt-dlp`. On **every launch** `tools.rs` copies the bundled tools into the app's `bin/` dir (version-stamped, idempotent) and the pipeline runs them from there — running them straight out of a downloaded, quarantined `.app` is refused by macOS for non-notarized binaries.
-- **ffmpeg** — same; bundled as a sidecar (static build from eugeneware/ffmpeg-static).
+- **ffmpeg** — bundled as a Tauri **sidecar** (`bundle.externalBin`; files in git-ignored `src-tauri/binaries/`, produced by `scripts/fetch-sidecars.sh` before any build; static build from eugeneware/ffmpeg-static). Tauri copies it to `Whispr.app/Contents/MacOS/ffmpeg`. On **every launch** `tools.rs` copies the bundled tools into the app's `bin/` dir (version-stamped, idempotent) and the pipeline runs them from there — running them straight out of a downloaded, quarantined `.app` is refused by macOS for non-notarized binaries.
+- **yt-dlp** — bundled as a **directory** (`bundle.resources` → `Whispr.app/Contents/Resources/yt-dlp/`, from `src-tauri/binaries/yt-dlp-pkg/`): the unpacked PyInstaller build (`yt-dlp_macos.zip`, trimmed to arm64 and ad-hoc re-signed by the script). `tools.rs` copies the folder to `bin/yt-dlp/` and the pipeline runs `bin/yt-dlp/yt-dlp`. Not the single-file build on purpose: that one unpacks a Python runtime into a new temp dir on every run and XProtect's scan of it costs ~12 s per run; the folder is scanned once after install and then starts in ~0.3 s.
 - **whisper-cli** — same; built from [whisper.cpp](https://github.com/ggml-org/whisper.cpp) (pinned tag in the script) as a fully static arm64 binary with Metal embedded, macOS 13+. **No Homebrew dependency.** Apple Silicon only.
 - **Models** — GGML `.bin` files (small / medium / large-v3) downloaded from Hugging Face URLs in Rust (`downloader.rs`); stored under the app’s models directory.
 

@@ -70,14 +70,25 @@ jobs:
           cp "$DMG" Whispr_aarch64.dmg
           gh release upload "${{ github.ref_name }}" Whispr_aarch64.dmg --clobber
 
+      # tauri-action creates the release with an empty body; apply the notes
+      # that scripts/bump-version.sh generated for this tag.
+      - name: Apply release notes
+        if: matrix.target == 'aarch64-apple-darwin'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          test -s .github/RELEASE_BODY.md && gh release edit "${{ github.ref_name }}" --notes-file .github/RELEASE_BODY.md
+
       - name: Verify bundled tools in Whispr.app
         run: |
           APP=src-tauri/target/${{ matrix.target }}/release/bundle/macos/Whispr.app
           ls -la "$APP/Contents/MacOS"
-          for t in ffmpeg yt-dlp whisper-cli; do
+          for t in ffmpeg whisper-cli; do
             test -x "$APP/Contents/MacOS/$t" || { echo "missing sidecar: $t"; exit 1; }
           done
+          test -x "$APP/Contents/Resources/yt-dlp/yt-dlp" || { echo "missing yt-dlp package"; exit 1; }
+          test -d "$APP/Contents/Resources/yt-dlp/_internal" || { echo "missing yt-dlp _internal"; exit 1; }
           "$APP/Contents/MacOS/ffmpeg" -version | head -1
-          "$APP/Contents/MacOS/yt-dlp" --version
+          "$APP/Contents/Resources/yt-dlp/yt-dlp" --version
           "$APP/Contents/MacOS/whisper-cli" --help >/dev/null 2>&1 || test $? -le 1
           codesign -dv "$APP" 2>&1 | grep -E 'Signature|flags' || true

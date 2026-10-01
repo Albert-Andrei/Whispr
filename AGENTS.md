@@ -87,6 +87,12 @@ Events: **`pipeline:progress`**, **`setup:progress`** (model download only).
 - **Dashboard:** Import modal; pipeline progress on rows; **TranscriptView** for completed jobs with export actions.
 - **Import:** a link or single file opens the **ClipEditor** (`src/app/import/`) — inline from the empty state, else in the modal — as a draft row; several files go straight to the queue.
 
+## App icon (two formats)
+
+- **`src-tauri/icons/icon.icns`** (+ PNGs, `icon.ico`) — classic icon for macOS 13–15: artwork on Apple's 824/1024 grid, rounded, transparent margins. Source `icons/app-icon.png`; regenerate all sizes with `bun x tauri icon src-tauri/icons/app-icon.png -o src-tauri/icons`.
+- **`src-tauri/icons/Assets.car`** — macOS 26 "Liquid Glass" icon (`CFBundleIconName = AppIcon`, set in `src-tauri/Info.plist`; shipped via `bundle.resources`). macOS 26 masks classic `.icns` icons into its slab *including their transparent margins*, which made the icon look 20% small; the catalog icon fills the slab. Source is the Icon Composer document `icons/AppIcon.icon/` (dark fill + white waveform layer). Recompile with Xcode 26 installed:
+  `xcrun actool src-tauri/icons/AppIcon.icon --compile /tmp/out --platform macosx --minimum-deployment-target 13.0 --app-icon AppIcon --output-partial-info-plist /tmp/out/p.plist` then copy `/tmp/out/Assets.car` into `src-tauri/icons/`. Both files ship; each macOS version reads its own.
+
 ## Supported media (import validation)
 
 - **Video:** `mp4`, `mov`, `mkv`, `webm`, `avi`

@@ -48,7 +48,8 @@
       "binaries/whisper-cli"
     ],
     "resources": {
-      "binaries/yt-dlp-pkg/": "yt-dlp/"
+      "binaries/yt-dlp-pkg/": "yt-dlp/",
+      "icons/Assets.car": "Assets.car"
     },
     "icon": [
       "icons/32x32.png",

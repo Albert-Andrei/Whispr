@@ -1,0 +1,22 @@
+{
+  "fill" : {
+    "solid" : "extended-srgb:0.090,0.090,0.094,1.000"
+  },
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "image-name" : "waveform.png",
+          "name" : "waveform",
+          "fill" : { "solid" : "extended-srgb:0.980,0.980,0.980,1.000" }
+        }
+      ],
+      "shadow" : { "kind" : "neutral", "opacity" : 0.5 },
+      "translucency" : { "enabled" : true, "value" : 0.5 }
+    }
+  ],
+  "supported-platforms" : {
+    "circles" : [ "watchOS" ],
+    "squares" : "shared"
+  }
+}

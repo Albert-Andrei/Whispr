@@ -1,8 +1,6 @@
-## Whispr v0.1.13
+## Whispr v0.1.14
 
-- Ship yt-dlp as an unpacked package; link previews in ~2 s
-- Rounded app icon for pre-Tahoe macOS, clean DMG background
-- GitHub Pages landing page with a permanent download link
+- Native macOS 26 app icon alongside the classic .icns
 
 ---
 

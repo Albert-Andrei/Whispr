@@ -1,9 +1,11 @@
-## Whispr v0.1.12
+## Whispr v0.1.13
 
-Pick a section of a link or file to transcribe, follow-along transcript, job cancel, real pipeline progress, rEADME for bundled tools (v0.1.11).
+- Ship yt-dlp as an unpacked package; link previews in ~2 s
+- Rounded app icon for pre-Tahoe macOS, clean DMG background
+- GitHub Pages landing page with a permanent download link
 
 ---
 
-Offline transcription for video and audio on macOS
+Offline transcription for video and audio on macOS. Apple Silicon (M1 or newer), macOS 13 or later.
 
-Download the `.dmg` for your Mac (Apple Silicon or Intel) from the assets below.
+Download `Whispr_aarch64.dmg` below.
